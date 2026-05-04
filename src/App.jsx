@@ -20,6 +20,7 @@ import { useAuth } from './hooks/useAuth'
 import { useTheme } from './hooks/useTheme'
 import { useTodosData } from './hooks/useTodosData'
 import { useCalendarNav } from './hooks/useCalendarNav'
+import { useSubscription, PRO_LIMITS } from './hooks/useSubscription'
 import { Header } from './components/Header'
 import { TodoList } from './components/TodoList'
 import { BottomNav } from './components/BottomNav'
@@ -32,6 +33,7 @@ import { AchievementUnlockModal } from './components/AchievementUnlockModal'
 import { AchievementsModal } from './components/AchievementsModal'
 import { LockScreenView } from './components/LockScreenView'
 import { OnboardingModal, shouldShowOnboarding } from './components/OnboardingModal'
+import { SubscriptionModal } from './components/SubscriptionModal'
 import './index.css'
 
 const LockScreenNative = Capacitor.isNativePlatform() ? registerPlugin('LockScreen') : null
@@ -119,6 +121,21 @@ function App() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [showAchievementsModal, setShowAchievementsModal] = useState(false)
   const [showNotificationsModal, setShowNotificationsModal] = useState(false)
+  
+  // Pro 구독 관련 상태
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
+  const {
+    isPro,
+    subscription,
+    loading: subscriptionLoading,
+    aiUsageToday,
+    canUseAi,
+    canUseProFeature,
+    getRemainingAiRequests,
+    incrementAiUsage,
+    startSubscription,
+    cancelSubscription,
+  } = useSubscription(user)
 
   useEffect(() => {
     localStorage.setItem('briodo-viewMode', viewMode)
@@ -924,6 +941,17 @@ function App() {
       setTimeout(async () => {
         try {
           let finalData = { text: savedText, date: today, time: '', tags: [], reminderOffset: savedReminderOffset }
+          
+          // AI 사용량 체크 (Pro 구독)
+          if (!canUseAi()) {
+            console.log('[AI] Daily limit reached, showing subscription modal')
+            setShowSubscriptionModal(true)
+            return
+          }
+          
+          // AI 사용량 증가
+          await incrementAiUsage()
+          
           const ai = await getAiFullAnalysis(savedText)
           if (cancelled) return
           if (ai) {
@@ -1392,6 +1420,9 @@ function App() {
           reminderOffset={smartReminderOffset} setReminderOffset={setSmartReminderOffset}
           defaultReminderOffset={defaultReminderOffset}
           autoStartVoice={!smartText}
+          isPro={isPro}
+          remainingAiRequests={getRemainingAiRequests()}
+          onUpgradeClick={() => setShowSubscriptionModal(true)}
         />
       )}
 
@@ -1440,6 +1471,17 @@ function App() {
           setShowSettings={setShowSettings}
           appVersion={APP_VERSION}
           screen={settingsScreen} setScreen={setSettingsScreen}
+          // Pro 구독 props
+          isPro={isPro}
+          subscription={subscription}
+          aiUsageToday={aiUsageToday}
+          onUpgradeClick={() => setShowSubscriptionModal(true)}
+          onCancelSubscription={async () => {
+            if (window.confirm(t('cancelConfirm') || '정말 구독을 취소하시겠습니까?')) {
+              await cancelSubscription()
+              showToastMsg(t('cancelSuccess') || '구독이 취소되었습니다.')
+            }
+          }}
         />
       )}
 
@@ -1487,6 +1529,22 @@ function App() {
         />
       )}
 
+      {/* Pro 구독 모달 */}
+      <SubscriptionModal
+        isOpen={showSubscriptionModal}
+        onClose={() => setShowSubscriptionModal(false)}
+        onSubscribe={async (planId) => {
+          try {
+            await startSubscription(planId)
+            showToastMsg(t('subscriptionSuccess') || 'Pro 구독이 시작되었습니다!')
+          } catch (error) {
+            showToastMsg(t('subscriptionError') || '구독 처리 중 오류가 발생했습니다.')
+          }
+        }}
+        currentPlan={subscription?.planId}
+        t={t}
+        theme={theme}
+      />
 
     </div>
   )

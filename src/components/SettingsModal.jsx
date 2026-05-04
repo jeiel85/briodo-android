@@ -70,6 +70,12 @@ export function SettingsModal({
   setShowSettings,
   appVersion,
   screen, setScreen,
+  // Pro 구독 관련 props
+  isPro,
+  subscription,
+  aiUsageToday,
+  onUpgradeClick,
+  onCancelSubscription,
 }) {
   const L = (ko, en, ja, zh) => lang === 'ko' ? ko : lang === 'ja' ? (ja ?? en) : lang === 'zh' ? (zh ?? en) : en
   const [licensesExpanded, setLicensesExpanded] = useState(false)
@@ -211,6 +217,122 @@ export function SettingsModal({
                   : L('로그인 안 됨', 'Not signed in', '未ログイン', '未登录')}
                 onClick={() => setScreen('account')}
               />
+
+              {/* Pro 구독 섹션 */}
+              <p className="settings-nav-group-label">{L('구독', 'Subscription', 'サブスクリプション', '订阅')}</p>
+              {isPro ? (
+                <div style={{
+                  backgroundColor: 'var(--color-primary-container)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '16px',
+                  margin: '8px 0',
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    marginBottom: '12px',
+                  }}>
+                    <span style={{ fontSize: '24px' }}>⚡</span>
+                    <div>
+                      <div style={{
+                        fontWeight: 700,
+                        fontSize: '16px',
+                        color: 'var(--color-on-surface)',
+                      }}>
+                        Pro {L('활성', 'Active', 'アクティブ', '活跃')}
+                      </div>
+                      <div style={{
+                        fontSize: '12px',
+                        color: 'var(--color-on-surface-variant)',
+                      }}>
+                        {subscription?.planName} · {L('만료', 'Expires', '有効期限', '到期')}: {subscription?.expiresAt?.toDate?.().toLocaleDateString?.() || '-'}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{
+                    display: 'flex',
+                    gap: '8px',
+                    flexWrap: 'wrap',
+                    fontSize: '11px',
+                  }}>
+                    <span style={{
+                      backgroundColor: 'var(--color-surface)',
+                      padding: '4px 8px',
+                      borderRadius: 'var(--radius-sm)',
+                      color: 'var(--color-primary)',
+                    }}>✨ {L('무제한 AI', 'Unlimited AI', '無制限AI', '无限AI')}</span>
+                    <span style={{
+                      backgroundColor: 'var(--color-surface)',
+                      padding: '4px 8px',
+                      borderRadius: 'var(--radius-sm)',
+                      color: 'var(--color-primary)',
+                    }}>🎨 {L('커스텀 테마', 'Custom Themes', 'カスタムテーマ', '自定义主题')}</span>
+                    <span style={{
+                      backgroundColor: 'var(--color-surface)',
+                      padding: '4px 8px',
+                      borderRadius: 'var(--radius-sm)',
+                      color: 'var(--color-primary)',
+                    }}>🚫 {L('광고 없음', 'No Ads', '広告なし', '无广告')}</span>
+                  </div>
+                  {onCancelSubscription && (
+                    <button
+                      onClick={onCancelSubscription}
+                      style={{
+                        marginTop: '12px',
+                        width: '100%',
+                        padding: '10px',
+                        backgroundColor: 'transparent',
+                        border: '1px solid var(--color-outline)',
+                        borderRadius: 'var(--radius-md)',
+                        color: 'var(--color-on-surface-variant)',
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {L('구독 취소', 'Cancel Subscription', 'サブスクリプションをキャンセル', '取消订阅')}
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <SettingsNavItem
+                    icon="⚡"
+                    title={L('Pro 업그레이드', 'Upgrade to Pro', 'Proにアップグレード', '升级到Pro')}
+                    subtitle={L('모든 기능 무제한 사용', 'Unlimited access to all features', 'すべての機能を無制限に使用', '无限使用所有功能')}
+                    onClick={onUpgradeClick}
+                  />
+                  {aiUsageToday > 0 && (
+                    <div style={{
+                      padding: '12px 16px',
+                      backgroundColor: 'var(--color-surface-container)',
+                      borderRadius: 'var(--radius-lg)',
+                      marginTop: '8px',
+                      fontSize: '13px',
+                      color: 'var(--color-on-surface-variant)',
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span>{L('오늘의 AI 사용량', "Today's AI usage", '今日のAI使用量', '今日AI使用量')}</span>
+                        <span>{aiUsageToday} / 10</span>
+                      </div>
+                      <div style={{
+                        height: '4px',
+                        backgroundColor: 'var(--color-outline-variant)',
+                        borderRadius: '2px',
+                        overflow: 'hidden',
+                      }}>
+                        <div style={{
+                          width: `${(aiUsageToday / 10) * 100}%`,
+                          height: '100%',
+                          backgroundColor: aiUsageToday >= 10 ? 'var(--color-error)' : 'var(--color-primary)',
+                          borderRadius: '2px',
+                          transition: 'width 0.3s ease',
+                        }} />
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
 
               <p className="settings-nav-group-label">{L('앱 정보', 'About', 'アプリ情報', '应用信息')}</p>
               <SettingsNavItem

@@ -77,5 +77,12 @@ export const initAppCheck = () => {
   }
 }
 
-// Pro Features - 하드코딩으로 비활성화 (릴리즈 시 필요시 활성화)
-export const PRO_ENABLED = false // TODO: 환경 변수로 전환 예정
+// Pro Features - 릴리즈 시 활성화
+export const PRO_ENABLED = true
+
+// 구독 설정
+export const SUBSCRIPTION_CONFIG = {
+  enabled: true,
+  trialDays: 7, // 묶음 체험 기간
+  gracePeriodDays: 3, // 구독 만료 후 유예 기간
+}
