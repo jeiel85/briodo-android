@@ -94,7 +94,7 @@ function App() {
     localStorage.setItem('completionCalendarMode', mode)
   }
 
-  const { todos, setTodos, isOnline, isAiAnalyzing, toggleComplete, toggleSubtaskComplete, deleteTodo, getAiFullAnalysis } = useTodosData(user, { completionCalendarMode, lang })
+  const { todos, setTodos, isOnline, isAiAnalyzing, syncStatus, toggleComplete, toggleSubtaskComplete, deleteTodo, getAiFullAnalysis, triggerSync } = useTodosData(user, { completionCalendarMode, lang })
   const { briefingText, briefingLoading, generateBriefing } = useBriefing()
   const { todayStr, selectedDate, setSelectedDate, calendarExpanded, setCalendarExpanded, viewMonth, viewMonthLabel, currentWeekDates, monthGridDates, weekdayNames, prevWeek, nextWeek, prevMonth, nextMonth, goToMonth, handleGoToToday } = useCalendarNav(lang)
 
@@ -1240,6 +1240,78 @@ function App() {
           onTouchEnd={handleSwipeEnd}
         >
           <Header {...headerProps} viewMode={viewMode} />
+          
+          {/* 동기화 상태 표시 인디케이터 */}
+          {user && (
+            <div className="sync-status-bar" style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              padding: '4px 12px',
+              fontSize: '11px',
+              color: !isOnline ? 'var(--color-error)' : syncStatus.isSyncing ? 'var(--color-primary)' : 'var(--color-on-surface-variant)',
+              backgroundColor: !isOnline ? 'var(--color-error-container)' : syncStatus.isSyncing ? 'var(--color-primary-container)' : 'var(--color-surface-container)',
+              borderRadius: '0 0 var(--radius-md) var(--radius-md)',
+              margin: '0 auto',
+              width: 'fit-content',
+              opacity: (!isOnline || syncStatus.isSyncing || syncStatus.queueSize > 0) ? 1 : 0,
+              transition: 'opacity 0.3s ease',
+              pointerEvents: (!isOnline || syncStatus.isSyncing || syncStatus.queueSize > 0) ? 'auto' : 'none',
+            }}>
+              {!isOnline ? (
+                <>
+                  <span>📴</span>
+                  <span>{t('offlineMode') || '오프라인 모드'}</span>
+                  {syncStatus.queueSize > 0 && (
+                    <span style={{ 
+                      background: 'var(--color-error)', 
+                      color: 'white', 
+                      borderRadius: '8px', 
+                      padding: '0 6px',
+                      fontSize: '10px',
+                    }}>
+                      {syncStatus.queueSize}
+                    </span>
+                  )}
+                </>
+              ) : syncStatus.isSyncing ? (
+                <>
+                  <span className="sync-spinner" style={{
+                    display: 'inline-block',
+                    width: '12px',
+                    height: '12px',
+                    border: '2px solid var(--color-primary)',
+                    borderTopColor: 'transparent',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite',
+                  }} />
+                  <span>{t('syncing') || '동기화 중...'}</span>
+                </>
+              ) : syncStatus.queueSize > 0 ? (
+                <>
+                  <span>⏳</span>
+                  <span>{t('pendingSync') || '대기 중'} ({syncStatus.queueSize})</span>
+                  <button 
+                    onClick={triggerSync}
+                    style={{
+                      background: 'var(--color-primary)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '2px 8px',
+                      fontSize: '10px',
+                      cursor: 'pointer',
+                      marginLeft: '4px',
+                    }}
+                  >
+                    {t('syncNow') || '동기화'}
+                  </button>
+                </>
+              ) : null}
+            </div>
+          )}
+          
           <div
             className="todo-list-section"
             ref={todoListRef}

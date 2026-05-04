@@ -20,6 +20,7 @@
   --color-tertiary: #742fe5;
   --color-tertiary-container: #8342f4;
   --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
   --priority-low: #44464E;
   --priority-medium: #3951C8;
   --priority-high: #742fe5;
@@ -63,6 +64,7 @@
   --color-tertiary-container: #3d1fa8;
 
   --color-error: #ff6b6b;
+  --color-error-container: #5c1414;
 
   /* 우선순위 — 다크에서도 선명하게 */
   --priority-low: #8892b0;
@@ -98,6 +100,7 @@
     --color-tertiary: #a78bff;
     --color-tertiary-container: #3d1fa8;
     --color-error: #ff6b6b;
+    --color-error-container: #5c1414;
     --priority-low: #8892b0;
     --priority-medium: #5c9aff;
     --priority-high: #a78bff;
@@ -128,6 +131,7 @@
   --color-tertiary: #7D5260;
   --color-tertiary-container: #FFD8E4;
   --color-error: #B3261E;
+  --color-error-container: #F9DEDC;
   --priority-low: #49454F;
   --priority-medium: #6750A4;
   --priority-high: #7D5260;
@@ -2434,6 +2438,7 @@ body.modal-open { overflow: hidden; }
 @keyframes slideUp { from { transform: translateY(100%); } }
 @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 /* ═══════════════════════════════════════════════
    FAB (Floating Action Button)
