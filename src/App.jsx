@@ -45,6 +45,8 @@ function App() {
   const { lang, langPref, setLangPref, t } = useLanguage()
   const { user, loading, handleLogin, handleLogout, tokenExpired, setTokenExpired } = useAuth()
   const [showOnboarding, setShowOnboarding] = useState(() => shouldShowOnboarding())
+
+  // ... (rest of states)
   const { theme, setTheme, fontScale, setFontScale, generateRandomTheme, syncStatusBar } = useTheme()
 
   // 완료 시 캘린더 처리 방식: 'status' | 'delete' (기본값: status)
@@ -127,10 +129,8 @@ function App() {
   const {
     isPro,
     subscription,
-    loading: subscriptionLoading,
     aiUsageToday,
     canUseAi,
-    canUseProFeature,
     getRemainingAiRequests,
     incrementAiUsage,
     startSubscription,
@@ -1537,7 +1537,7 @@ function App() {
           try {
             await startSubscription(planId)
             showToastMsg(t('subscriptionSuccess') || 'Pro 구독이 시작되었습니다!')
-          } catch (error) {
+          } catch {
             showToastMsg(t('subscriptionError') || '구독 처리 중 오류가 발생했습니다.')
           }
         }}

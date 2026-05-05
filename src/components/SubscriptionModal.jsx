@@ -8,9 +8,7 @@ export function SubscriptionModal({
   isOpen, 
   onClose, 
   onSubscribe, 
-  currentPlan = null,
   t = (key) => key,
-  theme = 'light'
 }) {
   const [selectedPlan, setSelectedPlan] = useState('YEARLY')
   const [isProcessing, setIsProcessing] = useState(false)

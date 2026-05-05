@@ -335,7 +335,7 @@ export async function measureNetworkQuality() {
       estimatedKbps,
       isLowBandwidth: estimatedKbps < SYNC_CONFIG.LOW_BANDWIDTH_THRESHOLD_KBPS,
     };
-  } catch (error) {
+  } catch {
     return {
       isOnline: false,
       latencyMs: Infinity,

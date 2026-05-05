@@ -30,9 +30,9 @@ cd android && ./gradlew assembleRelease
 `keystore.properties` (루트, git 제외):
 ```properties
 storeFile=blenddo-release.jks
-storePassword=blenddo2024
-keyAlias=blenddo
-keyPassword=blenddo2024
+storePassword=${env.STORE_PASSWORD}
+keyAlias=briodo
+keyPassword=${env.KEY_PASSWORD}
 ```
 
 키스토어 파일: `android/app/blenddo-release.jks`

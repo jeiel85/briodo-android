@@ -593,7 +593,7 @@ export function useTodosData(user, { completionCalendarMode = 'status', lang = '
         if (isOnline) {
           try {
             await setDoc(doc(db, "todos", todoId), { subtasks: updatedSubtasks }, { merge: true })
-          } catch (syncError) {
+          } catch {
             await addSyncQueue('set', todoId, { subtasks: updatedSubtasks })
           }
         } else {
@@ -617,7 +617,7 @@ export function useTodosData(user, { completionCalendarMode = 'status', lang = '
             if (target?.googleEventId) {
               setTimeout(() => deleteEventFromGoogle(target.googleEventId), 100)
             }
-          } catch (syncError) {
+          } catch {
             await addSyncQueue('delete', id, { googleEventId: target?.googleEventId || null })
           }
         } else {

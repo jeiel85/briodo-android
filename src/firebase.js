@@ -3,14 +3,11 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth"
 import { getFirestore } from "firebase/firestore"
 import { getFunctions } from "firebase/functions"
 
-// Firebase App Check - 하드코딩으로 비활성화 (릴리즈 시 필요시 활성화)
-// @capacitor-community/in-app-purchases와 함께 런칭 시 사용 예정
-const APP_CHECK_ENABLED = false // TODO: 환경 변수로 전환 예정
+// Firebase App Check - 환경 변수에 따라 활성화 여부 결정
+const APP_CHECK_ENABLED = import.meta.env.VITE_APP_CHECK_ENABLED === 'true'
 
 if (APP_CHECK_ENABLED) {
-  import('firebase/app-check').then(() => {
-    console.log('[AppCheck] App Check is disabled for now')
-  }).catch(() => {})
+  console.log('[AppCheck] App Check is enabled for this environment')
 }
 
 const firebaseConfig = {

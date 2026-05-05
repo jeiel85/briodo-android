@@ -4,6 +4,23 @@
 
 ---
 
+## 2026-05-05 — CI Lint 실패 긴급 수정 (세션 57)
+
+### 작업 배경
+- `ci: validate Android app launch on emulator` 푸시 후 CI에서 Lint 잡이 실패해 Android 실행 검증 잡이 시작되지 못함.
+
+### 수정 내용
+- 미사용 변수/파라미터로 인한 `no-unused-vars` 에러 해소:
+  - `src/App.jsx`
+  - `src/components/SubscriptionModal.jsx`
+  - `src/db.js`
+  - `src/hooks/useTodosData.js`
+
+### 결과
+- CI의 Lint 게이트 통과를 위한 차단 이슈 제거.
+
+---
+
 ## 2026-05-05 — GitHub CI Android 실행 검증 단계 추가 (세션 56)
 
 ### 작업 배경
