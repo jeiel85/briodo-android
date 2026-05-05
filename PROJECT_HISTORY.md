@@ -4,6 +4,28 @@
 
 ---
 
+## 2026-05-05 — Android Run Check 재안정화 및 버전업 (세션 59)
+
+### 작업 배경
+- `ci: Android 에뮬레이터 설치 대기 안정화` 반영 후에도 `Android Run Check`가 계속 실패.
+- 로그상 `package` 서비스 미준비 이슈는 완화됐지만, 부팅 직후 추가 `adb shell settings` / `input keyevent` 계열 명령으로 시스템 서비스가 죽으며 `DeadSystemException`이 발생.
+
+### 수정 내용
+- `.github/workflows/ci.yml`
+  - 에뮬레이터 부팅 후 위험도가 높은 추가 설정/키이벤트 명령 제거.
+  - `pm list packages` 준비 확인 유지.
+  - APK 설치(`adb install`)와 앱 실행(`am start`)에 재시도 루프 추가.
+  - 부팅 완료 후 15초 안정화 대기를 추가해 시스템 서비스 초기화 시간을 확보.
+- 버전 메타데이터 동기화:
+  - `src/App.jsx` → `APP_VERSION` `1.1.9`
+  - `android/app/build.gradle` → `versionName 1.1.9`, `versionCode 21`
+
+### 기대 효과
+- Android 에뮬레이터 검증 단계가 부팅 직후 시스템 불안정에 덜 민감해지고, 일시적 ADB 실패에도 복구 가능성이 높아짐.
+- 앱 내부 버전 표기와 Android 배포 메타데이터가 동일 버전으로 유지됨.
+
+---
+
 ## 2026-05-05 — CI Lint 실패 긴급 수정 (세션 57)
 
 ### 작업 배경
