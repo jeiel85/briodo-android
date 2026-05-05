@@ -307,20 +307,34 @@ jobs:
           disable-animations: false
           script: |
             adb wait-for-device
-            adb start-server
-            adb shell getprop sys.boot_completed
-            until [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ]; do
+            until [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ]; do
               echo "Waiting for sys.boot_completed..."
               sleep 2
             done
-            until adb shell pm path android >/dev/null 2>&1; do
+            until adb shell pm list packages >/dev/null 2>&1; do
               echo "Waiting for package manager service..."
               sleep 2
             done
-            adb shell settings put global window_animation_scale 0 || true
-            adb shell settings put global transition_animation_scale 0 || true
-            adb shell settings put global animator_duration_scale 0 || true
-            adb shell input keyevent 82 || true
-            adb install -r android/app/build/outputs/apk/debug/app-debug.apk
-            adb shell am start -W -n app.briodo/.MainActivity
+            sleep 15
+            for attempt in 1 2 3; do
+              adb install -r android/app/build/outputs/apk/debug/app-debug.apk && break
+              echo "adb install failed on attempt $attempt, restarting adb..."
+              adb kill-server || true
+              sleep 3
+              adb start-server
+              adb wait-for-device
+              if [ "$attempt" = "3" ]; then
+                echo "adb install failed after retries"
+                exit 1
+              fi
+            done
+            for attempt in 1 2 3; do
+              adb shell am start -W -n app.briodo/.MainActivity && break
+              echo "app start failed on attempt $attempt, retrying..."
+              sleep 5
+              if [ "$attempt" = "3" ]; then
+                echo "app start failed after retries"
+                exit 1
+              fi
+            done
             adb shell pidof app.briodo
