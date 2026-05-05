@@ -304,6 +304,9 @@ jobs:
           profile: pixel_6
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
           emulator-boot-timeout: 900
+          pre-emulator-launch-script: |
+            adb kill-server >/dev/null 2>&1 || true
+            adb start-server
           disable-animations: false
           script: |
             adb wait-for-device
@@ -316,6 +319,7 @@ jobs:
               sleep 2
             done
             sleep 15
+            adb uninstall app.briodo || true
             for attempt in 1 2 3; do
               adb install -r android/app/build/outputs/apk/debug/app-debug.apk && break
               echo "adb install failed on attempt $attempt, restarting adb..."
