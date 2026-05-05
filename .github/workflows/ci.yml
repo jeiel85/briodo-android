@@ -239,3 +239,73 @@ jobs:
             android/app/build/outputs/apk/release/app-release.apk
           prerelease: false
           make_latest: true
+
+  # 5. Android 앱 실행 검증 (에뮬레이터)
+  android-run:
+    name: Android Run Check
+    runs-on: ubuntu-latest
+    needs: [build, lint]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Create .env for Android Run
+        run: |
+          echo "VITE_FIREBASE_API_KEY=ci-placeholder-key" >> .env
+          echo "VITE_FIREBASE_AUTH_DOMAIN=ci-placeholder.firebaseapp.com" >> .env
+          echo "VITE_FIREBASE_PROJECT_ID=ci-placeholder" >> .env
+          echo "VITE_FIREBASE_STORAGE_BUCKET=ci-placeholder.appspot.com" >> .env
+          echo "VITE_FIREBASE_MESSAGING_SENDER_ID=000000000000" >> .env
+          echo "VITE_FIREBASE_APP_ID=1:000000000000:web:ci-placeholder" >> .env
+          echo "VITE_GEMINI_API_KEY=ci-placeholder-key" >> .env
+
+      - name: Patch node_modules for Android
+        run: |
+          sed -i "s/getDefaultProguardFile('proguard-android.txt')/getDefaultProguardFile('proguard-android-optimize.txt')/g" \
+            node_modules/@capacitor-community/speech-recognition/android/build.gradle \
+            node_modules/@codetrix-studio/capacitor-google-auth/android/build.gradle
+          sed -i "s/jcenter()/mavenCentral()/g" \
+            node_modules/@codetrix-studio/capacitor-google-auth/android/build.gradle
+
+      - name: Build web assets
+        run: npm run build
+
+      - name: Sync to Android
+        run: npx cap sync android
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Create local.properties
+        run: echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
+
+      - name: Build Android debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --quiet
+
+      - name: Run app on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: true
+          script: |
+            adb wait-for-device
+            adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+            adb shell am start -W -n app.briodo/.MainActivity
+            adb shell pidof app.briodo

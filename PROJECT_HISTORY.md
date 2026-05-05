@@ -4,6 +4,25 @@
 
 ---
 
+## 2026-05-05 — GitHub CI Android 실행 검증 단계 추가 (세션 56)
+
+### 작업 배경
+- 기존 CI의 Android 파이프라인은 빌드 성공 중심이라, 실제 APK 설치/앱 실행 가능 여부 자동 검증이 부족했음.
+
+### 수정 내용
+- `.github/workflows/ci.yml`에 `android-run` 잡 추가.
+- Android 디버그 APK를 CI에서 직접 빌드 후 에뮬레이터에서 설치/실행까지 검증.
+- 실행 검증 절차:
+  - `adb install -r android/app/build/outputs/apk/debug/app-debug.apk`
+  - `adb shell am start -W -n app.briodo/.MainActivity`
+  - `adb shell pidof app.briodo`로 프로세스 실행 확인
+
+### 기대 효과
+- Android CI가 "빌드 성공"뿐 아니라 "실행 가능"까지 자동 보장.
+- 배포 전 런타임 실패를 조기에 감지 가능.
+
+---
+
 ## 2026-05-04 — Pro 구독 모델 도입 (세션 55) - GitHub 이슈 #146
 
 ### 작업 배경
