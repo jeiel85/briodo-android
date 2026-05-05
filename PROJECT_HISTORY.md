@@ -21,6 +21,22 @@
 
 ---
 
+## 2026-05-05 — Android Run Check 안정화 (세션 58)
+
+### 작업 배경
+- `Android Run Check`에서 에뮬레이터 부팅 이후 ADB 상태 불안정(`device offline`, exit code 224)으로 실패.
+
+### 수정 내용
+- `.github/workflows/ci.yml`의 `android-run` 잡에서 에뮬레이터 옵션 조정:
+  - `-no-snapshot` 추가
+  - `emulator-boot-timeout: 900` 추가
+  - `disable-animations: false`로 변경
+
+### 기대 효과
+- 부팅 직후 ADB 세팅 명령 실패 가능성을 낮추고, 앱 실행 검증 스텝의 안정성 향상.
+
+---
+
 ## 2026-05-05 — GitHub CI Android 실행 검증 단계 추가 (세션 56)
 
 ### 작업 배경
