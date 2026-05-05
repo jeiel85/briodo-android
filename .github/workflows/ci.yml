@@ -314,25 +314,6 @@ jobs:
             timeout 120 bash -c 'until adb shell pm list packages >/dev/null 2>&1; do echo "Waiting for package manager service..."; sleep 2; done'
             sleep 15
             adb uninstall app.briodo || true
-            for attempt in 1 2 3; do
-              adb install -r android/app/build/outputs/apk/debug/app-debug.apk && break
-              echo "adb install failed on attempt $attempt, restarting adb..."
-              adb kill-server || true
-              sleep 3
-              adb start-server
-              adb wait-for-device
-              if [ "$attempt" = "3" ]; then
-                echo "adb install failed after retries"
-                exit 1
-              fi
-            done
-            for attempt in 1 2 3; do
-              adb shell am start -W -n app.briodo/.MainActivity && break
-              echo "app start failed on attempt $attempt, retrying..."
-              sleep 5
-              if [ "$attempt" = "3" ]; then
-                echo "app start failed after retries"
-                exit 1
-              fi
-            done
+            bash -c 'for attempt in 1 2 3; do adb install -r android/app/build/outputs/apk/debug/app-debug.apk && exit 0; echo "adb install failed on attempt $attempt, restarting adb..."; adb kill-server || true; sleep 3; adb start-server; adb wait-for-device; done; echo "adb install failed after retries"; exit 1'
+            bash -c 'for attempt in 1 2 3; do adb shell am start -W -n app.briodo/.MainActivity && exit 0; echo "app start failed on attempt $attempt, retrying..."; sleep 5; done; echo "app start failed after retries"; exit 1'
             adb shell pidof app.briodo
