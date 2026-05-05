@@ -307,6 +307,20 @@ jobs:
           disable-animations: false
           script: |
             adb wait-for-device
+            adb start-server
+            adb shell getprop sys.boot_completed
+            until [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ]; do
+              echo "Waiting for sys.boot_completed..."
+              sleep 2
+            done
+            until adb shell pm path android >/dev/null 2>&1; do
+              echo "Waiting for package manager service..."
+              sleep 2
+            done
+            adb shell settings put global window_animation_scale 0 || true
+            adb shell settings put global transition_animation_scale 0 || true
+            adb shell settings put global animator_duration_scale 0 || true
+            adb shell input keyevent 82 || true
             adb install -r android/app/build/outputs/apk/debug/app-debug.apk
             adb shell am start -W -n app.briodo/.MainActivity
             adb shell pidof app.briodo
