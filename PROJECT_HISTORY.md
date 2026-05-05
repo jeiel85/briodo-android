@@ -13,7 +13,9 @@
 ### 수정 내용
 - `.github/workflows/ci.yml`
   - 에뮬레이터 부팅 후 위험도가 높은 추가 설정/키이벤트 명령 제거.
+  - `pre-emulator-launch-script`에서 ADB 서버를 선정리해 오프라인 상태 잔존 가능성 완화.
   - `pm list packages` 준비 확인 유지.
+  - 설치 전 `adb uninstall app.briodo || true`를 추가해 잔여 앱 상태 영향을 제거.
   - APK 설치(`adb install`)와 앱 실행(`am start`)에 재시도 루프 추가.
   - 부팅 완료 후 15초 안정화 대기를 추가해 시스템 서비스 초기화 시간을 확보.
 - 버전 메타데이터 동기화:
