@@ -1,3 +1,5 @@
+/* eslint-env node */
+
 /**
  * BrioDo Admin Promotion Script
  * 
