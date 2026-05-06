@@ -1,4 +1,4 @@
-/* eslint-env node */
+/* global process */
 
 /**
  * BrioDo Admin Promotion Script
