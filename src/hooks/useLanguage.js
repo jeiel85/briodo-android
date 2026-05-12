@@ -15,7 +15,16 @@ export function useLanguage() {
 
   const lang = langPref === 'auto' ? getSystemLang() : langPref
 
-  const t = useMemo(() => translations[lang] || translations.ko, [lang])
+  // t는 두 가지 방식 모두 지원:
+  //   t.key          (객체 액세스 — 권장)
+  //   t('key')       (함수 호출 — 레거시 호환)
+  // 일부 호출 지점이 함수처럼 사용하고 있어 양쪽 모두 안전하게 동작하도록 한다.
+  const t = useMemo(() => {
+    const dict = translations[lang] || translations.ko
+    const fn = (key) => dict[key]
+    Object.assign(fn, dict)
+    return fn
+  }, [lang])
 
   const setLangPrefAndSave = (pref) => {
     setLangPref(pref)

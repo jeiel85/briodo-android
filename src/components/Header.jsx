@@ -23,6 +23,7 @@ export function Header({
   onNotificationTap,
   weatherData,
   isCollapsed,
+  collapseProgress = 0,
   allViewPeriod,
   setAllViewPeriodPersisted,
   allTodosTotal,
@@ -128,7 +129,10 @@ export function Header({
         : (lang === 'ko' ? '통계' : lang === 'ja' ? '統計' : lang === 'zh' ? '统计' : 'Stats')
 
   return (
-    <div className={`header-wrapper${isCollapsed ? ' header-collapsed' : ''}`}>
+    <div
+      className={`header-wrapper${isCollapsed ? ' header-collapsed' : ''}`}
+      style={{ '--collapse': collapseProgress }}
+    >
       <header className="header">
 
         {/* ─── Compact Bar: 스크롤 시 나타나는 슬림 바 ─── */}

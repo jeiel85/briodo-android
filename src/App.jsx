@@ -107,7 +107,10 @@ function App() {
   const [viewMode, setViewMode] = useState(() => localStorage.getItem('briodo-defaultView') || localStorage.getItem('briodo-viewMode') || 'date')
   const [allViewPeriod, setAllViewPeriod] = useState(() => localStorage.getItem('briodo-allViewPeriod') || 'all')
   const [settingsScreen, setSettingsScreen] = useState('main')
-  const [headerCollapsed, setHeaderCollapsed] = useState(false)
+  // headerProgress: 0(완전 펼침) ~ 1(완전 접힘). 스크롤과 1:1 동기화하여 부드러운 모션.
+  const [headerProgress, setHeaderProgress] = useState(0)
+  const headerCollapsed = headerProgress >= 0.5
+  const setHeaderCollapsed = (v) => setHeaderProgress(typeof v === 'function' ? (prev) => (v(prev >= 0.5) ? 1 : 0) : v ? 1 : 0)
   const todoListRef = useRef(null)   // 스크롤 가능한 content div (scrollTop 리셋용)
   const currentPanelRef = useRef(null) // 헤더+콘텐츠 전체 슬라이딩 패널
   const swipeTouchRef = useRef(null) // 스와이프 시작 좌표
@@ -1110,7 +1113,9 @@ function App() {
   const { unlockedIds, unlockedSortedByDifficulty, notifications, clearNotifications, currentUnlock, dismissUnlock } = useAchievements({ todos, todayStr, weeklyPulse, user })
 
   const formattedHeaderDate = useMemo(() => {
-    const d = new Date(selectedDate)
+    if (!selectedDate || !/^\d{4}-\d{2}-\d{2}$/.test(selectedDate)) return ''
+    const d = new Date(selectedDate + 'T00:00:00')
+    if (isNaN(d.getTime())) return ''
     const locale = lang === 'ko' ? 'ko-KR' : lang === 'ja' ? 'ja-JP' : lang === 'zh' ? 'zh-CN' : 'en-US'
     return d.toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })
   }, [selectedDate, lang])
@@ -1248,6 +1253,7 @@ function App() {
     weatherData: weatherEnabled ? weatherData : null,
     weatherLoading,
     isCollapsed: headerCollapsed,
+    collapseProgress: headerProgress,
     allViewPeriod,
     setAllViewPeriodPersisted,
     allTodosTotal: todos.length,
@@ -1358,7 +1364,12 @@ function App() {
           <div
             className="todo-list-section"
             ref={todoListRef}
-            onScroll={(e) => setHeaderCollapsed(e.currentTarget.scrollTop > 44)}
+            onScroll={(e) => {
+              // 스크롤과 1:1 동기화: 8~56px 구간을 0~1로 매핑 → 헤더가 손가락 따라 부드럽게 접힘
+              const top = e.currentTarget.scrollTop
+              const progress = Math.max(0, Math.min(1, (top - 8) / 48))
+              setHeaderProgress(progress)
+            }}
           >
             {searchQuery.trim() && viewMode === 'lists'
               ? (

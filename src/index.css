@@ -4518,26 +4518,24 @@ body.modal-open { overflow: hidden; }
 
 /* ─── Collapsing Header: Compact Bar + Collapsible Section ─── */
 
-/* Compact bar: 기본 숨김 → 스크롤 시 나타남 */
+/* Compact bar: --collapse(0~1)에 따라 스크롤과 1:1 동기화
+   - 0  → 완전 숨김
+   - 1  → 완전 표시 */
 .header-compact-bar {
   display: flex;
   flex-direction: column;
   align-items: stretch;
   padding: 6px 0 4px;
   overflow: hidden;
-  max-height: 0;
-  opacity: 0;
-  transition: max-height 0.28s ease, opacity 0.2s ease;
+  max-height: calc(170px * var(--collapse, 0));
+  opacity: var(--collapse, 0);
+  /* transition 없음 — 스크롤과 1:1 동기화. 손가락 위치에 헤더가 즉시 따라감 */
+  will-change: max-height, opacity;
   pointer-events: none;
 }
+/* 접힌 상태: pointer-events만 토글 — 크기는 위의 var(--collapse) 계산이 담당 */
 .header-wrapper.header-collapsed .header-compact-bar {
-  max-height: 160px;
-  opacity: 1;
   pointer-events: auto;
-}
-/* 접힌 상태에서 확장 태그 필터 숨김 (compact 바의 것만 표시) */
-.header-wrapper.header-collapsed .tag-filter-wrapper {
-  display: none;
 }
 .header-compact-top-row {
   display: flex;
@@ -4615,16 +4613,15 @@ body.modal-open { overflow: hidden; }
 }
 .tag-filter-bar.compact-tag-filter::-webkit-scrollbar { display: none; }
 
-/* Collapsible section: 기본 노출 → 스크롤 시 접힘 */
+/* Collapsible section: --collapse(0~1)에 따라 스크롤과 1:1 동기화
+   - 0  → 완전 표시
+   - 1  → 완전 숨김 */
 .header-collapsible {
   overflow: hidden;
-  max-height: 350px;
-  opacity: 1;
-  transition: max-height 0.3s ease, opacity 0.22s ease;
-}
-.header-wrapper.header-collapsed .header-collapsible {
-  max-height: 0;
-  opacity: 0;
+  max-height: calc(360px * (1 - var(--collapse, 0)));
+  opacity: calc(1 - var(--collapse, 0));
+  /* transition 없음 — 스크롤과 1:1 동기화 */
+  will-change: max-height, opacity;
 }
 
 /* ─── 주간 슬라이드 애니메이션 ─── */
