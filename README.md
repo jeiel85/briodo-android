@@ -45,12 +45,17 @@ BrioDo는 **AI 자연어 처리 + Google 캘린더 연동 + 잠금화면 위젯*
 - **음성 인식** — 네이티브 Android 음성 인식
 - **멀티 모델 폴백** — 기본 모델 실패 시 자동 대체
 - **AI 브리핑** — 오전·저녁 일정 요약 알림
+- **서버사이드 Rate Limit** — Firebase Functions 기반 일 10회 / 월 100회 안전 제어
 
 </td>
 <td width="50%">
 
 ### 📋 할 일 관리
-- **오프라인 우선** — IndexedDB 로컬 저장 → Firestore 자동 동기화
+- **오프라인 우선** — IndexedDB v2 로컬 저장 → Firestore 자동 동기화
+- **지수 백오프 재시도** — 최대 5회, 1~16초 대기로 안정적 복구
+- **타임스탬프 충돌 해결** — 로컬/서버 비교 후 최신본 채택
+- **우선순위 큐** — `delete > completed > 수정` 순으로 동기화
+- **저대역폭 자동 감지** — 배치 크기 자동 조절, 수동 동기화 버튼 제공
 - **게스트 모드** — 로그인 없이 사용, 로그인 시 자동 마이그레이션
 - **하위 태스크** — 할 일 내 체크리스트
 - **반복 일정** — 매일 / 매주 / 매월
@@ -90,8 +95,27 @@ BrioDo는 **AI 자연어 처리 + Google 캘린더 연동 + 잠금화면 위젯*
 ### 🎨 테마 & 개인화
 - **5가지 테마** — 라이트·다크·시스템·랜덤·Material You
 - **4개 언어** — 한국어 / English / 日本語 / 中文
-- **폰트 크기** — 7단계 세밀 조정
+- **폰트 크기** — 7단계 세밀 조정 (UI 밀도 자동 적용)
 - **106개 업적** — confetti 애니메이션 + 공유 카드
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 💎 Pro 구독
+- **Pro Monthly** — ₩4,900 / 월
+- **Pro Yearly** — ₩39,900 / 년 (32% 할인)
+- **Pro Family** — ₩8,900 / 월 (최대 6명)
+- **AI 사용량 무제한 · 광고 제거 · 우선 지원**
+
+</td>
+<td width="50%">
+
+### 🛠 관리자 대시보드
+- **별도 Vite 앱** — `admin/` 디렉토리에서 독립 실행
+- **관리자 클레임 인증** — Firebase Custom Claim 검증
+- **사용자 조회** — Firestore 사용자 목록 / 구독 상태 확인
 
 </td>
 </tr>
@@ -107,13 +131,16 @@ BrioDo는 **AI 자연어 처리 + Google 캘린더 연동 + 잠금화면 위젯*
 | **모바일 래핑** | Capacitor 8 (Android) |
 | **인증** | Firebase Authentication + Google OAuth |
 | **클라우드 DB** | Firebase Firestore |
-| **로컬 DB** | IndexedDB (`idb`) — 오프라인 우선 |
+| **로컬 DB** | IndexedDB v2 (`idb`) — `syncMetadata`, `offlineLog` 저장소 |
+| **서버리스** | Firebase Cloud Functions (Node 22) — AI Rate Limit |
 | **AI** | Google Gemini `gemini-2.5-flash-lite` (멀티 모델 폴백) |
+| **광고/결제** | `@capacitor-community/admob` (Pro 구독 시 제거) |
 | **음성** | `@capacitor-community/speech-recognition` |
 | **캘린더** | Google Calendar API v3 |
 | **알림** | `@capacitor/local-notifications` |
 | **스타일** | 커스텀 CSS + Material Design 3 토큰 (Manrope + Inter) |
 | **PWA** | Vite PWA Plugin + Workbox (Service Worker, 오프라인 캐싱) |
+| **관리자 앱** | 별도 Vite 앱 (`admin/`) — React 19 + Firebase |
 
 <br>
 
@@ -123,28 +150,49 @@ BrioDo는 **AI 자연어 처리 + Google 캘린더 연동 + 잠금화면 위젯*
 사용자 입력
   ├── 즉시 IndexedDB 저장  ──→  UI 즉시 반영
   ├── 온라인  ──→  Firestore 저장  +  Google Calendar 동기화
-  └── 오프라인  ──→  SyncQueue 대기  ──→  복귀 시 자동 처리
+  └── 오프라인  ──→  우선순위 SyncQueue 대기
+                     ├── 지수 백오프 재시도 (최대 5회, 1~16s)
+                     ├── 타임스탬프 기반 충돌 해결
+                     └── 저대역폭 시 배치 크기 자동 축소
+
+AI 호출 (Gemini)
+  └── Firebase Functions  ──→  Firestore rate limit 검증 (일 10회 / 월 100회)
+                              └── Pro 구독자는 무제한
 ```
 
 ```
-src/
-├── App.jsx                    # 루트 컴포넌트, 상태 오케스트레이션
-├── firebase.js                # Firebase + Gemini 초기화
-├── calendar.js                # Google Calendar API (싱글톤)
-├── db.js                      # IndexedDB CRUD
-├── hooks/
-│   ├── useAuth.js             # 로그인/로그아웃, OAuth 토큰 자동 갱신
-│   ├── useTodosData.js        # 할 일 CRUD, Firestore 구독
-│   ├── useAchievements.js     # 업적 시스템 (106개)
-│   ├── useNotifications.js    # 로컬 알림 스케줄링
-│   ├── useTheme.js            # 테마/폰트/상태바 관리
-│   └── useLanguage.js         # i18n (ko/en/ja/zh)
-└── components/
-    ├── Header.jsx             # 날짜, 태그 필터, 검색
-    ├── TodoList.jsx           # 할 일 목록 + 하위태스크
-    ├── SmartInputModal.jsx    # AI 자연어 + 음성 입력
-    ├── LockScreenView.jsx     # 잠금화면 위젯
-    └── SettingsModal.jsx      # 설정 전반
+BrioDo/
+├── src/                          # 메인 앱 (React 19 + Capacitor)
+│   ├── App.jsx                   # 루트 컴포넌트, 상태 오케스트레이션
+│   ├── firebase.js               # Firebase + Gemini 초기화
+│   ├── calendar.js               # Google Calendar API (싱글톤)
+│   ├── db.js                     # IndexedDB v2 (syncMetadata, offlineLog)
+│   ├── hooks/
+│   │   ├── useAuth.js            # 로그인/로그아웃, OAuth 토큰 자동 갱신
+│   │   ├── useTodosData.js       # 할 일 CRUD, 충돌 해결, 우선순위 큐
+│   │   ├── useSubscription.js    # Pro 구독 상태 / AI 사용량 추적
+│   │   ├── useAchievements.js    # 업적 시스템 (106개)
+│   │   ├── useNotifications.js   # 로컬 알림 스케줄링
+│   │   ├── useTheme.js           # 테마/폰트/상태바 관리
+│   │   └── useLanguage.js        # i18n (ko/en/ja/zh)
+│   └── components/
+│       ├── Header.jsx            # 날짜, 태그 필터, 검색
+│       ├── TodoList.jsx          # 할 일 목록 + 하위태스크
+│       ├── SmartInputModal.jsx   # AI 자연어 + 음성 입력 (사용량 표시)
+│       ├── SubscriptionModal.jsx # Pro 업그레이드 UI (월/연/패밀리)
+│       ├── LockScreenView.jsx    # 잠금화면 위젯
+│       └── SettingsModal.jsx     # 설정 + 구독 관리
+│
+├── functions/                    # Firebase Cloud Functions (Node 22)
+│   └── index.js                  # AI Rate Limit (Firestore 기반)
+│
+├── admin/                        # 관리자 대시보드 (별도 Vite 앱)
+│   └── src/
+│       ├── App.jsx               # 클레임 인증 + 사용자 조회
+│       └── firebase.js           # 관리자용 Firebase 초기화
+│
+└── scripts/
+    └── release.js                # 릴리즈 자동화 (npm run release)
 ```
 
 <br>
@@ -210,6 +258,31 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb shell am start -n app.briodo/.MainActivity
 ```
 
+### 5. 릴리즈 자동화
+
+```bash
+npm run release <버전>   # 예: npm run release 1.1.12
+# → versionName/versionCode 자동 범프, 커밋, 태그(v1.1.12) 푸시
+# → GitHub Actions가 서명 APK 빌드 + GitHub Release 자동 생성
+```
+
+### 6. Firebase Functions (서버사이드 AI Rate Limit)
+
+```bash
+cd functions
+npm install
+npm run serve            # 로컬 에뮬레이터
+npm run deploy           # 배포
+```
+
+### 7. 관리자 대시보드
+
+```bash
+cd admin
+npm install
+npm run dev              # 별도 포트에서 실행 (관리자 클레임 보유 계정 필요)
+```
+
 <br>
 
 ## 🧪 테스트
@@ -235,10 +308,17 @@ npx playwright test --project=chromium   # 특정 브라우저
 - [x] PWA 데스크톱 지원
 - [x] AI 브리핑 & Nudge
 - [x] 업적 시스템 (106개)
+- [x] AI Rate Limit (Firebase Functions, 일 10회 / 월 100회)
+- [x] 오프라인 신뢰성 극대화 (지수 백오프 + 충돌 해결 + 우선순위 큐)
+- [x] Pro 구독 모델 (월간 / 연간 / 패밀리)
+- [x] 관리자 대시보드 (별도 Vite 앱)
+- [x] 릴리즈 자동화 스크립트
+- [ ] 인앱 결제 실제 연동 (Google Play Billing)
 - [ ] iOS 지원
 - [ ] Android 홈 화면 위젯
 - [ ] 태블릿 최적화 레이아웃
 - [ ] F-Droid 배포
+- [ ] v1.2.0 스프린트 (100개 개선사항)
 
 <br>
 
