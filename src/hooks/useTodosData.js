@@ -16,6 +16,7 @@ import {
 import { syncEventToGoogle, deleteEventFromGoogle, fetchEventsFromGoogle } from '../calendar'
 import { cancelNotification, scheduleNotification } from './useNotifications'
 import { maskPII, warnPII } from '../utils/piiMask'
+import { track, EVENTS } from '../analytics'
 
 const sortTodos = (list) => list.sort((a, b) => {
   const dtA = new Date(`${a.date} ${a.time && a.time.includes(':') ? a.time : '00:00'}`)
@@ -500,6 +501,15 @@ export function useTodosData(user, { completionCalendarMode = 'status', lang = '
     const nowCompleting = !completed
     try {
       const target = todos.find(t => t.id === id)
+      if (nowCompleting && target) {
+        const createdAt = target.createdAt || Date.now()
+        const ageSeconds = Math.max(0, Math.floor((Date.now() - createdAt) / 1000))
+        track(EVENTS.TODO_COMPLETE, {
+          has_subtasks: Array.isArray(target.subtasks) && target.subtasks.length > 0,
+          age_seconds: ageSeconds,
+          is_recurring: !!(target.recurrence && target.recurrence.type && target.recurrence.type !== 'none'),
+        })
+      }
 
       // 반복 일정 인스턴스
       if (target?.recurrence?.type && target.recurrence.type !== 'none' && instanceDate) {
@@ -607,6 +617,10 @@ export function useTodosData(user, { completionCalendarMode = 'status', lang = '
     e.stopPropagation()
     try {
       const target = todos.find(t => t.id === id)
+      track(EVENTS.TODO_DELETE, {
+        was_completed: !!target?.completed,
+        is_recurring: !!(target?.recurrence && target.recurrence.type && target.recurrence.type !== 'none'),
+      })
       setTodos(prev => prev.filter(t => t.id !== id))
       await deleteLocalTodo(id)
       cancelNotification(id)

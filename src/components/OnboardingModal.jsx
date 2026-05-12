@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Capacitor } from '@capacitor/core'
 import { SpeechRecognition } from '@capacitor-community/speech-recognition'
 import { LocalNotifications } from '@capacitor/local-notifications'
+import { track, EVENTS } from '../analytics'
 
 const ONBOARDING_KEY = 'briodo-onboarding-done'
 
@@ -260,8 +261,31 @@ const SCREENS = [
 export function OnboardingModal({ lang, setLangPref, handleLogin, onDone }) {
   const [step, setStep] = useState(0)
   const total = SCREENS.length
+  const startTsRef = useRef(Date.now())
+
+  useEffect(() => {
+    track(EVENTS.ONBOARDING_START, { lang })
+    // mount만 트래킹
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const completed = (reason) => {
+    const seconds = Math.max(0, Math.floor((Date.now() - startTsRef.current) / 1000))
+    if (reason === 'complete') {
+      track(EVENTS.ONBOARDING_COMPLETE, { seconds_spent: seconds, last_step: step })
+    } else {
+      track(EVENTS.ONBOARDING_SKIP, { step, seconds_spent: seconds })
+    }
+  }
 
   const complete = () => {
+    completed('complete')
+    localStorage.setItem(ONBOARDING_KEY, '1')
+    onDone()
+  }
+
+  const skip = () => {
+    completed('skip')
     localStorage.setItem(ONBOARDING_KEY, '1')
     onDone()
   }
@@ -287,7 +311,7 @@ export function OnboardingModal({ lang, setLangPref, handleLogin, onDone }) {
           lang={lang}
           setLangPref={setLangPref}
           onNext={() => step < total - 1 ? setStep(step + 1) : complete()}
-          onSkip={complete}
+          onSkip={skip}
           onLogin={handleLogin_}
         />
       </div>

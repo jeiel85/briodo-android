@@ -11,6 +11,7 @@ import { useAchievements, trackEngagement } from './hooks/useAchievements'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { scheduleNotification, cancelNotification, initNotificationChannels, scheduleBriefingNotifications } from './hooks/useNotifications'
 import { initAdMob } from './hooks/useAdMob'
+import { track, trackFirstOpenOnce, EVENTS } from './analytics'
 import { fetchWeather } from './hooks/useWeather'
 import { useBriefing } from './hooks/useBriefing'
 import { BriefingModal } from './components/BriefingModal'
@@ -288,6 +289,8 @@ function App() {
   useEffect(() => {
     initNotificationChannels()
     initAdMob()
+    trackFirstOpenOnce()
+    track(EVENTS.SESSION_START, { platform: Capacitor.getPlatform() })
     // App Check - 현재 비활성화 (릴리즈 시 활성화 예정)
     // initAppCheck()
 
@@ -840,6 +843,7 @@ function App() {
           setTodos(prev => [...prev, localPayload])
           await saveLocalTodo(localPayload)
           scheduleNotification(localPayload)
+          track(EVENTS.TODO_CREATE, { source: 'manual', has_calendar: false, guest: true, has_time: !!savedTime })
           return
         }
 
@@ -852,6 +856,7 @@ function App() {
         setTodos(prev => [...prev, localPayload])
         await saveLocalTodo(localPayload)
         scheduleNotification(localPayload)
+        track(EVENTS.TODO_CREATE, { source: 'manual', has_calendar: isOnline, guest: false, has_time: !!savedTime })
 
         if (isOnline) {
           await setDoc(newDocRef, { ...initialData, createdAt: serverTimestamp() })
@@ -906,7 +911,7 @@ function App() {
   const handleSmartSave = async (text) => {
     if (!text.trim()) return
     const savedText = text.trim()
-    
+
     // AI 사용 플래그
     trackEngagement('aiUsed')
     trackEngagement('aiTasks', true)
@@ -922,6 +927,7 @@ function App() {
       setTodos(prev => [...prev, localPayload])
       await saveLocalTodo(localPayload)
       scheduleNotification(localPayload)
+      track(EVENTS.TODO_CREATE, { source: 'ai', has_calendar: false, guest: true, has_time: false })
       return
     }
 
@@ -951,9 +957,16 @@ function App() {
           
           // AI 사용량 증가
           await incrementAiUsage()
-          
+
           const ai = await getAiFullAnalysis(savedText)
           if (cancelled) return
+          track(EVENTS.AI_INPUT_USED, {
+            lang,
+            success: !!ai,
+            has_date: !!ai?.date,
+            has_time: !!ai?.time,
+            has_tag: Array.isArray(ai?.categories) && ai.categories.length > 0,
+          })
           if (ai) {
             finalData = {
               text: ai.refinedText || savedText,
@@ -977,11 +990,13 @@ function App() {
               await saveLocalTodo({ ...localPayload, ...finalData, googleEventId: gId })
             }
           }
+          track(EVENTS.TODO_CREATE, { source: 'ai', has_calendar: true, guest: false, has_time: !!finalData.time })
         } catch (e) { console.error("Smart Save Error:", e) }
       }, 300)
     } else {
       await addSyncQueue('set', newId, initialData)
       if (savedReminderOffset !== null) scheduleNotification({ ...localPayload })
+      track(EVENTS.TODO_CREATE, { source: 'ai', has_calendar: false, guest: false, has_time: false, offline: true })
     }
   }
 

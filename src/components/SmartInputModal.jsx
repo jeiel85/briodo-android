@@ -4,6 +4,7 @@ import { SpeechRecognition } from '@capacitor-community/speech-recognition'
 import { trackEngagement } from '../hooks/useAchievements'
 import { getLangLocale } from '../utils/helpers'
 import { useSwipeToDismiss } from '../hooks/useSwipeToDismiss'
+import { track, EVENTS } from '../analytics'
 
 // 묵음 감지 후 자동 재시작 최대 횟수 — 이 이상이면 완전 종료
 const MAX_AUTO_RESTARTS = 5
@@ -134,6 +135,7 @@ export function SmartInputModal({ lang, smartText, setSmartText, isAiAnalyzing, 
         if (retryCount === 0) {
           trackEngagement('voiceUsed')
           trackEngagement('voiceTasks', true)
+          track(EVENTS.VOICE_INPUT_USED, { lang, platform: 'native' })
           await SpeechRecognition.requestPermissions().catch(() => {})
           autoRestartCountRef.current = 0
         }
@@ -173,6 +175,7 @@ export function SmartInputModal({ lang, smartText, setSmartText, isAiAnalyzing, 
     } else {
       const WebSpeech = window.SpeechRecognition || window.webkitSpeechRecognition
       if (!WebSpeech) return
+      track(EVENTS.VOICE_INPUT_USED, { lang, platform: 'web' })
       const recognition = new WebSpeech()
       recognition.lang = langCode
       recognition.continuous = true // 웹: continuous 모드로 길게 대기

@@ -2,6 +2,7 @@ import { initializeApp } from "firebase/app"
 import { getAuth, GoogleAuthProvider } from "firebase/auth"
 import { getFirestore } from "firebase/firestore"
 import { getFunctions } from "firebase/functions"
+import { getAnalytics, isSupported as isAnalyticsSupported } from "firebase/analytics"
 
 // Firebase App Check - 환경 변수에 따라 활성화 여부 결정
 const APP_CHECK_ENABLED = import.meta.env.VITE_APP_CHECK_ENABLED === 'true'
@@ -16,7 +17,8 @@ const firebaseConfig = {
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 }
 
 // Firebase 설정 유효성 검사
@@ -29,6 +31,7 @@ let fbApp
 let auth
 let db
 let functions
+let analytics = null
 
 try {
   fbApp = initializeApp(firebaseConfig)
@@ -43,6 +46,20 @@ try {
   db = db || {}
   functions = functions || {}
 }
+
+// Analytics는 지원되는 환경에서만 초기화 (SSR/Node/일부 브라우저 제외)
+if (firebaseConfig.measurementId && fbApp.name) {
+  isAnalyticsSupported()
+    .then((supported) => {
+      if (supported) {
+        analytics = getAnalytics(fbApp)
+        console.log('[Analytics] Firebase Analytics initialized')
+      }
+    })
+    .catch((err) => console.warn('[Analytics] Support check failed:', err))
+}
+
+export const getAnalyticsInstance = () => analytics
 
 export { fbApp, auth, db, functions }
 

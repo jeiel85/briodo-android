@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { PRO_PLANS } from '../hooks/useSubscription'
+import { track, EVENTS } from '../analytics'
 
 /**
  * Pro 구독 업그레이드 모달
@@ -12,7 +13,11 @@ export function SubscriptionModal({
 }) {
   const [selectedPlan, setSelectedPlan] = useState('YEARLY')
   const [isProcessing, setIsProcessing] = useState(false)
-  
+
+  useEffect(() => {
+    if (isOpen) track(EVENTS.SUBSCRIPTION_VIEW, { plan_viewed: 'all' })
+  }, [isOpen])
+
   if (!isOpen) return null
 
   const plans = [
