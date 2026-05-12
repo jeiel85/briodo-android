@@ -1,0 +1,242 @@
+[
+  {
+    "id": "ko-001",
+    "input": "내일 오후 3시 팀 회의",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-13", "time": "15:00", "categories": ["업무"] },
+    "tags": ["relative-date", "afternoon-time"],
+    "difficulty": "easy"
+  },
+  {
+    "id": "ko-002",
+    "input": "오늘 저녁 7시 가족 식사",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-12", "time": "19:00", "categories": ["가족"] },
+    "tags": ["today", "evening-time"],
+    "difficulty": "easy"
+  },
+  {
+    "id": "ko-003",
+    "input": "5월 20일 오전 10시 병원 예약",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-20", "time": "10:00", "categories": ["건강"] },
+    "tags": ["absolute-date", "morning-time"],
+    "difficulty": "easy"
+  },
+  {
+    "id": "ko-004",
+    "input": "다음주 월요일 출장",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-18", "time": null, "categories": ["업무"] },
+    "tags": ["relative-weekday", "all-day"],
+    "difficulty": "medium"
+  },
+  {
+    "id": "ko-005",
+    "input": "모레 점심 약속",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-14", "time": "12:00", "categories": ["약속"] },
+    "tags": ["relative-date", "implicit-lunch-time"],
+    "difficulty": "medium"
+  },
+  {
+    "id": "ko-006",
+    "input": "장보기",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-12", "time": null, "categories": ["쇼핑"] },
+    "tags": ["no-date", "no-time"],
+    "difficulty": "easy"
+  },
+  {
+    "id": "ko-007",
+    "input": "다음주 금요일 오후 6시 동창회",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-22", "time": "18:00", "categories": ["약속"] },
+    "tags": ["relative-weekday", "evening-time"],
+    "difficulty": "medium"
+  },
+  {
+    "id": "ko-008",
+    "input": "내일 새벽 6시 헬스장",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-13", "time": "06:00", "categories": ["운동"] },
+    "tags": ["relative-date", "dawn-time"],
+    "difficulty": "easy"
+  },
+  {
+    "id": "ko-009",
+    "input": "이번주 토요일 영화",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-16", "time": null, "categories": ["개인"] },
+    "tags": ["relative-weekday-this-week", "all-day"],
+    "difficulty": "medium"
+  },
+  {
+    "id": "ko-010",
+    "input": "12월 25일 크리스마스 파티 저녁 8시",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-12-25", "time": "20:00", "categories": ["약속"] },
+    "tags": ["absolute-date-far", "evening-time"],
+    "difficulty": "easy"
+  },
+  {
+    "id": "ko-011",
+    "input": "오후 2시 30분 치과",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-12", "time": "14:30", "categories": ["건강"] },
+    "tags": ["today-implicit", "half-hour"],
+    "difficulty": "easy"
+  },
+  {
+    "id": "ko-012",
+    "input": "다음주 수요일 점심 김 부장님이랑 미팅",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-20", "time": "12:00", "categories": ["업무"] },
+    "tags": ["relative-weekday", "implicit-lunch", "meeting"],
+    "difficulty": "hard"
+  },
+  {
+    "id": "ko-013",
+    "input": "내일 종일 휴가",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-13", "time": null, "categories": ["개인"] },
+    "tags": ["relative-date", "all-day-explicit"],
+    "difficulty": "medium"
+  },
+  {
+    "id": "ko-014",
+    "input": "6월 1일 오전 9시 입사 면접",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-06-01", "time": "09:00", "categories": ["업무"] },
+    "tags": ["absolute-date", "morning-time"],
+    "difficulty": "easy"
+  },
+  {
+    "id": "ko-015",
+    "input": "오늘 밤 11시 미드 시청",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-12", "time": "23:00", "categories": ["개인"] },
+    "tags": ["today", "night-time"],
+    "difficulty": "easy"
+  },
+  {
+    "id": "ko-016",
+    "input": "내일 아침 8시 비행기",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-13", "time": "08:00", "categories": ["개인"] },
+    "tags": ["relative-date", "morning-time", "travel"],
+    "difficulty": "easy"
+  },
+  {
+    "id": "ko-017",
+    "input": "다다음주 화요일 자격증 시험",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-26", "time": null, "categories": ["학습"] },
+    "tags": ["far-relative-weekday", "all-day"],
+    "difficulty": "hard"
+  },
+  {
+    "id": "ko-018",
+    "input": "한 시간 후 회사 복귀",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-12", "time": null, "categories": ["업무"] },
+    "tags": ["relative-time", "ambiguous-time-context"],
+    "difficulty": "hard"
+  },
+  {
+    "id": "ko-019",
+    "input": "오늘 오후 4시 카페에서 인터뷰",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-12", "time": "16:00", "categories": ["업무"] },
+    "tags": ["today", "afternoon-time"],
+    "difficulty": "easy"
+  },
+  {
+    "id": "ko-020",
+    "input": "이번주 일요일 부모님 댁",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-17", "time": null, "categories": ["가족"] },
+    "tags": ["this-week-weekday", "all-day"],
+    "difficulty": "medium"
+  },
+  {
+    "id": "ko-021",
+    "input": "5월 30일 17시 결혼식",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-30", "time": "17:00", "categories": ["약속"] },
+    "tags": ["absolute-date", "24h-time-format"],
+    "difficulty": "easy"
+  },
+  {
+    "id": "ko-022",
+    "input": "내일 오전 11시 30분 미용실",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-13", "time": "11:30", "categories": ["개인"] },
+    "tags": ["relative-date", "morning-time", "half-hour"],
+    "difficulty": "easy"
+  },
+  {
+    "id": "ko-023",
+    "input": "주말에 청소",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-16", "time": null, "categories": ["개인"] },
+    "tags": ["weekend", "all-day", "implicit-saturday"],
+    "difficulty": "hard"
+  },
+  {
+    "id": "ko-024",
+    "input": "내일 오후 1시부터 3시까지 코딩 공부",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-13", "time": "13:00", "categories": ["학습"] },
+    "tags": ["relative-date", "time-range-start"],
+    "difficulty": "medium"
+  },
+  {
+    "id": "ko-025",
+    "input": "약 사오기",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-12", "time": null, "categories": ["건강"] },
+    "tags": ["no-date", "no-time", "errand"],
+    "difficulty": "easy"
+  },
+  {
+    "id": "ko-026",
+    "input": "다음달 첫째 주 월요일 프로젝트 마감",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-06-01", "time": null, "categories": ["업무"] },
+    "tags": ["complex-relative", "all-day"],
+    "difficulty": "hard"
+  },
+  {
+    "id": "ko-027",
+    "input": "오늘 22시 운동",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-12", "time": "22:00", "categories": ["운동"] },
+    "tags": ["today", "24h-time-format"],
+    "difficulty": "easy"
+  },
+  {
+    "id": "ko-028",
+    "input": "내일 9시 강아지 산책",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-13", "time": "09:00", "categories": ["개인"] },
+    "tags": ["relative-date", "ambiguous-am-pm-defaults-am"],
+    "difficulty": "medium"
+  },
+  {
+    "id": "ko-029",
+    "input": "다음주 목요일 오후 영어 학원",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-21", "time": null, "categories": ["학습"] },
+    "tags": ["relative-weekday", "vague-afternoon"],
+    "difficulty": "hard"
+  },
+  {
+    "id": "ko-030",
+    "input": "내일 정오 점심 미팅",
+    "today": "2026-05-12",
+    "expected": { "date": "2026-05-13", "time": "12:00", "categories": ["업무"] },
+    "tags": ["relative-date", "noon-time"],
+    "difficulty": "easy"
+  }
+]

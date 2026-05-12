@@ -58,6 +58,7 @@ keystore.properties
 
 # Test artifacts
 test-results/
+tests/nlp-golden/reports/
 
 # Temp/debug screenshots (root-level)
 screenshot_*.png

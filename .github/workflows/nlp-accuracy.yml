@@ -1,0 +1,78 @@
+name: NLP Accuracy Measurement
+
+# 측정에 비용이 발생하므로 자동 실행하지 않는다.
+# 수동 트리거 또는 NLP 골든셋/프롬프트가 바뀐 PR에서만 실행.
+on:
+  workflow_dispatch:
+    inputs:
+      lang:
+        description: 'Language to measure (ko / en / ja / zh / all)'
+        required: false
+        default: 'ko'
+        type: choice
+        options:
+          - 'all'
+          - 'ko'
+          - 'en'
+          - 'ja'
+          - 'zh'
+      model:
+        description: 'Gemini model'
+        required: false
+        default: 'gemini-2.5-flash-lite'
+        type: string
+      dry_run:
+        description: 'Schema validation only (no API calls)'
+        required: false
+        default: false
+        type: boolean
+
+  pull_request:
+    paths:
+      - 'tests/nlp-golden/**'
+      - 'scripts/measure-nlp.js'
+      - 'src/hooks/useTodosData.js'  # 프롬프트 변경 감지
+      - '.github/workflows/nlp-accuracy.yml'
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate schema (dry-run)
+        run: node scripts/measure-nlp.js --dry-run
+
+      - name: Skip measurement on PR (schema-only)
+        if: github.event_name == 'pull_request'
+        run: echo "PR validates schema only. Run workflow_dispatch for full measurement."
+
+      - name: Skip measurement on manual dry-run
+        if: github.event_name == 'workflow_dispatch' && inputs.dry_run == true
+        run: echo "Dry run requested. Skipping API calls."
+
+      - name: Measure NLP accuracy
+        if: github.event_name == 'workflow_dispatch' && inputs.dry_run != true
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          LANG_FLAG=""
+          if [ "${{ inputs.lang }}" != "all" ]; then
+            LANG_FLAG="--lang=${{ inputs.lang }}"
+          fi
+          node scripts/measure-nlp.js $LANG_FLAG --model=${{ inputs.model }}
+
+      - name: Upload report
+        if: github.event_name == 'workflow_dispatch' && inputs.dry_run != true
+        uses: actions/upload-artifact@v4
+        with:
+          name: nlp-report-${{ github.run_id }}
+          path: tests/nlp-golden/reports/*.json
+          if-no-files-found: warn
+          retention-days: 90
