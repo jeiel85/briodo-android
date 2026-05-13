@@ -2,6 +2,8 @@
 
 > Play Console: https://play.google.com/console
 > 개발자 계정 등록비: USD $25 (1회)
+>
+> **관련 문서**: [store-deploy.md](store-deploy.md) (전체 배포 가이드) · [store-listing.md](store-listing.md) (등록 카피) · [google-oauth-review.md](google-oauth-review.md) (OAuth 심사)
 
 ---
 

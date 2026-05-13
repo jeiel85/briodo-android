@@ -4,19 +4,21 @@
 
 ---
 
-## 🏗️ 시스템 설계 (BRIO System)
+## 🏗️ 시스템 설계
 
-### 1. 수익 모델 및 재화 (Brio)
-- **Brio**: AI 기능을 사용하기 위한 인앱 재화.
-- **충전 방식**:
-  - 자동 충전: 2시간마다 1개씩 자동 충전 (최대 10개).
-  - 업적 보상: 난이도에 따라 ⚡1 ~ ⚡15 지급.
-  - 광고 시청: AdMob 보상형 광고 시청 시 지급.
-- **소비**: AI 전체 분석 1회당 ⚡2 소비.
+### 1. 수익 모델 — Pro 구독
+- **Pro Monthly**: ₩4,900/월
+- **Pro Yearly**: ₩39,900/년 (32% 할인)
+- **Pro Family**: ₩8,900/월 (최대 6명)
+- **Pro 혜택**: AI 무제한, 광고 제거, 커스텀 테마, 우선 지원
+- **관련 이슈**: [#209](https://github.com/jeiel85/BrioDo/issues/209)
+
+> ⚠️ 브리오(Brio) 재화 시스템은 v1.0.4에서 폐기되었습니다. 상세는 [docs/brio-system.md](docs/brio-system.md) (참고용) 참조.
 
 ### 2. 업적 시스템
-- 총 200여 개의 업적이 정의되어 있으며, `useAchievements.js`에서 로직을 관리합니다.
+- 총 106개의 업적이 정의되어 있으며, `useAchievements.js`에서 로직을 관리합니다.
 - 달성 내역은 Firestore `userSettings` 컬렉션에 동기화됩니다.
+- 상세 업적 목록: [docs/achievements.md](docs/achievements.md) (공개 50개), [ACHIEVEMENTS_SECRET.md](ACHIEVEMENTS_SECRET.md) (비공개 50개).
 
 ---
 
@@ -73,6 +75,9 @@ CI 빌드 시 실제 API 키 주입을 위해 아래 시크릿이 필요합니�
 ---
 
 ## 📈 향후 계획 (Roadmap)
-- Android 홈 화면 위젯 개발.
-- 태블릿 레이아웃 최적화 (Split-pane).
-- iOS 버전 출시 및 Apple 로그인 연동.
+
+- **현행 로드맵**: [SPRINT_PLAN.md](SPRINT_PLAN.md) — Top 10 진입 6개월 계획
+- **기술 청사진**: [TOP10_BLUEPRINT.md](TOP10_BLUEPRINT.md) (참고용 — 우선순위는 SPRINT_PLAN.md 기준)
+- **GitHub Issues**: https://github.com/jeiel85/BrioDo/issues
+  - [P0 (16개)](https://github.com/jeiel85/BrioDo/issues?q=is%3Aopen+label%3AP0)
+  - [Growth 라벨 (11개)](https://github.com/jeiel85/BrioDo/issues?q=is%3Aopen+label%3Agrowth)

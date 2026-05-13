@@ -2,6 +2,8 @@
 
 본 문서는 프로젝트 공개(Play Store 배포 등) 전 보안 취약점을 점검하고 조치한 내역과, 향후 대응이 필요한 이슈들을 정리한 리포트입니다.
 
+> **GitHub Issues**: 보안 관련 이슈는 [`security` 라벨](https://github.com/jeiel85/BrioDo/issues?q=is%3Aopen+label%3Asecurity)로 추적합니다.
+
 ---
 
 ## ✅ 조치 완료된 항목
@@ -33,22 +35,26 @@
 - **대응**: 
   1. `capacitor-google-auth` 플러그인을 v8과 호환되는 최신 버전으로 업데이트하거나 대체품을 찾아야 합니다.
   2. 수동으로 `package.json`의 버전을 조정하며 `npm install --legacy-peer-deps`를 통해 패치를 진행해야 합니다.
+- **GitHub 이슈**: [#231](https://github.com/jeiel85/BrioDo/issues/231) 외 `security` 라벨
 
 ### 이슈 2: Google OAuth Access Token 스토리지 보안
 - **설명**: 현재 Google Calendar 연동을 위한 Access Token을 `localStorage`에 저장하고 있습니다.
 - **위험**: XSS 공격 시 토큰이 탈취될 수 있습니다. (현재 CSP로 위험을 낮췄으나 근본적인 조치는 아님)
 - **대응**: 
   - Capacitor 환경에서는 `Capacitor Cookies`나 `Secure Storage` 플러그인을 사용하여 시스템 보안 영역에 토큰을 저장하도록 리팩토링하는 것을 권장합니다.
+- **GitHub 이슈**: [#239](https://github.com/jeiel85/BrioDo/issues/239) 외
 
 ### 이슈 3: Firebase 관리자 권한(Custom Claims) 설정 프로세스
 - **설명**: Firestore 규칙은 준비되었으나, 실제 특정 유저에게 `admin` 권한을 부여하는 프로세스가 필요합니다.
 - **대응**: 
   - `scripts/promote-admin.js`를 실행하여 실제 관리자 계정의 이메일에 `admin: true` 클레임을 부여해야 합니다. (Firebase Admin SDK 필요)
+- **상태**: `scripts/promote-admin.js` 구현 완료. 관리자 계정에 수동 적용 필요.
 
 ### 이슈 4: API 키 노출 방지 (Secrets Management)
 - **설명**: `src/firebase.js` 등에서 환경 변수를 사용하고 있으나, 빌드 결과물에는 해당 키들이 포함됩니다.
 - **대응**: 
   - Firebase API 키 자체는 노출되어도 큰 위험은 없으나(Firestore Rules로 보호되므로), Firestore 규칙과 앱 체크(App Check)를 활성화하여 비정상적인 접근을 차단해야 합니다.
+- **GitHub 이슈**: [#231](https://github.com/jeiel85/BrioDo/issues/231) (App Check), [#236](https://github.com/jeiel85/BrioDo/issues/236) 외
 
 ---
 

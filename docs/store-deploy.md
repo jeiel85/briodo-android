@@ -2,6 +2,13 @@
 
 > 마지막 업데이트: 2026-03-26
 > 현재 버전: v1.0.0 (`app.briodo`)
+>
+> **관련 문서**:
+> - [play-store-submission.md](play-store-submission.md) — Play Console 단계별 제출 체크리스트 (복붙용 입력값 포함)
+> - [google-oauth-review.md](google-oauth-review.md) — OAuth 동의 화면 심사 서류
+> - [store-listing.md](store-listing.md) — Play Store 등록 정보 / 카피
+> - [TODO_STORE_LAUNCH.md](TODO_STORE_LAUNCH.md) — 수동 작업 체크리스트
+> - [apkpure-submission.md](apkpure-submission.md) — APKPure 등록 가이드
 
 ---
 

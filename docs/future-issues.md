@@ -1,5 +1,9 @@
 # BrioDo 프로젝트 온전화 및 고도화를 위한 종합 백로그
 
+> ⚠️ **[2026-05-12 폐기]** 이 문서는 GitHub Issues 체계 도입 이전의 레거시 이슈 카탈로그입니다.
+> **현행 이슈 추적은 [GitHub Issues](https://github.com/jeiel85/BrioDo/issues)를 참조**하세요.
+> 각 항목의 마이그레이션 현황은 아래 매핑 표를 참고하세요.
+
 현재 BrioDo는 코어 기능(AI 스마트 입력, 잠금화면, 동기화)과 기초 보안을 성공적으로 갖춘 훌륭한 상태입니다. 이 프로젝트를 **상업적으로도 성공하고, 기술적으로도 무결점인 프로덕트**로 만들기 위해 4가지 핵심 영역(보안, 수익, 마케팅, 사용자)에서 처리해야 할 과제들을 종합 이슈 형태로 정리했습니다.
 
 ---
@@ -70,3 +74,25 @@
 
 - **[Issue-UX-4] AI "묵은 할 일" 스마트 정리 제안**
   - **상세**: 생성된 지 2주가 지나도 미완료로 남겨진 일정이 확인될 경우, 아침 AI 브리핑 시 "이 일정을 오늘로 미룰까요, 아니면 과감히 삭제할까요?"라고 넛지(Nudge)해주는 기능 추가.
+
+---
+
+## 🔗 GitHub Issues 마이그레이션 매핑
+
+| 레거시 ID | GitHub 이슈 | 상태 |
+|-----------|------------|------|
+| Issue-Sec-1 (App Check) | [#231](https://github.com/jeiel85/BrioDo/issues/231) 외 | `security` 라벨 |
+| Issue-Sec-2 (PII 마스킹) | [#232](https://github.com/jeiel85/BrioDo/issues/232) 외 | `security` 라벨 |
+| Issue-Sec-3 (Firestore Rules) | [#233](https://github.com/jeiel85/BrioDo/issues/233) 외 | `security` 라벨 |
+| Issue-Mon-1 (Pro 구독) | [#209](https://github.com/jeiel85/BrioDo/issues/209) | P1 |
+| Issue-Mon-2 (커피 후원) | (미생성 — P3 검토) | — |
+| Issue-Mon-3 (네이티브 광고) | (미생성 — AdMob 보상형으로 대체) | — |
+| Issue-Mkt-1 (ASO) | [#134](https://github.com/jeiel85/BrioDo/issues/134) | P0 · `growth` |
+| Issue-Mkt-2 (소셜 바이럴) | [#135](https://github.com/jeiel85/BrioDo/issues/135) | P0 · `growth` |
+| Issue-Mkt-3 (커뮤니티 런칭) | [#136](https://github.com/jeiel85/BrioDo/issues/136) | P0 · `growth` |
+| Issue-UX-1 (홈 위젯) | [#152](https://github.com/jeiel85/BrioDo/issues/152) | P0 |
+| Issue-UX-2 (Streak/통계) | [#158](https://github.com/jeiel85/BrioDo/issues/158) 외 | P1 |
+| Issue-UX-3 (PWA) | [#159](https://github.com/jeiel85/BrioDo/issues/159) 외 | P0 |
+| Issue-UX-4 (AI Nudge) | [#164](https://github.com/jeiel85/BrioDo/issues/164) 외 | P1 |
+
+> **참고**: 현재 정본 로드맵은 [SPRINT_PLAN.md](../SPRINT_PLAN.md)입니다.

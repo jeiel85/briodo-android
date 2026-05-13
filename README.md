@@ -26,7 +26,22 @@
 
 ---
 
+## 📖 문서
+
+| 문서 | 설명 |
+|------|------|
+| [AGENTS.md](AGENTS.md) | AI 에이전트 개발 지침 |
+| [DEVELOPMENT.md](DEVELOPMENT.md) | 시스템 설계 및 개발 환경 |
+| [SPRINT_PLAN.md](SPRINT_PLAN.md) | Top 10 진입 6개월 로드맵 |
+| [docs/INDEX.md](docs/INDEX.md) | **전체 문서 네비게이션** |
+| [PROJECT_HISTORY.md](PROJECT_HISTORY.md) | 개발 세션 이력 |
+| [GitHub Issues](https://github.com/jeiel85/BrioDo/issues) | 이슈 트래커 |
+
 ## 📖 소개
+
+BrioDo는 **AI 자연어 처리 + Google 캘린더 연동 + 잠금화면 위젯**을 결합한 Android 할 일 관리 앱입니다.
+
+"내일 오후 3시 팀 회의"처럼 자연어로 말하거나 입력하면 AI가 날짜·시간·태그를 자동 추출하고, Google 캘린더와 실시간 동기화합니다. 오프라인에서도 완벽히 동작하며, 잠금화면에서 바로 할 일을 확인하고 편집할 수 있습니다.
 
 BrioDo는 **AI 자연어 처리 + Google 캘린더 연동 + 잠금화면 위젯**을 결합한 Android 할 일 관리 앱입니다.
 
@@ -313,12 +328,14 @@ npx playwright test --project=chromium   # 특정 브라우저
 - [x] Pro 구독 모델 (월간 / 연간 / 패밀리)
 - [x] 관리자 대시보드 (별도 Vite 앱)
 - [x] 릴리즈 자동화 스크립트
-- [ ] 인앱 결제 실제 연동 (Google Play Billing)
+- [x] Firebase Analytics 측정 파이프라인
+- [ ] 인앱 결제 실제 연동 (Google Play Billing) — [#209](https://github.com/jeiel85/BrioDo/issues/209)
 - [ ] iOS 지원
-- [ ] Android 홈 화면 위젯
+- [ ] Android 홈 화면 위젯 다양한 크기 — [#152](https://github.com/jeiel85/BrioDo/issues/152)
 - [ ] 태블릿 최적화 레이아웃
-- [ ] F-Droid 배포
-- [ ] v1.2.0 스프린트 (100개 개선사항)
+
+> **현행 로드맵**: [SPRINT_PLAN.md](SPRINT_PLAN.md) — Top 10 진입 6개월 계획
+> **GitHub Issues**: https://github.com/jeiel85/BrioDo/issues
 
 <br>
 

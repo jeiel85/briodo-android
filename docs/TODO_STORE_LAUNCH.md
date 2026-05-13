@@ -2,6 +2,8 @@
 
 > 마지막 업데이트: 2026-03-30 (오전 세션)
 > 클로가 할 수 없는 **수동 작업** 목록입니다. 하나씩 완료 후 체크하세요.
+>
+> **관련 문서**: [store-deploy.md](store-deploy.md) (전체 배포 가이드) · [play-store-submission.md](play-store-submission.md) (제출 체크리스트) · [google-oauth-review.md](google-oauth-review.md) (OAuth 심사)
 
 ---
 

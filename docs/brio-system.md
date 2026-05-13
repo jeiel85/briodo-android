@@ -1,6 +1,11 @@
 # BrioDo — ⚡ 브리오 에너지 시스템 설계
 
-> 수익화 모델 + 브리오 크레딧 시스템 전체 설계 문서
+> ⚠️ **[2026-04-08 폐기]** 브리오(Brio) 재화 시스템은 v1.0.4에서 전면 제거되었습니다.
+> 현재 Pro 구독 모델([#209](https://github.com/jeiel85/BrioDo/issues/209))로 대체되었으며,
+> AI 사용량은 `useSubscription.js`의 Firestore 기반 카운터로 관리합니다.
+> 본 문서는 참고용으로만 보존합니다.
+
+> 수익화 모델 + 브리오 크레딧 시스템 전체 설계 문서 (폐기됨)
 
 ---
 
@@ -163,7 +168,7 @@ Gemini 2.5 Flash Lite API 1회 원가:
 | `src/components/SmartInputModal.jsx` | 브리오 표시 + 부족 시 팝업 |
 | `src/components/AchievementUnlockModal.jsx` | 보상 브리오 표시 추가 |
 | `src/App.jsx` | useBrio 훅 통합, aiUsageCount 제거 |
-| `ADMOB_PLAN.md` | AdMob 연동 실무 가이드 |
+| `ADMOB_PLAN.md` → [docs/admob-plan.md](admob-plan.md) | AdMob 연동 실무 가이드 |
 
 ---
 
@@ -176,5 +181,5 @@ Phase 1 (현재): 브리오 UI + 로직만 구현
   → 광고 버튼 클릭 시 "준비 중" 또는 테스트용 즉시 +5 지급
 
 Phase 2 (AdMob 연동 후): 실제 광고 영상 시청 후 +5 지급
-  → ADMOB_PLAN.md 절차 참조
+  → [docs/admob-plan.md](admob-plan.md) 절차 참조
 ```
