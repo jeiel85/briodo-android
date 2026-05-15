@@ -9,7 +9,7 @@ import { track, EVENTS } from '../analytics'
 // 묵음 감지 후 자동 재시작 최대 횟수 — 이 이상이면 완전 종료
 const MAX_AUTO_RESTARTS = 5
 
-export function SmartInputModal({ lang, smartText, setSmartText, isAiAnalyzing, onClose, onSave, autoStartVoice, isPro = false, remainingAiRequests = Infinity, onUpgradeClick }) {
+export function SmartInputModal({ lang, smartText, setSmartText, isAiAnalyzing, onClose, onSave, autoStartVoice }) {
   const textareaRef = useRef(null)
   const webRecognitionRef = useRef(null)
   const retryingRef = useRef(false)
@@ -288,43 +288,6 @@ export function SmartInputModal({ lang, smartText, setSmartText, isAiAnalyzing, 
                 ? '자유롭게 입력하면 날짜·태그를 자동으로 분석해요'
                 : 'Type naturally — date & tags will be detected automatically'}
             </div>
-
-            {/* AI 사용량 표시 */}
-            {!isPro && remainingAiRequests !== Infinity && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '8px 12px',
-                backgroundColor: remainingAiRequests === 0 ? 'var(--color-error-container)' : 'var(--color-primary-container)',
-                borderRadius: 'var(--radius-md)',
-                marginBottom: '12px',
-                fontSize: '12px',
-              }}>
-                <span style={{ color: remainingAiRequests === 0 ? 'var(--color-error)' : 'var(--color-primary)' }}>
-                  {remainingAiRequests === 0
-                    ? (lang === 'ko' ? '오늘의 AI 사용량을 모두 사용했습니다' : 'Daily AI limit reached')
-                    : `${lang === 'ko' ? '오늘 남은 AI 사용' : 'AI uses remaining today'}: ${remainingAiRequests}`}
-                </span>
-                {remainingAiRequests === 0 && onUpgradeClick && (
-                  <button
-                    onClick={onUpgradeClick}
-                    style={{
-                      backgroundColor: 'var(--color-primary)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: 'var(--radius-sm)',
-                      padding: '4px 10px',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {lang === 'ko' ? 'Pro 업그레이드' : 'Upgrade to Pro'}
-                  </button>
-                )}
-              </div>
-            )}
 
             <textarea
               ref={textareaRef}

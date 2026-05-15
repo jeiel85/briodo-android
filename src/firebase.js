@@ -91,12 +91,5 @@ export const initAppCheck = () => {
   }
 }
 
-// Pro Features - 릴리즈 시 활성화
-export const PRO_ENABLED = true
-
-// 구독 설정
-export const SUBSCRIPTION_CONFIG = {
-  enabled: true,
-  trialDays: 7, // 묶음 체험 기간
-  gracePeriodDays: 3, // 구독 만료 후 유예 기간
-}
+// Pro Features - 제품 가치와 정책 대응이 정리될 때까지 비활성화
+export const PRO_ENABLED = false

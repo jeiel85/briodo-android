@@ -21,7 +21,6 @@ import { useAuth } from './hooks/useAuth'
 import { useTheme } from './hooks/useTheme'
 import { useTodosData } from './hooks/useTodosData'
 import { useCalendarNav } from './hooks/useCalendarNav'
-import { useSubscription, PRO_LIMITS } from './hooks/useSubscription'
 import { Header } from './components/Header'
 import { TodoList } from './components/TodoList'
 import { BottomNav } from './components/BottomNav'
@@ -34,13 +33,12 @@ import { AchievementUnlockModal } from './components/AchievementUnlockModal'
 import { AchievementsModal } from './components/AchievementsModal'
 import { LockScreenView } from './components/LockScreenView'
 import { OnboardingModal, shouldShowOnboarding } from './components/OnboardingModal'
-import { SubscriptionModal } from './components/SubscriptionModal'
 import './index.css'
 
 const LockScreenNative = Capacitor.isNativePlatform() ? registerPlugin('LockScreen') : null
 const StatusBarNotifNative = Capacitor.isNativePlatform() ? registerPlugin('StatusBarNotification') : null
 
-const APP_VERSION = '1.1.13'
+const APP_VERSION = '1.1.14'
 
 function App() {
   const { lang, langPref, setLangPref, t } = useLanguage()
@@ -128,19 +126,6 @@ function App() {
   const [showAchievementsModal, setShowAchievementsModal] = useState(false)
   const [showNotificationsModal, setShowNotificationsModal] = useState(false)
   
-  // Pro 구독 관련 상태
-  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
-  const {
-    isPro,
-    subscription,
-    aiUsageToday,
-    canUseAi,
-    getRemainingAiRequests,
-    incrementAiUsage,
-    startSubscription,
-    cancelSubscription,
-  } = useSubscription(user)
-
   useEffect(() => {
     localStorage.setItem('briodo-viewMode', viewMode)
     if (viewMode === 'lists') trackEngagement('collectionVisited')
@@ -951,16 +936,6 @@ function App() {
         try {
           let finalData = { text: savedText, date: today, time: '', tags: [], reminderOffset: savedReminderOffset }
           
-          // AI 사용량 체크 (Pro 구독)
-          if (!canUseAi()) {
-            console.log('[AI] Daily limit reached, showing subscription modal')
-            setShowSubscriptionModal(true)
-            return
-          }
-          
-          // AI 사용량 증가
-          await incrementAiUsage()
-
           const ai = await getAiFullAnalysis(savedText)
           if (cancelled) return
           track(EVENTS.AI_INPUT_USED, {
@@ -1446,9 +1421,6 @@ function App() {
           reminderOffset={smartReminderOffset} setReminderOffset={setSmartReminderOffset}
           defaultReminderOffset={defaultReminderOffset}
           autoStartVoice={!smartText}
-          isPro={isPro}
-          remainingAiRequests={getRemainingAiRequests()}
-          onUpgradeClick={() => setShowSubscriptionModal(true)}
         />
       )}
 
@@ -1497,17 +1469,6 @@ function App() {
           setShowSettings={setShowSettings}
           appVersion={APP_VERSION}
           screen={settingsScreen} setScreen={setSettingsScreen}
-          // Pro 구독 props
-          isPro={isPro}
-          subscription={subscription}
-          aiUsageToday={aiUsageToday}
-          onUpgradeClick={() => setShowSubscriptionModal(true)}
-          onCancelSubscription={async () => {
-            if (window.confirm(t('cancelConfirm') || '정말 구독을 취소하시겠습니까?')) {
-              await cancelSubscription()
-              showToastMsg(t('cancelSuccess') || '구독이 취소되었습니다.')
-            }
-          }}
         />
       )}
 
@@ -1554,23 +1515,6 @@ function App() {
           onDone={() => setShowOnboarding(false)}
         />
       )}
-
-      {/* Pro 구독 모달 */}
-      <SubscriptionModal
-        isOpen={showSubscriptionModal}
-        onClose={() => setShowSubscriptionModal(false)}
-        onSubscribe={async (planId) => {
-          try {
-            await startSubscription(planId)
-            showToastMsg(t('subscriptionSuccess') || 'Pro 구독이 시작되었습니다!')
-          } catch {
-            showToastMsg(t('subscriptionError') || '구독 처리 중 오류가 발생했습니다.')
-          }
-        }}
-        currentPlan={subscription?.planId}
-        t={t}
-        theme={theme}
-      />
 
     </div>
   )
