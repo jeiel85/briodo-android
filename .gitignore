@@ -65,3 +65,6 @@ screenshot_*.png
 
 # Playwright MCP session artifacts
 .playwright-mcp/
+
+# Sisyphus tool workspace
+.sisyphus/
