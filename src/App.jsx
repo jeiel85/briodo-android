@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { Capacitor, registerPlugin } from '@capacitor/core'
 import { StatusBar, Style } from '@capacitor/status-bar'
 import { App as CapApp } from '@capacitor/app'
@@ -22,6 +22,7 @@ import { useAuth } from './hooks/useAuth'
 import { useTheme } from './hooks/useTheme'
 import { useTodosData } from './hooks/useTodosData'
 import { useCalendarNav } from './hooks/useCalendarNav'
+import { useAiUsageQuota } from './hooks/useAiUsageQuota'
 import { Header } from './components/Header'
 import { TodoList } from './components/TodoList'
 import { BottomNav } from './components/BottomNav'
@@ -39,7 +40,7 @@ import './index.css'
 const LockScreenNative = Capacitor.isNativePlatform() ? registerPlugin('LockScreen') : null
 const StatusBarNotifNative = Capacitor.isNativePlatform() ? registerPlugin('StatusBarNotification') : null
 
-const APP_VERSION = '1.1.15'
+const APP_VERSION = '1.1.16'
 
 function App() {
   const { lang, langPref, setLangPref, t } = useLanguage()
@@ -101,6 +102,7 @@ function App() {
   const { todos, setTodos, isOnline, isAiAnalyzing, syncStatus, toggleComplete, toggleSubtaskComplete, deleteTodo, getAiFullAnalysis, triggerSync } = useTodosData(user, { completionCalendarMode, lang })
   const { briefingText, briefingLoading, generateBriefing } = useBriefing()
   const { todayStr, selectedDate, setSelectedDate, calendarExpanded, setCalendarExpanded, viewMonth, viewMonthLabel, currentWeekDates, monthGridDates, weekdayNames, prevWeek, nextWeek, prevMonth, nextMonth, goToMonth, handleGoToToday } = useCalendarNav(lang)
+  const aiUsageQuota = useAiUsageQuota(user)
 
   const [defaultView, setDefaultViewState] = useState(() => localStorage.getItem('briodo-defaultView') || localStorage.getItem('briodo-viewMode') || 'date')
   const [viewMode, setViewMode] = useState(() => localStorage.getItem('briodo-defaultView') || localStorage.getItem('briodo-viewMode') || 'date')
@@ -244,6 +246,7 @@ function App() {
   // 입력 모드: 'smart' | 'manual' (기본값: manual — 로그인 전에는 항상 manual)
   const [inputMode, setInputMode] = useState(() => localStorage.getItem('inputMode') || 'manual')
   const setInputModePersisted = (mode) => { setInputMode(mode); localStorage.setItem('inputMode', mode) }
+  const effectiveInputMode = user && inputMode === 'smart' && !aiUsageQuota.exhausted ? 'smart' : 'manual'
 
   const toastTimerRef = useRef(null)
   const smartSaveCancelRef = useRef(null)
@@ -520,15 +523,6 @@ function App() {
     }
   }, [])
 
-  // 상태바 알림 ➕ 버튼 → SmartInputModal 열기
-  useEffect(() => {
-    if (!Capacitor.isNativePlatform()) return
-    const handler = StatusBarNotifNative?.addListener?.('openSmartInput', () => {
-      setShowSmartModal(true)
-    })
-    return () => { handler?.remove?.() }
-  }, [])
-
   // 상태바 텍스트 — todos 배열 전체 대신 필요한 값만 계산
   const statusBarText = useMemo(() => {
     if (statusBarContentStyle === 'tasks') {
@@ -787,7 +781,7 @@ function App() {
     document.body.classList.add('modal-open')
   }
 
-  const handleOpenAddModal = () => {
+  const handleOpenAddModal = useCallback(() => {
     let defaultDate = ''
     let defaultTime = ''
     if (viewMode === 'date') {
@@ -803,7 +797,23 @@ function App() {
     setShowDescInput(false)
     setShowInputModal(true)
     document.body.classList.add('modal-open')
-  }
+  }, [defaultReminderOffset, selectedDate, viewMode])
+
+  // 상태바 알림 ➕ 버튼 → 현재 사용 가능한 입력 방식으로 열기
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return
+    const handler = StatusBarNotifNative?.addListener?.('openSmartInput', () => {
+      if (effectiveInputMode === 'smart') {
+        setShowSmartModal(true)
+      } else {
+        if (user && inputMode === 'smart' && aiUsageQuota.exhausted) {
+          showToastMsg(getAiQuotaMessage(lang, 'smart'), 6000)
+        }
+        handleOpenAddModal()
+      }
+    })
+    return () => { handler?.remove?.() }
+  }, [effectiveInputMode, user, inputMode, aiUsageQuota.exhausted, lang, handleOpenAddModal])
 
   const handleSaveTodo = async () => {
     if (newTodo.text.trim() === '') return
@@ -940,7 +950,10 @@ function App() {
           const ai = await getAiFullAnalysis(savedText)
           if (cancelled) return
           if (ai?.__aiError === 'quota_exhausted') {
+            aiUsageQuota.markExhausted(ai.exhaustedReason || 'daily')
             showToastMsg(getAiQuotaMessage(lang, 'smart'), 6000)
+          } else {
+            aiUsageQuota.applyUsageStatus(ai?.__usage)
           }
           track(EVENTS.AI_INPUT_USED, {
             lang,
@@ -1394,15 +1407,17 @@ function App() {
         <button
           className="fab"
           onClick={() => {
-            const mode = user ? inputMode : 'manual'
-            if (mode === 'smart') {
+            if (effectiveInputMode === 'smart') {
               setShowSmartModal(true)
             } else {
+              if (user && inputMode === 'smart' && aiUsageQuota.exhausted) {
+                showToastMsg(getAiQuotaMessage(lang, 'smart'), 6000)
+              }
               handleOpenAddModal()
             }
           }}
         >
-          {(user ? inputMode : 'manual') === 'smart'
+          {effectiveInputMode === 'smart'
             ? <span style={{ fontSize: '22px', lineHeight: 1 }}>✨</span>
             : <svg viewBox="0 0 24 24" fill="white" width="26" height="26"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
           }
@@ -1426,6 +1441,7 @@ function App() {
           reminderOffset={smartReminderOffset} setReminderOffset={setSmartReminderOffset}
           defaultReminderOffset={defaultReminderOffset}
           autoStartVoice={!smartText}
+          aiUsageQuota={aiUsageQuota}
         />
       )}
 
@@ -1449,6 +1465,8 @@ function App() {
           defaultView={defaultView} setDefaultView={setDefaultViewPersisted}
           setSelectedDate={setSelectedDate}
           inputMode={inputMode} setInputMode={setInputModePersisted}
+          effectiveInputMode={effectiveInputMode}
+          aiUsageQuota={aiUsageQuota}
           onAiLimitToast={(msg) => showToastMsg(msg)}
           completionCalendarMode={completionCalendarMode} setCompletionCalendarMode={setCompletionCalendarModePersisted}
           defaultReminderOffset={defaultReminderOffset} setDefaultReminderOffset={setDefaultReminderOffsetPersisted}
@@ -1483,7 +1501,11 @@ function App() {
           briefingText={briefingText}
           briefingLoading={briefingLoading}
           onClose={() => setShowBriefingModal(false)}
-          onGenerate={() => generateBriefing(todos, briefingType, lang)}
+          onGenerate={async () => {
+            const result = await generateBriefing(todos, briefingType, lang)
+            aiUsageQuota.refresh()
+            return result
+          }}
           lang={lang}
         />
       )}

@@ -15,11 +15,36 @@ const MAX_PROMPT_LENGTH = 4000;
 const DAILY_LIMIT = 10;
 const MONTHLY_LIMIT = 100;
 
+function getUsageKeys(now = new Date()) {
+  return {
+    dayKey: `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}`,
+    monthKey: `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`,
+  };
+}
+
+function buildUsageStatus(data = {}) {
+  const now = new Date();
+  const { dayKey, monthKey } = getUsageKeys(now);
+  const daily = data.dayKey === dayKey ? data.daily || 0 : 0;
+  const monthly = data.monthKey === monthKey ? data.monthly || 0 : 0;
+
+  return {
+    dayKey,
+    monthKey,
+    daily,
+    monthly,
+    dailyLimit: DAILY_LIMIT,
+    monthlyLimit: MONTHLY_LIMIT,
+    remainingDaily: Math.max(0, DAILY_LIMIT - daily),
+    remainingMonthly: Math.max(0, MONTHLY_LIMIT - monthly),
+    exhausted: daily >= DAILY_LIMIT || monthly >= MONTHLY_LIMIT,
+    exhaustedReason: daily >= DAILY_LIMIT ? "daily" : monthly >= MONTHLY_LIMIT ? "monthly" : null,
+  };
+}
+
 async function checkAndIncrementUsage(uid) {
   const db = getFirestore();
-  const now = new Date();
-  const dayKey = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}`;
-  const monthKey = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+  const { dayKey, monthKey } = getUsageKeys();
 
   const ref = db.collection("ai_usage").doc(uid);
 
@@ -44,6 +69,23 @@ async function checkAndIncrementUsage(uid) {
     return "ok";
   });
 }
+
+exports.getAiUsageStatus = onCall(
+  {
+    region: "asia-northeast3",
+    cors: true,
+    enforceAppCheck: false,
+  },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "The function must be called while authenticated.");
+    }
+
+    const db = getFirestore();
+    const snap = await db.collection("ai_usage").doc(request.auth.uid).get();
+    return buildUsageStatus(snap.exists ? snap.data() : {});
+  }
+);
 
 exports.generateGeminiContent = onCall(
   {
@@ -89,7 +131,8 @@ exports.generateGeminiContent = onCall(
       });
 
       if (response && response.text) {
-        return { text: response.text };
+        const snap = await getFirestore().collection("ai_usage").doc(request.auth.uid).get();
+        return { text: response.text, usage: buildUsageStatus(snap.exists ? snap.data() : {}) };
       } else {
         throw new HttpsError("internal", "No text returned from Gemini.");
       }

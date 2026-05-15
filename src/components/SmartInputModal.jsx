@@ -9,7 +9,7 @@ import { track, EVENTS } from '../analytics'
 // 묵음 감지 후 자동 재시작 최대 횟수 — 이 이상이면 완전 종료
 const MAX_AUTO_RESTARTS = 5
 
-export function SmartInputModal({ lang, smartText, setSmartText, isAiAnalyzing, onClose, onSave, autoStartVoice }) {
+export function SmartInputModal({ lang, smartText, setSmartText, isAiAnalyzing, onClose, onSave, autoStartVoice, aiUsageQuota }) {
   const textareaRef = useRef(null)
   const webRecognitionRef = useRef(null)
   const retryingRef = useRef(false)
@@ -288,6 +288,18 @@ export function SmartInputModal({ lang, smartText, setSmartText, isAiAnalyzing, 
                 ? '자유롭게 입력하면 날짜·태그를 자동으로 분석해요'
                 : 'Type naturally — date & tags will be detected automatically'}
             </div>
+            {aiUsageQuota && (
+              <div className={`ai-usage-pill${aiUsageQuota.exhausted ? ' exhausted' : ''}`}>
+                <span>
+                  {lang === 'ko' ? '오늘 AI 정리' : lang === 'ja' ? '今日のAI整理' : lang === 'zh' ? '今日AI整理' : 'AI cleanup today'}
+                </span>
+                <strong>
+                  {aiUsageQuota.loading || aiUsageQuota.unavailable
+                    ? '-'
+                    : `${aiUsageQuota.daily}/${aiUsageQuota.dailyLimit}`}
+                </strong>
+              </div>
+            )}
 
             <textarea
               ref={textareaRef}

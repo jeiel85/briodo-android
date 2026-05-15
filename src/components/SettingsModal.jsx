@@ -45,6 +45,8 @@ export function SettingsModal({
   theme, setTheme, generateRandomTheme,
   setViewMode, defaultView, setDefaultView, setSelectedDate,
   inputMode, setInputMode,
+  effectiveInputMode,
+  aiUsageQuota,
   onAiLimitToast,
   completionCalendarMode, setCompletionCalendarMode,
   defaultReminderOffset, setDefaultReminderOffset,
@@ -362,9 +364,44 @@ export function SettingsModal({
                 </div>
                 <p style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '8px', lineHeight: '1.4' }}>
                   {inputMode === 'smart'
-                    ? L('자유롭게 입력하면 날짜·태그를 AI가 자동 분석합니다', 'AI detects date & tags from natural text', '自由入力でAIが日付・タグを自動分析します', '自由输入，AI自动分析日期和标签')
+                    ? effectiveInputMode === 'manual' && aiUsageQuota?.exhausted
+                      ? L('기본 설정은 스마트 입력입니다. 오늘 AI 사용량을 모두 사용해 내일까지 수동 입력으로 열립니다.', 'Smart Input remains your default. Today\'s AI quota is used, so add opens Manual until tomorrow.', 'デフォルトはスマート入力のままです。本日のAI利用枠を使い切ったため、明日まで手動入力で開きます。', '默认仍为智能输入。今天的AI额度已用完，明天前将以手动输入打开。')
+                      : L('자유롭게 입력하면 날짜·태그를 AI가 자동 분석합니다', 'AI detects date & tags from natural text', '自由入力でAIが日付・タグを自動分析します', '自由输入，AI自动分析日期和标签')
                     : L('날짜·태그를 직접 지정해 저장합니다', 'Manually set date, tags and priority', '日付・タグを直接指定して保存します', '手动指定日期、标签并保存')}
                 </p>
+                {user && aiUsageQuota && (
+                  <div style={{
+                    marginTop: '12px',
+                    padding: '12px',
+                    background: aiUsageQuota.exhausted ? 'var(--color-error-container)' : 'var(--color-surface-container)',
+                    borderRadius: 'var(--radius-lg)',
+                    border: '1px solid var(--color-outline-variant)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: aiUsageQuota.exhausted ? 'var(--color-error)' : 'var(--color-on-surface)' }}>
+                        {L('오늘 AI 정리 사용량', 'AI Cleanup Today', '今日のAI整理', '今日AI整理')}
+                      </span>
+                      <span style={{ fontSize: '13px', fontWeight: 800, color: aiUsageQuota.exhausted ? 'var(--color-error)' : 'var(--color-primary)' }}>
+                        {aiUsageQuota.loading || aiUsageQuota.unavailable ? '-' : `${aiUsageQuota.daily} / ${aiUsageQuota.dailyLimit}`}
+                      </span>
+                    </div>
+                    <div style={{ height: '5px', background: 'var(--color-outline-variant)', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div style={{
+                        width: `${Math.min(100, ((aiUsageQuota.daily || 0) / (aiUsageQuota.dailyLimit || 10)) * 100)}%`,
+                        height: '100%',
+                        background: aiUsageQuota.exhausted ? 'var(--color-error)' : 'var(--color-primary)',
+                        borderRadius: '3px',
+                      }} />
+                    </div>
+                    <p style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '8px', lineHeight: '1.4' }}>
+                      {aiUsageQuota.unavailable
+                        ? L('사용량을 불러오지 못했습니다. 잠시 후 다시 확인됩니다.', 'Could not load usage. It will refresh shortly.', '使用量を読み込めませんでした。しばらくすると再確認します。', '无法加载使用量，稍后会自动刷新。')
+                        : aiUsageQuota.exhausted
+                          ? L('오늘은 수동 입력으로 저장하고, AI 정리는 내일 다시 사용할 수 있어요.', 'Use Manual today; AI cleanup will be available again tomorrow.', '今日は手動入力で保存し、AI整理は明日また利用できます。', '今天可用手动输入保存，AI整理明天可再次使用。')
+                          : L('스마트 입력, AI 브리핑, 정리 제안에서 함께 사용하는 하루 한도입니다.', 'Shared daily quota for Smart Input, AI Briefing, and cleanup suggestions.', 'スマート入力、AIブリーフィング、整理提案で共有する1日の利用枠です。', '智能输入、AI简报和整理建议共用此每日额度。')}
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="settings-section">

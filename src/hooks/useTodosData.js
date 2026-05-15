@@ -425,7 +425,7 @@ export function useTodosData(user, { completionCalendarMode = 'status', lang = '
     for (const model of AI_MODELS) {
       try {
         const response = await generateGeminiContent({ model, prompt })
-        if (response?.data?.text) return response.data.text
+        if (response?.data?.text) return response.data
       } catch (e) {
         if (isAiQuotaError(e)) throw e
         console.warn(`[AI] ${model} failed:`, e?.message || String(e))
@@ -446,9 +446,10 @@ export function useTodosData(user, { completionCalendarMode = 'status', lang = '
         : lang === 'en' ? `Extract ONLY 1-2 category tags in English (e.g., ${tagExamples})`
         : `한국어 태그 1~2개만 추출 (예: ${tagExamples})`
       const prompt = `Analyze: "${maskedText}". ${langInstruction}. Return ONLY JSON: {"categories": ["tag1", "tag2"]}`
-      const rawText = await generateWithFallback(prompt)
-      if (!rawText) return null
-      return JSON.parse(rawText.replace(/```json|```/g, '').trim().match(/\{.*\}/s)?.[0] || rawText.trim())
+      const result = await generateWithFallback(prompt)
+      if (!result?.text) return null
+      const parsed = JSON.parse(result.text.replace(/```json|```/g, '').trim().match(/\{.*\}/s)?.[0] || result.text.trim())
+      return { ...parsed, __usage: result.usage }
     } catch (error) {
       if (isAiQuotaError(error)) return { __aiError: 'quota_exhausted' }
       console.error('AI Tags Error:', error)
@@ -484,10 +485,11 @@ export function useTodosData(user, { completionCalendarMode = 'status', lang = '
         ? `Today: ${todayInfo}\nInput: "${maskedText}"\n\nRespond with ONLY this JSON:\n{"categories":["tag1"],"date":"YYYY-MM-DD","time":"HH:MM or null","refinedText":"core content"}\n\nRules:\n- categories: 1-2 task category tags (work, personal, health, study, etc.)\n- date: date (YYYY-MM-DD). Relative expressions calculated from today\n- time: HH:MM if specified, null if not\n- refinedText: core content without date/time`
         : `오늘: ${todayInfo}\n입력: "${maskedText}"\n\n반드시 아래 JSON만 응답하세요:\n{"categories":["태그1"],"date":"YYYY-MM-DD","time":"HH:MM 또는 null","refinedText":"핵심 내용"}\n\n규칙:\n- categories: 할일 성격 태그 1~2개 (업무,개인,건강,학습 등)\n- date: 날짜(YYYY-MM-DD). 상대적 표현은 오늘 기준 계산\n- time: 시간 있으면 HH:MM, 없으면 null\n- refinedText: 날짜/시간 제외한 핵심 내용`
 
-      const rawText = await generateWithFallback(prompt)
-      if (!rawText) return null
-      const cleaned = rawText.replace(/```json|```/g, '').trim()
+      const result = await generateWithFallback(prompt)
+      if (!result?.text) return null
+      const cleaned = result.text.replace(/```json|```/g, '').trim()
       const analysis = JSON.parse(cleaned.match(/\{.*\}/s)?.[0] || cleaned)
+      analysis.__usage = result.usage
 
       if (analysis && (!analysis.date || !/^\d{4}-\d{2}-\d{2}$/.test(analysis.date))) {
         analysis.date = null

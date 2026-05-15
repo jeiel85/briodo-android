@@ -1939,6 +1939,34 @@ body.modal-open { overflow: hidden; }
   text-align: center;
 }
 
+.ai-usage-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-container);
+  color: var(--color-on-surface-variant);
+  font-size: 12px;
+}
+
+.ai-usage-pill strong {
+  color: var(--color-primary);
+  font-size: 13px;
+}
+
+.ai-usage-pill.exhausted {
+  background: var(--color-error-container);
+  color: var(--color-error);
+}
+
+.ai-usage-pill.exhausted strong {
+  color: var(--color-error);
+}
+
 /* ─── Voice Waveform (스마트 입력 음성 인식 중) ─── */
 .voice-listening-area {
   display: flex;

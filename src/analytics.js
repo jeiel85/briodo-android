@@ -32,7 +32,7 @@ export const EVENTS = Object.freeze({
 })
 
 const debug = import.meta.env.DEV
-const APP_VERSION = '1.1.15'
+const APP_VERSION = '1.1.16'
 
 export function track(eventName, params = {}) {
   const analytics = getAnalyticsInstance()
