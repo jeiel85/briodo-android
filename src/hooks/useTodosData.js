@@ -17,6 +17,7 @@ import { syncEventToGoogle, deleteEventFromGoogle, fetchEventsFromGoogle } from 
 import { cancelNotification, scheduleNotification } from './useNotifications'
 import { maskPII, warnPII } from '../utils/piiMask'
 import { track, EVENTS } from '../analytics'
+import { isAiQuotaError } from '../utils/aiLimit'
 
 const sortTodos = (list) => list.sort((a, b) => {
   const dtA = new Date(`${a.date} ${a.time && a.time.includes(':') ? a.time : '00:00'}`)
@@ -426,6 +427,7 @@ export function useTodosData(user, { completionCalendarMode = 'status', lang = '
         const response = await generateGeminiContent({ model, prompt })
         if (response?.data?.text) return response.data.text
       } catch (e) {
+        if (isAiQuotaError(e)) throw e
         console.warn(`[AI] ${model} failed:`, e?.message || String(e))
       }
     }
@@ -448,6 +450,7 @@ export function useTodosData(user, { completionCalendarMode = 'status', lang = '
       if (!rawText) return null
       return JSON.parse(rawText.replace(/```json|```/g, '').trim().match(/\{.*\}/s)?.[0] || rawText.trim())
     } catch (error) {
+      if (isAiQuotaError(error)) return { __aiError: 'quota_exhausted' }
       console.error('AI Tags Error:', error)
       return null
     } finally {
@@ -491,6 +494,7 @@ export function useTodosData(user, { completionCalendarMode = 'status', lang = '
       }
       return analysis
     } catch (error) {
+      if (isAiQuotaError(error)) return { __aiError: 'quota_exhausted' }
       console.error("AI Analysis Error:", error)
       return null
     }

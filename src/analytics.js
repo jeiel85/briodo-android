@@ -26,16 +26,13 @@ export const EVENTS = Object.freeze({
   WIDGET_ADDED: 'widget_added',
   LOCKSCREEN_OPEN: 'lockscreen_open',
 
-  SUBSCRIPTION_VIEW: 'subscription_view',
-  SUBSCRIPTION_PURCHASE: 'subscription_purchase',
-
   ONBOARDING_START: 'onboarding_start',
   ONBOARDING_COMPLETE: 'onboarding_complete',
   ONBOARDING_SKIP: 'onboarding_skip',
 })
 
 const debug = import.meta.env.DEV
-const APP_VERSION = '1.1.11'
+const APP_VERSION = '1.1.15'
 
 export function track(eventName, params = {}) {
   const analytics = getAnalyticsInstance()

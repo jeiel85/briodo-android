@@ -12,6 +12,7 @@ import { LocalNotifications } from '@capacitor/local-notifications'
 import { scheduleNotification, cancelNotification, initNotificationChannels, scheduleBriefingNotifications } from './hooks/useNotifications'
 import { initAdMob } from './hooks/useAdMob'
 import { track, trackFirstOpenOnce, EVENTS } from './analytics'
+import { getAiQuotaMessage } from './utils/aiLimit'
 import { fetchWeather } from './hooks/useWeather'
 import { useBriefing } from './hooks/useBriefing'
 import { BriefingModal } from './components/BriefingModal'
@@ -38,7 +39,7 @@ import './index.css'
 const LockScreenNative = Capacitor.isNativePlatform() ? registerPlugin('LockScreen') : null
 const StatusBarNotifNative = Capacitor.isNativePlatform() ? registerPlugin('StatusBarNotification') : null
 
-const APP_VERSION = '1.1.14'
+const APP_VERSION = '1.1.15'
 
 function App() {
   const { lang, langPref, setLangPref, t } = useLanguage()
@@ -938,14 +939,18 @@ function App() {
           
           const ai = await getAiFullAnalysis(savedText)
           if (cancelled) return
+          if (ai?.__aiError === 'quota_exhausted') {
+            showToastMsg(getAiQuotaMessage(lang, 'smart'), 6000)
+          }
           track(EVENTS.AI_INPUT_USED, {
             lang,
-            success: !!ai,
+            success: !!ai && !ai.__aiError,
+            limit_reached: ai?.__aiError === 'quota_exhausted',
             has_date: !!ai?.date,
             has_time: !!ai?.time,
             has_tag: Array.isArray(ai?.categories) && ai.categories.length > 0,
           })
-          if (ai) {
+          if (ai && !ai.__aiError) {
             finalData = {
               text: ai.refinedText || savedText,
               date: ai.date || today,
