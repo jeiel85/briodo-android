@@ -1,4 +1,4 @@
-package app.briodo.briodo
+package app.briodo
 
 import io.flutter.embedding.android.FlutterActivity
 
