@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_background"
+    android:padding="12dp">
+
+    <TextView
+        android:id="@+id/widget_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="BrioDo"
+        android:textColor="#FFFFFF"
+        android:textSize="11sp"
+        android:alpha="0.7"
+        android:fontFamily="sans-serif-medium"/>
+
+    <TextView
+        android:id="@+id/widget_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0"
+        android:textColor="#FFFFFF"
+        android:textSize="38sp"
+        android:fontFamily="sans-serif-medium"
+        android:layout_marginTop="2dp"/>
+
+    <TextView
+        android:id="@+id/widget_first_line"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#FFFFFF"
+        android:textSize="13sp"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:alpha="0.9"
+        android:layout_marginTop="6dp"/>
+</LinearLayout>

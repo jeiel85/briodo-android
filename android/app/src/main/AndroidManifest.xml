@@ -39,6 +39,19 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
+        <!-- BrioDo 홈 위젯 -->
+        <receiver
+            android:name=".BrioDoWidgetProvider"
+            android:exported="true"
+            android:label="BrioDo">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/briodo_widget_info"/>
+        </receiver>
+
         <!-- flutter_local_notifications: 부팅 후 스케줄 복원 + 정확 알람 + 알림 액션 수신 -->
         <receiver
             android:exported="false"

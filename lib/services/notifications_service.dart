@@ -18,6 +18,8 @@ class NotificationsService {
   static const String _channelHigh = 'briodo_high';
   static const String _channelMedium = 'briodo_medium';
   static const String _channelLow = 'briodo_low';
+  static const String _channelOngoing = 'briodo_ongoing';
+  static const int _ongoingId = 999999;
 
   Future<void> init() async {
     if (_initialized || kIsWeb) return;
@@ -73,6 +75,13 @@ class NotificationsService {
         '낮음',
         description: '낮음 우선순위 일정 알림',
         importance: Importance.low,
+      ),
+      const AndroidNotificationChannel(
+        _channelOngoing,
+        '상시 표시',
+        description: '상태바에 오늘 할 일 개수 상주 표시',
+        importance: Importance.min,
+        showBadge: false,
       ),
     ];
     for (final c in channels) {
@@ -161,6 +170,40 @@ class NotificationsService {
   Future<void> cancelAll() async {
     if (!_initialized) await init();
     await _plugin.cancelAll();
+  }
+
+  /// 상태바 상주 알림. 사용자가 끌 때까지 계속 표시.
+  /// activeCount/firstLine을 업데이트하면 같은 ID로 갱신.
+  Future<void> showOngoing({
+    required int activeCount,
+    required String firstLine,
+  }) async {
+    if (!_initialized) await init();
+    final body = firstLine.isEmpty ? '오늘 할 일이 없어요' : firstLine;
+    final title = activeCount > 0 ? '오늘 할 일 $activeCount개' : '오늘은 비어있어요';
+    await _plugin.show(
+      id: _ongoingId,
+      title: title,
+      body: body,
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          _channelOngoing,
+          '상시 표시',
+          importance: Importance.min,
+          priority: Priority.min,
+          ongoing: true,
+          autoCancel: false,
+          showWhen: false,
+          onlyAlertOnce: true,
+          category: AndroidNotificationCategory.status,
+        ),
+      ),
+    );
+  }
+
+  Future<void> cancelOngoing() async {
+    if (!_initialized) await init();
+    await _plugin.cancel(id: _ongoingId);
   }
 
   String _channelFor(String priority) {

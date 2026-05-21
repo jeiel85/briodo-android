@@ -12,6 +12,7 @@ import '../providers/locale_provider.dart';
 import '../providers/todos_provider.dart';
 import '../services/analytics_service.dart';
 import '../services/calendar_sync_service.dart';
+import '../services/home_widget_service.dart';
 import '../services/notifications_service.dart';
 import '../widgets/calendar_header.dart';
 import '../widgets/todo_editor_dialog.dart';
@@ -242,6 +243,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
+  Future<void> _syncOngoingNotification(List<Todo> todos) async {
+    final s = ref.read(appSettingsProvider);
+    if (!s.statusBarOngoingEnabled) {
+      await NotificationsService.instance.cancelOngoing();
+      return;
+    }
+    final todayKey = dateKey(DateTime.now());
+    final active = todos.where((t) => t.date == todayKey && !t.completed).toList()
+      ..sort((a, b) {
+        final at = a.time.isEmpty ? '99:99' : a.time;
+        final bt = b.time.isEmpty ? '99:99' : b.time;
+        return at.compareTo(bt);
+      });
+    await NotificationsService.instance.showOngoing(
+      activeCount: active.length,
+      firstLine: active.isEmpty ? '' : active.first.text,
+    );
+  }
+
   /// reminderOffset/time 조건이 맞으면 새로 스케줄, 아니면 취소.
   /// 권한이 없으면 한 번 요청한다.
   Future<void> _rescheduleNotification(Todo todo) async {
@@ -281,6 +301,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final list = next.asData?.value;
       if (list != null) {
         ref.read(achievementsProvider.notifier).checkAgainst(list);
+        HomeWidgetService.instance.updateFromTodos(list);
+        _syncOngoingNotification(list);
       }
     });
     final selected = ref.watch(selectedDateProvider);

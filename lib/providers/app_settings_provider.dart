@@ -10,7 +10,12 @@ class AppSettings {
     this.allDayReminderHour = 9,
     this.allDayReminderMinute = 0,
     this.calendarSyncEnabled = false,
-    this.calendarSyncNoTime = 'allday', // 'allday' | 'skip'
+    this.calendarSyncNoTime = 'allday',
+    this.statusBarOngoingEnabled = false,
+    this.themeMode = 'system',
+    this.fontScale = 1.0,
+    this.defaultView = 'date',
+    this.completeMode = 'toggle',
   });
 
   /// 종일 일정 알림 시각 (기본 09:00)
@@ -20,14 +25,34 @@ class AppSettings {
   /// Google Calendar 양방향 동기화 활성화
   final bool calendarSyncEnabled;
 
-  /// 시간 없는(종일) todo를 캘린더에 어떻게 보낼지
+  /// 시간 없는(종일) todo를 캘린더에 어떻게 보낼지 ('allday' | 'skip')
   final String calendarSyncNoTime;
+
+  /// 상태바 상주 알림 (오늘 할 일 N개) 활성
+  final bool statusBarOngoingEnabled;
+
+  /// 'system' | 'light' | 'dark'
+  final String themeMode;
+
+  /// 1.0 = 기본, 0.9 / 1.1 / 1.25 등
+  final double fontScale;
+
+  /// 'date' | 'all' | 'lists'
+  final String defaultView;
+
+  /// 완료 시 처리 — 'toggle'(완료 상태 토글) | 'delete'(즉시 삭제)
+  final String completeMode;
 
   AppSettings copyWith({
     int? allDayReminderHour,
     int? allDayReminderMinute,
     bool? calendarSyncEnabled,
     String? calendarSyncNoTime,
+    bool? statusBarOngoingEnabled,
+    String? themeMode,
+    double? fontScale,
+    String? defaultView,
+    String? completeMode,
   }) =>
       AppSettings(
         allDayReminderHour: allDayReminderHour ?? this.allDayReminderHour,
@@ -35,6 +60,12 @@ class AppSettings {
             allDayReminderMinute ?? this.allDayReminderMinute,
         calendarSyncEnabled: calendarSyncEnabled ?? this.calendarSyncEnabled,
         calendarSyncNoTime: calendarSyncNoTime ?? this.calendarSyncNoTime,
+        statusBarOngoingEnabled:
+            statusBarOngoingEnabled ?? this.statusBarOngoingEnabled,
+        themeMode: themeMode ?? this.themeMode,
+        fontScale: fontScale ?? this.fontScale,
+        defaultView: defaultView ?? this.defaultView,
+        completeMode: completeMode ?? this.completeMode,
       );
 }
 
@@ -43,6 +74,11 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   static const _keyMinute = 'settings.allDayReminderMinute';
   static const _keyCalSync = 'settings.calendarSyncEnabled';
   static const _keyCalNoTime = 'settings.calendarSyncNoTime';
+  static const _keyOngoing = 'settings.statusBarOngoing';
+  static const _keyThemeMode = 'settings.themeMode';
+  static const _keyFontScale = 'settings.fontScale';
+  static const _keyDefaultView = 'settings.defaultView';
+  static const _keyCompleteMode = 'settings.completeMode';
 
   late SharedPreferences _prefs;
 
@@ -54,6 +90,11 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
       allDayReminderMinute: _prefs.getInt(_keyMinute) ?? 0,
       calendarSyncEnabled: _prefs.getBool(_keyCalSync) ?? false,
       calendarSyncNoTime: _prefs.getString(_keyCalNoTime) ?? 'allday',
+      statusBarOngoingEnabled: _prefs.getBool(_keyOngoing) ?? false,
+      themeMode: _prefs.getString(_keyThemeMode) ?? 'system',
+      fontScale: _prefs.getDouble(_keyFontScale) ?? 1.0,
+      defaultView: _prefs.getString(_keyDefaultView) ?? 'date',
+      completeMode: _prefs.getString(_keyCompleteMode) ?? 'toggle',
     );
   }
 
@@ -74,6 +115,31 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   Future<void> setCalendarSyncNoTime(String policy) async {
     await _prefs.setString(_keyCalNoTime, policy);
     state = state.copyWith(calendarSyncNoTime: policy);
+  }
+
+  Future<void> setStatusBarOngoingEnabled(bool enabled) async {
+    await _prefs.setBool(_keyOngoing, enabled);
+    state = state.copyWith(statusBarOngoingEnabled: enabled);
+  }
+
+  Future<void> setThemeMode(String mode) async {
+    await _prefs.setString(_keyThemeMode, mode);
+    state = state.copyWith(themeMode: mode);
+  }
+
+  Future<void> setFontScale(double scale) async {
+    await _prefs.setDouble(_keyFontScale, scale);
+    state = state.copyWith(fontScale: scale);
+  }
+
+  Future<void> setDefaultView(String view) async {
+    await _prefs.setString(_keyDefaultView, view);
+    state = state.copyWith(defaultView: view);
+  }
+
+  Future<void> setCompleteMode(String mode) async {
+    await _prefs.setString(_keyCompleteMode, mode);
+    state = state.copyWith(completeMode: mode);
   }
 }
 
