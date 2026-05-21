@@ -5,10 +5,10 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../models/todo.dart';
 import '../providers/auth_provider.dart';
 import '../providers/todos_provider.dart';
+import '../widgets/calendar_header.dart';
 import '../widgets/todo_editor_dialog.dart';
 
-/// 선택 날짜의 할 일 리스트.
-/// 상단 헤더로 날짜 이동(‹ ›/DatePicker), FAB로 추가, 항목 탭으로 편집.
+/// 캘린더 + 선택 날짜의 할 일 리스트.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -84,19 +84,6 @@ class HomeScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _jumpDate(BuildContext context, WidgetRef ref) async {
-    final cur = parseDateKey(ref.read(selectedDateProvider));
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: cur,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2100),
-    );
-    if (picked != null) {
-      ref.read(selectedDateProvider.notifier).set(dateKey(picked));
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -109,6 +96,11 @@ class HomeScreen extends ConsumerWidget {
           data: (user) => user?.isAnonymous ?? false,
           orElse: () => false,
         );
+
+    final allTodos = todosAsync.maybeWhen(
+      data: (list) => list,
+      orElse: () => const <Todo>[],
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -134,11 +126,10 @@ class HomeScreen extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          _DateHeader(
+          CalendarHeader(
             selected: selected,
-            onPrev: () => ref.read(selectedDateProvider.notifier).shiftDays(-1),
-            onNext: () => ref.read(selectedDateProvider.notifier).shiftDays(1),
-            onTap: () => _jumpDate(context, ref),
+            todos: allTodos,
+            onSelect: (date) => ref.read(selectedDateProvider.notifier).set(date),
           ),
           const Divider(height: 1),
           Expanded(
@@ -240,64 +231,5 @@ class HomeScreen extends ConsumerWidget {
     final ap = _priorityOrder[a.priority] ?? 2;
     final bp = _priorityOrder[b.priority] ?? 2;
     return ap.compareTo(bp);
-  }
-}
-
-class _DateHeader extends StatelessWidget {
-  const _DateHeader({
-    required this.selected,
-    required this.onPrev,
-    required this.onNext,
-    required this.onTap,
-  });
-
-  final String selected;
-  final VoidCallback onPrev;
-  final VoidCallback onNext;
-  final VoidCallback onTap;
-
-  static const _weekdays = ['월', '화', '수', '목', '금', '토', '일'];
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final d = parseDateKey(selected);
-    final wd = _weekdays[(d.weekday - 1).clamp(0, 6)];
-    final label = '${d.year}.${d.month.toString().padLeft(2, '0')}.${d.day.toString().padLeft(2, '0')} ($wd)';
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(
-            onPressed: onPrev,
-            icon: const Icon(Icons.chevron_left),
-            tooltip: '이전 날짜',
-          ),
-          Expanded(
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(8),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: onNext,
-            icon: const Icon(Icons.chevron_right),
-            tooltip: '다음 날짜',
-          ),
-        ],
-      ),
-    );
   }
 }

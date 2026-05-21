@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../providers/auth_provider.dart';
+import 'demo_screen.dart';
 
 /// 진입 화면 — Google 로그인 1버튼.
 /// 익명 로그인은 v1.1.17(Capacitor) → Flutter 마이그레이션 과정에서 폐기.
@@ -82,6 +84,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   _error!,
                   style: TextStyle(color: theme.colorScheme.error),
                   textAlign: TextAlign.center,
+                ),
+              ],
+              if (kDebugMode) ...[
+                const SizedBox(height: 24),
+                TextButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const DemoScreen(),
+                    ),
+                  ),
+                  icon: const Icon(Icons.preview, size: 18),
+                  label: const Text('데모 보기 (로그인 없이)'),
                 ),
               ],
             ],
