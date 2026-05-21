@@ -4,20 +4,17 @@ import {
   collection, onSnapshot, query, where,
   doc, updateDoc, serverTimestamp, setDoc, deleteDoc, getDoc
 } from "firebase/firestore"
-import { db, functions } from '../firebase'
-import { httpsCallable } from 'firebase/functions'
-import { 
-  getLocalTodos, saveLocalTodosBatch, saveLocalTodo, deleteLocalTodo, 
+import { db } from '../firebase'
+import {
+  getLocalTodos, saveLocalTodosBatch, saveLocalTodo, deleteLocalTodo,
   addSyncQueue, getSyncQueue, clearSyncQueue, incrementRetryCount,
-  getSyncQueueStats, resolveConflict, measureNetworkQuality, 
+  getSyncQueueStats, resolveConflict, measureNetworkQuality,
   shouldSyncInLowBandwidth, setSyncMetadata, addOfflineLog,
   SYNC_CONFIG
 } from '../db'
 import { syncEventToGoogle, deleteEventFromGoogle, fetchEventsFromGoogle } from '../calendar'
 import { cancelNotification, scheduleNotification } from './useNotifications'
-import { maskPII, warnPII } from '../utils/piiMask'
 import { track, EVENTS } from '../analytics'
-import { isAiQuotaError } from '../utils/aiLimit'
 
 const sortTodos = (list) => list.sort((a, b) => {
   const dtA = new Date(`${a.date} ${a.time && a.time.includes(':') ? a.time : '00:00'}`)
@@ -35,7 +32,6 @@ const sortTodos = (list) => list.sort((a, b) => {
 export function useTodosData(user, { completionCalendarMode = 'status', lang = 'ko' } = {}) {
   const [todos, setTodos] = useState([])
   const [isOnline, setIsOnline] = useState(true)
-  const [isAiAnalyzing, setIsAiAnalyzing] = useState(false)
   const [syncStatus, setSyncStatus] = useState({
     isSyncing: false,
     queueSize: 0,
@@ -412,96 +408,6 @@ export function useTodosData(user, { completionCalendarMode = 'status', lang = '
     return () => { if (unsubscribe) unsubscribe() }
   }, [user])
 
-  // AI 모델 폴백
-  const AI_MODELS = [
-    'gemini-2.5-flash-lite',
-    'gemini-2.0-flash-lite',
-    'gemini-1.5-flash-8b',
-    'gemini-1.5-flash',
-  ]
-
-  const generateWithFallback = async (prompt) => {
-    const generateGeminiContent = httpsCallable(functions, 'generateGeminiContent')
-    for (const model of AI_MODELS) {
-      try {
-        const response = await generateGeminiContent({ model, prompt })
-        if (response?.data?.text) return response.data
-      } catch (e) {
-        if (isAiQuotaError(e)) throw e
-        console.warn(`[AI] ${model} failed:`, e?.message || String(e))
-      }
-    }
-    console.error('[AI] All models failed')
-    return null
-  }
-
-  const getAiTagsOnly = async (text) => {
-    try {
-      setIsAiAnalyzing(true)
-      const maskedText = maskPII(text)
-      warnPII(text, 'getAiTagsOnly')
-      const tagExamples = lang === 'ja' ? '仕事, 個人, 健康, 学習' : lang === 'zh' ? '工作, 个人, 健康, 学习' : lang === 'en' ? 'work, personal, health, study' : '업무, 개인, 건강, 학습'
-      const langInstruction = lang === 'ja' ? `日本語で1~2個のカテゴリタグのみ抽出 (例: ${tagExamples})`
-        : lang === 'zh' ? `仅提取1-2个中文分类标签 (例如: ${tagExamples})`
-        : lang === 'en' ? `Extract ONLY 1-2 category tags in English (e.g., ${tagExamples})`
-        : `한국어 태그 1~2개만 추출 (예: ${tagExamples})`
-      const prompt = `Analyze: "${maskedText}". ${langInstruction}. Return ONLY JSON: {"categories": ["tag1", "tag2"]}`
-      const result = await generateWithFallback(prompt)
-      if (!result?.text) return null
-      const parsed = JSON.parse(result.text.replace(/```json|```/g, '').trim().match(/\{.*\}/s)?.[0] || result.text.trim())
-      return { ...parsed, __usage: result.usage }
-    } catch (error) {
-      if (isAiQuotaError(error)) return { __aiError: 'quota_exhausted' }
-      console.error('AI Tags Error:', error)
-      return null
-    } finally {
-      setIsAiAnalyzing(false)
-    }
-  }
-
-  const getAiFullAnalysis = async (text) => {
-    try {
-      const maskedText = maskPII(text)
-      warnPII(text, 'getAiFullAnalysis')
-
-      const now = new Date()
-      const year = now.getFullYear()
-      const month = String(now.getMonth() + 1).padStart(2, '0')
-      const day = String(now.getDate()).padStart(2, '0')
-      const dayNames = lang === 'ja'
-        ? ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '土曜日']
-        : lang === 'zh'
-        ? ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
-        : lang === 'en'
-        ? ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-        : ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일']
-      const todayInfo = `${year}-${month}-${day} (${dayNames[now.getDay()]})`
-
-      const prompt = lang === 'ja'
-        ? `今日: ${todayInfo}\n入力: "${maskedText}"\n\n以下のJSONのみで回答:\n{"categories":["タグ1"],"date":"YYYY-MM-DD","time":"HH:MM またはnull","refinedText":"要点"}\n\nルール:\n- categories: タスクのカテゴリタグ1~2個 (仕事,個人,健康,学習 など)\n- date: 日付(YYYY-MM-DD)。相対表現は今日を基準に計算\n- time: 時間があればHH:MM、なければnull\n- refinedText: 日付/時間を除いた要点`
-        : lang === 'zh'
-        ? `今天: ${todayInfo}\n输入: "${maskedText}"\n\n只用以下JSON回复:\n{"categories":["标签1"],"date":"YYYY-MM-DD","time":"HH:MM 或 null","refinedText":"核心内容"}\n\n规则:\n- categories: 1-2个任务分类标签 (工作,个人,健康,学习 等)\n- date: 日期(YYYY-MM-DD)。相对表达从今天计算\n- time: 有时间则HH:MM，没有则null\n- refinedText: 去除日期/时间后的核心内容`
-        : lang === 'en'
-        ? `Today: ${todayInfo}\nInput: "${maskedText}"\n\nRespond with ONLY this JSON:\n{"categories":["tag1"],"date":"YYYY-MM-DD","time":"HH:MM or null","refinedText":"core content"}\n\nRules:\n- categories: 1-2 task category tags (work, personal, health, study, etc.)\n- date: date (YYYY-MM-DD). Relative expressions calculated from today\n- time: HH:MM if specified, null if not\n- refinedText: core content without date/time`
-        : `오늘: ${todayInfo}\n입력: "${maskedText}"\n\n반드시 아래 JSON만 응답하세요:\n{"categories":["태그1"],"date":"YYYY-MM-DD","time":"HH:MM 또는 null","refinedText":"핵심 내용"}\n\n규칙:\n- categories: 할일 성격 태그 1~2개 (업무,개인,건강,학습 등)\n- date: 날짜(YYYY-MM-DD). 상대적 표현은 오늘 기준 계산\n- time: 시간 있으면 HH:MM, 없으면 null\n- refinedText: 날짜/시간 제외한 핵심 내용`
-
-      const result = await generateWithFallback(prompt)
-      if (!result?.text) return null
-      const cleaned = result.text.replace(/```json|```/g, '').trim()
-      const analysis = JSON.parse(cleaned.match(/\{.*\}/s)?.[0] || cleaned)
-      analysis.__usage = result.usage
-
-      if (analysis && (!analysis.date || !/^\d{4}-\d{2}-\d{2}$/.test(analysis.date))) {
-        analysis.date = null
-      }
-      return analysis
-    } catch (error) {
-      if (isAiQuotaError(error)) return { __aiError: 'quota_exhausted' }
-      console.error("AI Analysis Error:", error)
-      return null
-    }
-  }
-
   const toggleComplete = async (e, id, completed, instanceDate = null) => {
     e.stopPropagation()
     const nowCompleting = !completed
@@ -656,13 +562,10 @@ export function useTodosData(user, { completionCalendarMode = 'status', lang = '
     todos,
     setTodos,
     isOnline,
-    isAiAnalyzing,
     syncStatus,
     toggleComplete,
     toggleSubtaskComplete,
     deleteTodo,
-    getAiTagsOnly,
-    getAiFullAnalysis,
     triggerSync, // 수동 동기화 함수
   }
 }

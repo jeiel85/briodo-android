@@ -18,7 +18,6 @@ const OPEN_SOURCE_LICENSES = [
   { name: 'Vite', version: '8', license: 'MIT', author: 'Evan You & Vite contributors' },
   { name: 'Capacitor', version: '8', license: 'MIT', author: 'Ionic, Inc.' },
   { name: 'Firebase JS SDK', version: '12', license: 'Apache 2.0', author: 'Google LLC' },
-  { name: '@google/genai', version: '1', license: 'Apache 2.0', author: 'Google LLC' },
   { name: 'idb', version: '8', license: 'ISC', author: 'Jake Archibald' },
   { name: 'canvas-confetti', version: '1', license: 'ISC', author: 'Kiril Vatev' },
   { name: 'patch-package', version: '8', license: 'MIT', author: 'David Sheldrick' },
@@ -44,10 +43,6 @@ export function SettingsModal({
   fontScale, setFontScale,
   theme, setTheme, generateRandomTheme,
   setViewMode, defaultView, setDefaultView, setSelectedDate,
-  inputMode, setInputMode,
-  effectiveInputMode,
-  aiUsageQuota,
-  onAiLimitToast,
   completionCalendarMode, setCompletionCalendarMode,
   defaultReminderOffset, setDefaultReminderOffset,
   allDayReminderTime, setAllDayReminderTime,
@@ -63,9 +58,6 @@ export function SettingsModal({
   calendarSyncNoTime, setCalendarSyncNoTime,
   weatherEnabled, setWeatherEnabled,
   weatherLocation, setWeatherLocation,
-  briefingEnabled, setBriefingEnabled,
-  morningBriefingTime, setMorningBriefingTime,
-  eveningBriefingTime, setEveningBriefingTime,
   onPreviewLockScreen,
   statusBarNotifEnabled, setStatusBarNotifEnabled,
   statusBarContentStyle, setStatusBarContentStyle,
@@ -190,9 +182,9 @@ export function SettingsModal({
               <SettingsNavItem
                 icon="⚡"
                 title={L('기능', 'Features', '機能', '功能')}
-                subtitle={inputMode === 'smart'
-                  ? L('스마트 입력', 'Smart Input', 'スマート入力', '智能输入')
-                  : L('수동 입력', 'Manual', '手動入力', '手动输入')}
+                subtitle={defaultView === 'all'
+                  ? L('기본 보기: 전체', 'Default: All', 'デフォルト表示: すべて', '默认视图: 全部')
+                  : L('기본 보기: 날짜별', 'Default: By Date', 'デフォルト表示: 日付別', '默认视图: 按日期')}
                 onClick={() => setScreen('features')}
               />
 
@@ -342,69 +334,6 @@ export function SettingsModal({
           {screen === 'features' && (
             <div className="settings-subscreen">
               <div className="settings-section">
-                <h3>{L('할 일 입력 방식', 'Input Mode', '入力方法', '输入方式')}</h3>
-                <div className="font-size-selector">
-                  <button
-                    className={inputMode === 'smart' ? 'active' : ''}
-                    onClick={() => {
-                      if (!user) {
-                        onAiLimitToast?.(L('스마트 입력은 로그인 후 이용할 수 있어요', 'Sign in to use Smart Input', 'スマート入力はログイン後にご利用いただけます', '智能输入需要登录后才能使用'))
-                      } else {
-                        setInputMode('smart')
-                      }
-                    }}
-                  >
-                    <span>✨</span>
-                    <span>{L('스마트 입력', 'Smart', 'スマート入力', '智能输入')}</span>
-                  </button>
-                  <button className={inputMode === 'manual' ? 'active' : ''} onClick={() => setInputMode('manual')}>
-                    <span>✏️</span>
-                    <span>{L('수동 입력', 'Manual', '手動入力', '手动输入')}</span>
-                  </button>
-                </div>
-                <p style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '8px', lineHeight: '1.4' }}>
-                  {inputMode === 'smart'
-                    ? effectiveInputMode === 'manual' && aiUsageQuota?.exhausted
-                      ? L('기본 설정은 스마트 입력입니다. 오늘 AI 사용량을 모두 사용해 내일까지 수동 입력으로 열립니다.', 'Smart Input remains your default. Today\'s AI quota is used, so add opens Manual until tomorrow.', 'デフォルトはスマート入力のままです。本日のAI利用枠を使い切ったため、明日まで手動入力で開きます。', '默认仍为智能输入。今天的AI额度已用完，明天前将以手动输入打开。')
-                      : L('자유롭게 입력하면 날짜·태그를 AI가 자동 분석합니다', 'AI detects date & tags from natural text', '自由入力でAIが日付・タグを自動分析します', '自由输入，AI自动分析日期和标签')
-                    : L('날짜·태그를 직접 지정해 저장합니다', 'Manually set date, tags and priority', '日付・タグを直接指定して保存します', '手动指定日期、标签并保存')}
-                </p>
-                {user && aiUsageQuota && (
-                  <div style={{
-                    marginTop: '12px',
-                    padding: '12px',
-                    background: aiUsageQuota.exhausted ? 'var(--color-error-container)' : 'var(--color-surface-container)',
-                    borderRadius: 'var(--radius-lg)',
-                    border: '1px solid var(--color-outline-variant)',
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 700, color: aiUsageQuota.exhausted ? 'var(--color-error)' : 'var(--color-on-surface)' }}>
-                        {L('오늘 AI 정리 사용량', 'AI Cleanup Today', '今日のAI整理', '今日AI整理')}
-                      </span>
-                      <span style={{ fontSize: '13px', fontWeight: 800, color: aiUsageQuota.exhausted ? 'var(--color-error)' : 'var(--color-primary)' }}>
-                        {aiUsageQuota.loading || aiUsageQuota.unavailable ? '-' : `${aiUsageQuota.daily} / ${aiUsageQuota.dailyLimit}`}
-                      </span>
-                    </div>
-                    <div style={{ height: '5px', background: 'var(--color-outline-variant)', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{
-                        width: `${Math.min(100, ((aiUsageQuota.daily || 0) / (aiUsageQuota.dailyLimit || 10)) * 100)}%`,
-                        height: '100%',
-                        background: aiUsageQuota.exhausted ? 'var(--color-error)' : 'var(--color-primary)',
-                        borderRadius: '3px',
-                      }} />
-                    </div>
-                    <p style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '8px', lineHeight: '1.4' }}>
-                      {aiUsageQuota.unavailable
-                        ? L('사용량을 불러오지 못했습니다. 잠시 후 다시 확인됩니다.', 'Could not load usage. It will refresh shortly.', '使用量を読み込めませんでした。しばらくすると再確認します。', '无法加载使用量，稍后会自动刷新。')
-                        : aiUsageQuota.exhausted
-                          ? L('오늘은 수동 입력으로 저장하고, AI 정리는 내일 다시 사용할 수 있어요.', 'Use Manual today; AI cleanup will be available again tomorrow.', '今日は手動入力で保存し、AI整理は明日また利用できます。', '今天可用手动输入保存，AI整理明天可再次使用。')
-                          : L('스마트 입력, AI 브리핑, 정리 제안에서 함께 사용하는 하루 한도입니다.', 'Shared daily quota for Smart Input, AI Briefing, and cleanup suggestions.', 'スマート入力、AIブリーフィング、整理提案で共有する1日の利用枠です。', '智能输入、AI简报和整理建议共用此每日额度。')}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              <div className="settings-section">
                 <h3>{L('기본 보기', 'Default View', 'デフォルト表示', '默认视图')}</h3>
                 <div className="font-size-selector">
                   <button
@@ -521,62 +450,6 @@ export function SettingsModal({
                         ? '💡 要显示中文地名，请直接输入。例如: 北京, 上海'
                         : '💡 For localized city names, type directly. e.g. Gwangmyeong, Seoul'}
                     </p>
-                  </div>
-                )}
-              </div>
-
-              {/* ─── AI 브리핑 설정 ─── */}
-              <div className="settings-section">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <h3 style={{ margin: 0 }}>{L('🤖 AI 브리핑', '🤖 AI Briefing', '🤖 AIブリーフィング', '🤖 AI简报')}</h3>
-                  <label className="settings-toggle">
-                    <input type="checkbox" checked={briefingEnabled} onChange={e => setBriefingEnabled(e.target.checked)} />
-                    <span className="settings-toggle-track" />
-                  </label>
-                </div>
-                <p style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', marginBottom: briefingEnabled ? '12px' : 0, lineHeight: '1.4' }}>
-                  {L('매일 아침·저녁 AI가 일정을 요약해 알려드립니다.', 'AI summarizes your schedule every morning and evening.', '毎朝・毎晩AIがスケジュールを要約してお知らせします。', 'AI每天早晚为您总结日程。')}
-                </p>
-                {briefingEnabled && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div>
-                      <label style={{ fontSize: '13px', fontWeight: 600, marginBottom: '4px', display: 'block' }}>
-                        {L('☀️ 아침 브리핑', '☀️ Morning', '☀️ 朝', '☀️ 早间')}
-                      </label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <input
-                          type="time"
-                          value={morningBriefingTime}
-                          onChange={e => setMorningBriefingTime(e.target.value)}
-                          style={{ flex: 1, padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--color-outline)', background: 'var(--color-surface-variant)', color: 'var(--color-on-surface)', fontSize: '14px' }}
-                        />
-                        <button
-                          onClick={() => setMorningBriefingTime('08:00')}
-                          style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px' }}
-                        >
-                          {L('기본값', 'Reset', 'リセット', '重置')}
-                        </button>
-                      </div>
-                    </div>
-                    <div>
-                      <label style={{ fontSize: '13px', fontWeight: 600, marginBottom: '4px', display: 'block' }}>
-                        {L('🌙 저녁 브리핑', '🌙 Evening', '🌙 夜', '🌙 晚间')}
-                      </label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <input
-                          type="time"
-                          value={eveningBriefingTime}
-                          onChange={e => setEveningBriefingTime(e.target.value)}
-                          style={{ flex: 1, padding: '8px 10px', borderRadius: '10px', border: '1px solid var(--color-outline)', background: 'var(--color-surface-variant)', color: 'var(--color-on-surface)', fontSize: '14px' }}
-                        />
-                        <button
-                          onClick={() => setEveningBriefingTime('21:00')}
-                          style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px' }}
-                        >
-                          {L('기본값', 'Reset', 'リセット', '重置')}
-                        </button>
-                      </div>
-                    </div>
                   </div>
                 )}
               </div>

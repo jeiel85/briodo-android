@@ -92,6 +92,18 @@ export async function cancelNotification(todoId) {
 const MORNING_BRIEFING_NOTIF_ID = 2147483001
 const EVENING_BRIEFING_NOTIF_ID = 2147483002
 
+// AI 기능 비활성화(v1.1.17) 후 이전 빌드에서 스케줄된 브리핑 알림 정리용.
+export async function cancelBriefingNotifications() {
+  try {
+    await LocalNotifications.cancel({ notifications: [
+      { id: MORNING_BRIEFING_NOTIF_ID },
+      { id: EVENING_BRIEFING_NOTIF_ID }
+    ] })
+  } catch (e) {
+    console.error('[Briefing] cancel error:', e)
+  }
+}
+
 export async function scheduleBriefingNotifications(morningTime, eveningTime, enabled) {
   try {
     await LocalNotifications.cancel({ notifications: [

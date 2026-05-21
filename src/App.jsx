@@ -9,26 +9,21 @@ import { syncEventToGoogle } from './calendar'
 import { formatTime, matchesRecurrence } from './utils/helpers'
 import { useAchievements, trackEngagement } from './hooks/useAchievements'
 import { LocalNotifications } from '@capacitor/local-notifications'
-import { scheduleNotification, cancelNotification, initNotificationChannels, scheduleBriefingNotifications } from './hooks/useNotifications'
+import { scheduleNotification, cancelNotification, initNotificationChannels, cancelBriefingNotifications } from './hooks/useNotifications'
 import { initAdMob } from './hooks/useAdMob'
 import { track, trackFirstOpenOnce, EVENTS } from './analytics'
-import { getAiQuotaMessage } from './utils/aiLimit'
 import { fetchWeather } from './hooks/useWeather'
-import { useBriefing } from './hooks/useBriefing'
-import { BriefingModal } from './components/BriefingModal'
 
 import { useLanguage } from './hooks/useLanguage'
 import { useAuth } from './hooks/useAuth'
 import { useTheme } from './hooks/useTheme'
 import { useTodosData } from './hooks/useTodosData'
 import { useCalendarNav } from './hooks/useCalendarNav'
-import { useAiUsageQuota } from './hooks/useAiUsageQuota'
 import { Header } from './components/Header'
 import { TodoList } from './components/TodoList'
 import { BottomNav } from './components/BottomNav'
 import { CollectionsScreen } from './components/CollectionsScreen'
 import { InputModal } from './components/InputModal'
-import { SmartInputModal } from './components/SmartInputModal'
 import { SettingsModal } from './components/SettingsModal'
 import { NotificationsModal } from './components/NotificationsModal'
 import { AchievementUnlockModal } from './components/AchievementUnlockModal'
@@ -40,7 +35,7 @@ import './index.css'
 const LockScreenNative = Capacitor.isNativePlatform() ? registerPlugin('LockScreen') : null
 const StatusBarNotifNative = Capacitor.isNativePlatform() ? registerPlugin('StatusBarNotification') : null
 
-const APP_VERSION = '1.1.16'
+const APP_VERSION = '1.1.17'
 
 function App() {
   const { lang, langPref, setLangPref, t } = useLanguage()
@@ -71,38 +66,13 @@ function App() {
     setAllDayReminderTime(val)
     localStorage.setItem('allDayReminderTime', val)
   }
-  const [briefingEnabled, setBriefingEnabled] = useState(
-    () => localStorage.getItem('briodo-briefingEnabled') === 'true'
-  )
-  const setBriefingEnabledPersisted = (val) => {
-    setBriefingEnabled(val)
-    localStorage.setItem('briodo-briefingEnabled', String(val))
-  }
-  const [morningBriefingTime, setMorningBriefingTime] = useState(
-    () => localStorage.getItem('briodo-morningBriefingTime') || '08:00'
-  )
-  const setMorningBriefingTimePersisted = (val) => {
-    setMorningBriefingTime(val)
-    localStorage.setItem('briodo-morningBriefingTime', val)
-  }
-  const [eveningBriefingTime, setEveningBriefingTime] = useState(
-    () => localStorage.getItem('briodo-eveningBriefingTime') || '21:00'
-  )
-  const setEveningBriefingTimePersisted = (val) => {
-    setEveningBriefingTime(val)
-    localStorage.setItem('briodo-eveningBriefingTime', val)
-  }
-  const [showBriefingModal, setShowBriefingModal] = useState(false)
-  const [briefingType, setBriefingType] = useState('morning')
   const setCompletionCalendarModePersisted = (mode) => {
     setCompletionCalendarMode(mode)
     localStorage.setItem('completionCalendarMode', mode)
   }
 
-  const { todos, setTodos, isOnline, isAiAnalyzing, syncStatus, toggleComplete, toggleSubtaskComplete, deleteTodo, getAiFullAnalysis, triggerSync } = useTodosData(user, { completionCalendarMode, lang })
-  const { briefingText, briefingLoading, generateBriefing } = useBriefing()
+  const { todos, setTodos, isOnline, syncStatus, toggleComplete, toggleSubtaskComplete, deleteTodo, triggerSync } = useTodosData(user, { completionCalendarMode, lang })
   const { todayStr, selectedDate, setSelectedDate, calendarExpanded, setCalendarExpanded, viewMonth, viewMonthLabel, currentWeekDates, monthGridDates, weekdayNames, prevWeek, nextWeek, prevMonth, nextMonth, goToMonth, handleGoToToday } = useCalendarNav(lang)
-  const aiUsageQuota = useAiUsageQuota(user)
 
   const [defaultView, setDefaultViewState] = useState(() => localStorage.getItem('briodo-defaultView') || localStorage.getItem('briodo-viewMode') || 'date')
   const [viewMode, setViewMode] = useState(() => localStorage.getItem('briodo-defaultView') || localStorage.getItem('briodo-viewMode') || 'date')
@@ -243,13 +213,7 @@ function App() {
     }
   }
 
-  // 입력 모드: 'smart' | 'manual' (기본값: manual — 로그인 전에는 항상 manual)
-  const [inputMode, setInputMode] = useState(() => localStorage.getItem('inputMode') || 'manual')
-  const setInputModePersisted = (mode) => { setInputMode(mode); localStorage.setItem('inputMode', mode) }
-  const effectiveInputMode = user && inputMode === 'smart' && !aiUsageQuota.exhausted ? 'smart' : 'manual'
-
   const toastTimerRef = useRef(null)
-  const smartSaveCancelRef = useRef(null)
   const [toastMsg, setToastMsg] = useState('')
 
   const showToastMsg = (msg, duration = 3000) => {
@@ -272,16 +236,12 @@ function App() {
     })
   }
 
-  // 스마트 입력 모달 상태
-  const [showSmartModal, setShowSmartModal] = useState(false)
-  const [smartText, setSmartText] = useState('')
-  const [smartReminderOffset, setSmartReminderOffset] = useState(null)
-
   // 알림 채널 초기화 및 앱 사용 빈도 트래킹 (앱 시작 시 1회)
   useEffect(() => {
     initNotificationChannels()
     initAdMob()
     trackFirstOpenOnce()
+    cancelBriefingNotifications()
     track(EVENTS.SESSION_START, { platform: Capacitor.getPlatform() })
     // App Check - 현재 비활성화 (릴리즈 시 활성화 예정)
     // initAppCheck()
@@ -312,21 +272,6 @@ function App() {
     } catch { /* ignore */ }
   }, [])
 
-  useEffect(() => {
-    if (Capacitor.isNativePlatform()) {
-      scheduleBriefingNotifications(morningBriefingTime, eveningBriefingTime, briefingEnabled)
-    }
-  }, [briefingEnabled, morningBriefingTime, eveningBriefingTime])
-
-  useEffect(() => {
-    const listener = LocalNotifications.addListener('localNotificationActionPerformed', (event) => {
-      if (event.notification?.extra?.action === 'briefing') {
-        setBriefingType(event.notification.extra.type || 'morning')
-        setShowBriefingModal(true)
-      }
-    })
-    return () => { listener.then(l => l.remove()).catch(() => {}) }
-  }, [])
 
   // 할 일 입력 모달 상태
   const [showInputModal, setShowInputModal] = useState(false)
@@ -644,7 +589,7 @@ function App() {
   // 렌더 중 직접 동기 업데이트 — useEffect로 하면 렌더~효과 실행 사이에 백버튼이 눌릴 경우 stale 값 읽힘
   const modalStateRef = useRef({})
   // eslint-disable-next-line react-hooks/refs
-  modalStateRef.current = { showInputModal, showSmartModal, showSettings, showAchievementsModal, showNotificationsModal, settingsScreen }
+  modalStateRef.current = { showInputModal, showSettings, showAchievementsModal, showNotificationsModal, settingsScreen }
 
   const resetForm = () => {
     setNewTodo({ text: '', description: '', date: todayStr, time: '', tagInput: '', priority: 'medium', reminderOffset: defaultReminderOffset, subtasks: [], recurrence: { type: 'none', endDate: null } })
@@ -662,13 +607,9 @@ function App() {
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
       const backListener = CapApp.addListener('backButton', () => {
-        const { showInputModal, showSmartModal, showSettings, showAchievementsModal, showNotificationsModal, settingsScreen } = modalStateRef.current
+        const { showInputModal, showSettings, showAchievementsModal, showNotificationsModal, settingsScreen } = modalStateRef.current
         if (showInputModal) {
           resetForm()
-        } else if (showSmartModal) {
-          setShowSmartModal(false)
-          setSmartText('')
-          setSmartReminderOffset(null)
         } else if (showSettings) {
           if (settingsScreen !== 'main') {
             setSettingsScreen('main')
@@ -799,21 +740,14 @@ function App() {
     document.body.classList.add('modal-open')
   }, [defaultReminderOffset, selectedDate, viewMode])
 
-  // 상태바 알림 ➕ 버튼 → 현재 사용 가능한 입력 방식으로 열기
+  // 상태바 알림 ➕ 버튼 → 수동 입력 모달 열기
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return
     const handler = StatusBarNotifNative?.addListener?.('openSmartInput', () => {
-      if (effectiveInputMode === 'smart') {
-        setShowSmartModal(true)
-      } else {
-        if (user && inputMode === 'smart' && aiUsageQuota.exhausted) {
-          showToastMsg(getAiQuotaMessage(lang, 'smart'), 6000)
-        }
-        handleOpenAddModal()
-      }
+      handleOpenAddModal()
     })
     return () => { handler?.remove?.() }
-  }, [effectiveInputMode, user, inputMode, aiUsageQuota.exhausted, lang, handleOpenAddModal])
+  }, [handleOpenAddModal])
 
   const handleSaveTodo = async () => {
     if (newTodo.text.trim() === '') return
@@ -904,96 +838,6 @@ function App() {
         }
       }
     } catch (e) { console.error("Save Todo Error:", e) }
-  }
-
-  // 스마트 입력 저장 (AI 자연어 처리)
-  const handleSmartSave = async (text) => {
-    if (!text.trim()) return
-    const savedText = text.trim()
-
-    // AI 사용 플래그
-    trackEngagement('aiUsed')
-    trackEngagement('aiTasks', true)
-    const savedReminderOffset = smartReminderOffset
-    const today = todayStr
-    setShowSmartModal(false)
-    setSmartText('')
-    setSmartReminderOffset(null)
-
-    if (!user) {
-      const localId = `guest_${Date.now()}`
-      const localPayload = { id: localId, text: savedText, description: '', date: today, time: '', tags: [], priority: 'medium', reminderOffset: savedReminderOffset, completed: false, createdAt: Date.now() }
-      setTodos(prev => [...prev, localPayload])
-      await saveLocalTodo(localPayload)
-      scheduleNotification(localPayload)
-      track(EVENTS.TODO_CREATE, { source: 'ai', has_calendar: false, guest: true, has_time: false })
-      return
-    }
-
-    const newDocRef = doc(collection(db, "todos"))
-    const newId = newDocRef.id
-    const initialData = { uid: user.uid, text: savedText, description: '', date: today, time: '', tags: [], priority: 'medium', reminderOffset: savedReminderOffset, completed: false }
-    const localPayload = { ...initialData, id: newId, createdAt: Date.now() }
-
-    setTodos(prev => [...prev, localPayload])
-    await saveLocalTodo(localPayload)
-
-    if (isOnline) {
-      await setDoc(newDocRef, { ...initialData, createdAt: serverTimestamp() })
-      let cancelled = false
-      const cancelRef = { cancel: () => { cancelled = true } }
-      smartSaveCancelRef.current = cancelRef
-      setTimeout(async () => {
-        try {
-          let finalData = { text: savedText, date: today, time: '', tags: [], reminderOffset: savedReminderOffset }
-          
-          const ai = await getAiFullAnalysis(savedText)
-          if (cancelled) return
-          if (ai?.__aiError === 'quota_exhausted') {
-            aiUsageQuota.markExhausted(ai.exhaustedReason || 'daily')
-            showToastMsg(getAiQuotaMessage(lang, 'smart'), 6000)
-          } else {
-            aiUsageQuota.applyUsageStatus(ai?.__usage)
-          }
-          track(EVENTS.AI_INPUT_USED, {
-            lang,
-            success: !!ai && !ai.__aiError,
-            limit_reached: ai?.__aiError === 'quota_exhausted',
-            has_date: !!ai?.date,
-            has_time: !!ai?.time,
-            has_tag: Array.isArray(ai?.categories) && ai.categories.length > 0,
-          })
-          if (ai && !ai.__aiError) {
-            finalData = {
-              text: ai.refinedText || savedText,
-              date: ai.date || today,
-              time: ai.time || '',
-              tags: ai.categories || [],
-              reminderOffset: savedReminderOffset
-            }
-            setTodos(prev => prev.map(t => t.id === newId ? { ...t, ...finalData } : t))
-            await saveLocalTodo({ ...localPayload, ...finalData })
-            await setDoc(newDocRef, { ...finalData, updatedAt: serverTimestamp() }, { merge: true })
-          }
-          if (cancelled) return
-          // AI 분석 완료 후 알림 스케줄 (날짜가 확정된 시점)
-          scheduleNotification({ ...localPayload, ...finalData, id: newId })
-          const gId = await syncEventToGoogle({ ...localPayload, ...finalData })
-          if (gId) {
-            await setDoc(newDocRef, { googleEventId: gId, updatedAt: serverTimestamp() }, { merge: true })
-            if (!cancelled) {
-              setTodos(prev => prev.map(t => t.id === newId ? { ...t, googleEventId: gId } : t))
-              await saveLocalTodo({ ...localPayload, ...finalData, googleEventId: gId })
-            }
-          }
-          track(EVENTS.TODO_CREATE, { source: 'ai', has_calendar: true, guest: false, has_time: !!finalData.time })
-        } catch (e) { console.error("Smart Save Error:", e) }
-      }, 300)
-    } else {
-      await addSyncQueue('set', newId, initialData)
-      if (savedReminderOffset !== null) scheduleNotification({ ...localPayload })
-      track(EVENTS.TODO_CREATE, { source: 'ai', has_calendar: false, guest: false, has_time: false, offline: true })
-    }
   }
 
   // 필터링
@@ -1406,21 +1250,9 @@ function App() {
       {(viewMode === 'date' || viewMode === 'all' || viewMode === 'lists') && (
         <button
           className="fab"
-          onClick={() => {
-            if (effectiveInputMode === 'smart') {
-              setShowSmartModal(true)
-            } else {
-              if (user && inputMode === 'smart' && aiUsageQuota.exhausted) {
-                showToastMsg(getAiQuotaMessage(lang, 'smart'), 6000)
-              }
-              handleOpenAddModal()
-            }
-          }}
+          onClick={handleOpenAddModal}
         >
-          {effectiveInputMode === 'smart'
-            ? <span style={{ fontSize: '22px', lineHeight: 1 }}>✨</span>
-            : <svg viewBox="0 0 24 24" fill="white" width="26" height="26"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-          }
+          <svg viewBox="0 0 24 24" fill="white" width="26" height="26"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
         </button>
       )}
 
@@ -1430,20 +1262,6 @@ function App() {
         todayStr={todayStr} setSelectedDate={setSelectedDate}
         showSettings={showSettings} setShowSettings={setShowSettings}
       />
-
-      {showSmartModal && (
-        <SmartInputModal
-          lang={lang}
-          smartText={smartText} setSmartText={setSmartText}
-          isAiAnalyzing={isAiAnalyzing}
-          onClose={() => { setShowSmartModal(false); setSmartText(''); setSmartReminderOffset(null) }}
-          onSave={handleSmartSave}
-          reminderOffset={smartReminderOffset} setReminderOffset={setSmartReminderOffset}
-          defaultReminderOffset={defaultReminderOffset}
-          autoStartVoice={!smartText}
-          aiUsageQuota={aiUsageQuota}
-        />
-      )}
 
       {showInputModal && (
         <InputModal
@@ -1464,10 +1282,6 @@ function App() {
           viewMode={viewMode} setViewMode={setViewMode}
           defaultView={defaultView} setDefaultView={setDefaultViewPersisted}
           setSelectedDate={setSelectedDate}
-          inputMode={inputMode} setInputMode={setInputModePersisted}
-          effectiveInputMode={effectiveInputMode}
-          aiUsageQuota={aiUsageQuota}
-          onAiLimitToast={(msg) => showToastMsg(msg)}
           completionCalendarMode={completionCalendarMode} setCompletionCalendarMode={setCompletionCalendarModePersisted}
           defaultReminderOffset={defaultReminderOffset} setDefaultReminderOffset={setDefaultReminderOffsetPersisted}
           allDayReminderTime={allDayReminderTime} setAllDayReminderTime={setAllDayReminderTimePersisted}
@@ -1483,30 +1297,12 @@ function App() {
           calendarSyncNoTime={calendarSyncNoTime} setCalendarSyncNoTime={setCalendarSyncNoTimePersisted}
           weatherEnabled={weatherEnabled} setWeatherEnabled={setWeatherEnabledPersisted}
           weatherLocation={weatherLocation} setWeatherLocation={setWeatherLocationPersisted}
-          briefingEnabled={briefingEnabled} setBriefingEnabled={setBriefingEnabledPersisted}
-          morningBriefingTime={morningBriefingTime} setMorningBriefingTime={setMorningBriefingTimePersisted}
-          eveningBriefingTime={eveningBriefingTime} setEveningBriefingTime={setEveningBriefingTimePersisted}
           onPreviewLockScreen={() => { setShowSettings(false); setShowLockPreview(true) }}
           statusBarNotifEnabled={statusBarNotifEnabled} setStatusBarNotifEnabled={setStatusBarNotifEnabledPersisted}
           statusBarContentStyle={statusBarContentStyle} setStatusBarContentStyle={setStatusBarContentStylePersisted}
           setShowSettings={setShowSettings}
           appVersion={APP_VERSION}
           screen={settingsScreen} setScreen={setSettingsScreen}
-        />
-      )}
-
-      {showBriefingModal && (
-        <BriefingModal
-          type={briefingType}
-          briefingText={briefingText}
-          briefingLoading={briefingLoading}
-          onClose={() => setShowBriefingModal(false)}
-          onGenerate={async () => {
-            const result = await generateBriefing(todos, briefingType, lang)
-            aiUsageQuota.refresh()
-            return result
-          }}
-          lang={lang}
         />
       )}
 
