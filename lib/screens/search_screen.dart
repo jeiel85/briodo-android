@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/todo.dart';
+import '../providers/achievements_provider.dart';
 import '../providers/todos_provider.dart';
 
 /// 전문 검색 화면. text/description/tags에서 substring 매치.
@@ -47,7 +48,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             border: InputBorder.none,
             hintText: l.searchHint,
           ),
-          onChanged: (v) => setState(() => _query = v.trim()),
+          onChanged: (v) {
+            setState(() => _query = v.trim());
+            if (_query.isNotEmpty) {
+              ref.read(achievementsProvider.notifier).setFlag('searchUsed');
+            }
+          },
         ),
       ),
       body: todosAsync.when(

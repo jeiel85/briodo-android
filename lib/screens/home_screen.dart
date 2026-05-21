@@ -4,14 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../l10n/app_localizations.dart';
+import '../models/achievement.dart';
 import '../models/todo.dart';
+import '../providers/achievements_provider.dart';
 import '../providers/app_settings_provider.dart';
+import '../providers/locale_provider.dart';
 import '../providers/todos_provider.dart';
 import '../services/analytics_service.dart';
 import '../services/calendar_sync_service.dart';
 import '../services/notifications_service.dart';
 import '../widgets/calendar_header.dart';
 import '../widgets/todo_editor_dialog.dart';
+import 'achievements_screen.dart';
 import 'all_view_screen.dart';
 import 'lists_screen.dart';
 import 'search_screen.dart';
@@ -50,8 +54,54 @@ DateTime? scheduleAtFor(Todo todo, AppSettings settings) {
 }
 
 /// 캘린더 + 선택 날짜의 할 일 리스트.
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // 잠금 해제 스트림 listen.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(achievementsProvider.notifier).unlockStream.listen(_onUnlock);
+    });
+  }
+
+  void _onUnlock(AchievementDef def) {
+    if (!mounted) return;
+    final localeCode = ref.read(localeProvider)?.languageCode ?? 'ko';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Text(def.icon, style: const TextStyle(fontSize: 22)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(def.name.forLocale(localeCode)),
+                  Text(def.desc.forLocale(localeCode),
+                      style: const TextStyle(fontSize: 12)),
+                ],
+              ),
+            ),
+          ],
+        ),
+        action: SnackBarAction(
+          label: '🏆',
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const AchievementsScreen()),
+          ),
+        ),
+      ),
+    );
+  }
 
   static const _priorityOrder = {'urgent': 0, 'high': 1, 'medium': 2, 'low': 3};
 
@@ -70,8 +120,7 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Future<void> _openEditor(
-    BuildContext context,
-    WidgetRef ref, {
+    BuildContext context, {
     Todo? initial,
   }) async {
     final repo = ref.read(todosRepositoryProvider);
@@ -116,8 +165,11 @@ class HomeScreen extends ConsumerWidget {
         recurrence: result.recurrence,
         recurrenceEnd: result.recurrenceEnd,
       );
-      await _rescheduleNotification(ref, newTodo);
-      unawaited(_syncToCalendar(ref, newTodo));
+      await _rescheduleNotification(newTodo);
+      unawaited(_syncToCalendar(newTodo));
+      unawaited(ref
+          .read(achievementsProvider.notifier)
+          .checkAgainst((ref.read(todosStreamProvider).asData?.value ?? <Todo>[])));
     } else {
       final updated = initial.copyWith(
         text: result.text,
@@ -132,22 +184,25 @@ class HomeScreen extends ConsumerWidget {
         recurrenceEnd: result.recurrenceEnd,
       );
       await repo.update(updated);
-      await _rescheduleNotification(ref, updated);
-      unawaited(_syncToCalendar(ref, updated));
+      await _rescheduleNotification(updated);
+      unawaited(_syncToCalendar(updated));
     }
   }
 
   /// calendarSyncEnabled가 켜져 있으면 todo를 Google Calendar로 push.
-  Future<void> _syncToCalendar(WidgetRef ref, Todo todo) async {
+  Future<void> _syncToCalendar(Todo todo) async {
     final s = ref.read(appSettingsProvider);
     if (!s.calendarSyncEnabled) return;
     await CalendarSyncService.instance
         .pushTodo(todo, syncNoTimePolicy: s.calendarSyncNoTime);
+    unawaited(ref
+        .read(achievementsProvider.notifier)
+        .setFlag('calendarUsed'));
   }
 
   /// 반복 일정 완료 시 다음 occurrence 자동 생성.
   /// recurrence != 'none'이고 recurrenceEnd가 비어있거나 미래면 다음 날짜로 새 todo 추가.
-  Future<void> _spawnNextOccurrence(WidgetRef ref, Todo t) async {
+  Future<void> _spawnNextOccurrence(Todo t) async {
     if (t.recurrence == 'none') return;
     final repo = ref.read(todosRepositoryProvider);
     final nextDate = _nextOccurrenceDate(t.date, t.recurrence);
@@ -189,7 +244,7 @@ class HomeScreen extends ConsumerWidget {
 
   /// reminderOffset/time 조건이 맞으면 새로 스케줄, 아니면 취소.
   /// 권한이 없으면 한 번 요청한다.
-  Future<void> _rescheduleNotification(WidgetRef ref, Todo todo) async {
+  Future<void> _rescheduleNotification(Todo todo) async {
     final ns = NotificationsService.instance;
     if (todo.completed) {
       unawaited(ns.cancel(todo.id));
@@ -216,11 +271,18 @@ class HomeScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l = AppLocalizations.of(context)!;
     final todosAsync = ref.watch(todosStreamProvider);
     final repo = ref.read(todosRepositoryProvider);
+    // 새 todo 데이터가 도착할 때마다 업적 체크.
+    ref.listen(todosStreamProvider, (_, next) {
+      final list = next.asData?.value;
+      if (list != null) {
+        ref.read(achievementsProvider.notifier).checkAgainst(list);
+      }
+    });
     final selected = ref.watch(selectedDateProvider);
     final today = dateKey(DateTime.now());
     final isToday = selected == today;
@@ -257,10 +319,16 @@ class HomeScreen extends ConsumerWidget {
                   target = const AllViewScreen();
                   break;
                 case 'lists':
+                  ref
+                      .read(achievementsProvider.notifier)
+                      .setFlag('collectionVisited');
                   target = const ListsScreen();
                   break;
                 case 'stats':
                   target = const StatsScreen();
+                  break;
+                case 'achievements':
+                  target = const AchievementsScreen();
                   break;
                 case 'settings':
                 default:
@@ -298,6 +366,16 @@ class HomeScreen extends ConsumerWidget {
                     const Icon(Icons.bar_chart_outlined),
                     const SizedBox(width: 12),
                     Text(l.stats),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'achievements',
+                child: Row(
+                  children: [
+                    Icon(Icons.emoji_events_outlined),
+                    SizedBox(width: 12),
+                    Text('🏆'),
                   ],
                 ),
               ),
@@ -378,7 +456,7 @@ class HomeScreen extends ConsumerWidget {
                         }
                       },
                       child: ListTile(
-                        onTap: () => _openEditor(context, ref, initial: t),
+                        onTap: () => _openEditor(context, initial: t),
                         leading: GestureDetector(
                           onTap: () {
                             repo.toggleComplete(t);
@@ -387,7 +465,7 @@ class HomeScreen extends ConsumerWidget {
                               unawaited(AnalyticsService.instance.logTodoComplete(
                                 priority: t.priority,
                               ));
-                              unawaited(_spawnNextOccurrence(ref, t));
+                              unawaited(_spawnNextOccurrence(t));
                             }
                           },
                           child: Container(
@@ -428,7 +506,7 @@ class HomeScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _openEditor(context, ref),
+        onPressed: () => _openEditor(context),
         child: const Icon(Icons.add),
       ),
     );
