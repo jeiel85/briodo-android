@@ -158,6 +158,50 @@ class AppLocalizationsKo extends AppLocalizations {
   String get reminder1hour => '1시간 전';
 
   @override
+  String get fieldSubtasks => '하위 작업';
+
+  @override
+  String get addSubtask => '하위 작업 추가';
+
+  @override
+  String get subtaskHint => '내용 입력 후 Enter';
+
+  @override
+  String get fieldRecurrence => '반복';
+
+  @override
+  String get recurrenceNone => '반복 안 함';
+
+  @override
+  String get recurrenceDaily => '매일';
+
+  @override
+  String get recurrenceWeekly => '매주';
+
+  @override
+  String get recurrenceMonthly => '매월';
+
+  @override
+  String get recurrenceEnd => '반복 종료일';
+
+  @override
+  String get recurrenceEndNone => '무기한';
+
+  @override
+  String subtaskProgress(int done, int total) {
+    return '$done/$total';
+  }
+
+  @override
+  String get search => '검색';
+
+  @override
+  String get searchHint => '내용, 메모, 태그';
+
+  @override
+  String get searchEmpty => '결과가 없어요';
+
+  @override
   String get actionCancel => '취소';
 
   @override

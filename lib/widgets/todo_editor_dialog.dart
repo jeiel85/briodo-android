@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
+import '../models/subtask.dart';
 import '../models/todo.dart';
 import '../providers/todos_provider.dart';
 
@@ -27,13 +28,18 @@ class _TodoEditorDialogState extends State<TodoEditorDialog> {
   late final TextEditingController _textCtrl;
   late final TextEditingController _descCtrl;
   late final TextEditingController _tagsCtrl;
+  late final TextEditingController _subtaskInputCtrl;
   late String _date;
   late String _time;
   late String _priority;
-  late int _reminderOffset; // -1 = 끔, 0 = 정각, 10/30/60
+  late int _reminderOffset;
+  late List<Subtask> _subtasks;
+  late String _recurrence;
+  late String _recurrenceEnd;
 
   static const _priorities = ['low', 'medium', 'high', 'urgent'];
   static const _reminderOffsets = [-1, 0, 10, 30, 60];
+  static const _recurrences = ['none', 'daily', 'weekly', 'monthly'];
 
   String _priorityLabel(AppLocalizations l, String p) {
     switch (p) {
@@ -65,6 +71,20 @@ class _TodoEditorDialogState extends State<TodoEditorDialog> {
     }
   }
 
+  String _recurrenceLabel(AppLocalizations l, String r) {
+    switch (r) {
+      case 'daily':
+        return l.recurrenceDaily;
+      case 'weekly':
+        return l.recurrenceWeekly;
+      case 'monthly':
+        return l.recurrenceMonthly;
+      case 'none':
+      default:
+        return l.recurrenceNone;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -72,10 +92,14 @@ class _TodoEditorDialogState extends State<TodoEditorDialog> {
     _textCtrl = TextEditingController(text: i?.text ?? '');
     _descCtrl = TextEditingController(text: i?.description ?? '');
     _tagsCtrl = TextEditingController(text: (i?.tags ?? const <String>[]).join(', '));
+    _subtaskInputCtrl = TextEditingController();
     _date = i?.date ?? widget.defaultDate;
     _time = i?.time ?? '';
     _priority = i?.priority ?? 'medium';
     _reminderOffset = i?.reminderOffset ?? -1;
+    _subtasks = List<Subtask>.from(i?.subtasks ?? const <Subtask>[]);
+    _recurrence = i?.recurrence ?? 'none';
+    _recurrenceEnd = i?.recurrenceEnd ?? '';
   }
 
   @override
@@ -83,8 +107,55 @@ class _TodoEditorDialogState extends State<TodoEditorDialog> {
     _textCtrl.dispose();
     _descCtrl.dispose();
     _tagsCtrl.dispose();
+    _subtaskInputCtrl.dispose();
     super.dispose();
   }
+
+  void _addSubtask() {
+    final t = _subtaskInputCtrl.text.trim();
+    if (t.isEmpty) return;
+    setState(() {
+      _subtasks = [
+        ..._subtasks,
+        Subtask(
+          id: 'sub-${DateTime.now().microsecondsSinceEpoch}-${_subtasks.length}',
+          text: t,
+        ),
+      ];
+      _subtaskInputCtrl.clear();
+    });
+  }
+
+  void _toggleSubtask(String id) {
+    setState(() {
+      _subtasks = _subtasks
+          .map((s) => s.id == id ? s.copyWith(completed: !s.completed) : s)
+          .toList();
+    });
+  }
+
+  void _removeSubtask(String id) {
+    setState(() {
+      _subtasks = _subtasks.where((s) => s.id != id).toList();
+    });
+  }
+
+  Future<void> _pickRecurrenceEnd() async {
+    final base = _recurrenceEnd.isNotEmpty
+        ? parseDateKey(_recurrenceEnd)
+        : parseDateKey(_date).add(const Duration(days: 30));
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: base,
+      firstDate: parseDateKey(_date),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      setState(() => _recurrenceEnd = dateKey(picked));
+    }
+  }
+
+  void _clearRecurrenceEnd() => setState(() => _recurrenceEnd = '');
 
   Future<void> _pickDate() async {
     final initial = parseDateKey(_date);
@@ -136,6 +207,9 @@ class _TodoEditorDialogState extends State<TodoEditorDialog> {
       tags: tags,
       priority: _priority,
       reminderOffset: _reminderOffset,
+      subtasks: _subtasks,
+      recurrence: _recurrence,
+      recurrenceEnd: _recurrence == 'none' ? '' : _recurrenceEnd,
     ));
   }
 
@@ -233,6 +307,93 @@ class _TodoEditorDialogState extends State<TodoEditorDialog> {
                 ),
               ),
             const SizedBox(height: 12),
+            Text(l.fieldRecurrence, style: theme.textTheme.labelMedium),
+            const SizedBox(height: 4),
+            Wrap(
+              spacing: 6,
+              children: [
+                for (final r in _recurrences)
+                  ChoiceChip(
+                    label: Text(_recurrenceLabel(l, r)),
+                    selected: _recurrence == r,
+                    onSelected: (_) => setState(() => _recurrence = r),
+                  ),
+              ],
+            ),
+            if (_recurrence != 'none')
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _pickRecurrenceEnd,
+                        icon: const Icon(Icons.event, size: 18),
+                        label: Text(
+                          _recurrenceEnd.isEmpty
+                              ? l.recurrenceEndNone
+                              : '${l.recurrenceEnd}: $_recurrenceEnd',
+                        ),
+                      ),
+                    ),
+                    if (_recurrenceEnd.isNotEmpty)
+                      IconButton(
+                        onPressed: _clearRecurrenceEnd,
+                        icon: const Icon(Icons.close, size: 18),
+                      ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 12),
+            Text(l.fieldSubtasks, style: theme.textTheme.labelMedium),
+            const SizedBox(height: 4),
+            for (final s in _subtasks)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  children: [
+                    Checkbox(
+                      value: s.completed,
+                      onChanged: (_) => _toggleSubtask(s.id),
+                    ),
+                    Expanded(
+                      child: Text(
+                        s.text,
+                        style: s.completed
+                            ? TextStyle(
+                                decoration: TextDecoration.lineThrough,
+                                color: theme.colorScheme.outline,
+                              )
+                            : null,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => _removeSubtask(s.id),
+                      icon: const Icon(Icons.close, size: 18),
+                    ),
+                  ],
+                ),
+              ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _subtaskInputCtrl,
+                    decoration: InputDecoration(
+                      hintText: l.subtaskHint,
+                      isDense: true,
+                    ),
+                    onSubmitted: (_) => _addSubtask(),
+                  ),
+                ),
+                IconButton(
+                  tooltip: l.addSubtask,
+                  onPressed: _addSubtask,
+                  icon: const Icon(Icons.add),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             TextField(
               controller: _tagsCtrl,
               decoration: InputDecoration(
@@ -267,6 +428,9 @@ class TodoEditorResult {
     required this.tags,
     required this.priority,
     required this.reminderOffset,
+    required this.subtasks,
+    required this.recurrence,
+    required this.recurrenceEnd,
   });
 
   final String text;
@@ -276,4 +440,7 @@ class TodoEditorResult {
   final List<String> tags;
   final String priority;
   final int reminderOffset;
+  final List<Subtask> subtasks;
+  final String recurrence;
+  final String recurrenceEnd;
 }

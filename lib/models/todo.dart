@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'subtask.dart';
+
 /// 단일 할 일.
 /// 기존 Capacitor 버전 Firestore 스키마와 호환되도록 필드명 동일하게 맞춤.
 class Todo {
@@ -23,6 +25,15 @@ class Todo {
   /// -1 = 알림 끔, 0 = 정각, 10/30/60 등.
   final int reminderOffset;
 
+  /// 하위 체크리스트.
+  final List<Subtask> subtasks;
+
+  /// 반복 일정. 'none' | 'daily' | 'weekly' | 'monthly'
+  final String recurrence;
+
+  /// 반복 종료일 (YYYY-MM-DD). 빈 문자열이면 무기한.
+  final String recurrenceEnd;
+
   const Todo({
     required this.id,
     required this.uid,
@@ -35,6 +46,9 @@ class Todo {
     this.completed = false,
     this.createdAt,
     this.reminderOffset = -1,
+    this.subtasks = const [],
+    this.recurrence = 'none',
+    this.recurrenceEnd = '',
   });
 
   factory Todo.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -46,6 +60,14 @@ class Todo {
     } else if (createdAtRaw is int) {
       createdAt = DateTime.fromMillisecondsSinceEpoch(createdAtRaw);
     }
+
+    final subsRaw = d['subtasks'];
+    final subs = subsRaw is List
+        ? subsRaw
+            .whereType<Map<String, dynamic>>()
+            .map(Subtask.fromJson)
+            .toList()
+        : <Subtask>[];
 
     return Todo(
       id: doc.id,
@@ -61,6 +83,9 @@ class Todo {
       reminderOffset: (d['reminderOffset'] is int)
           ? d['reminderOffset'] as int
           : -1,
+      subtasks: subs,
+      recurrence: (d['recurrence'] ?? 'none') as String,
+      recurrenceEnd: (d['recurrenceEnd'] ?? '') as String,
     );
   }
 
@@ -74,6 +99,9 @@ class Todo {
         'priority': priority,
         'completed': completed,
         'reminderOffset': reminderOffset,
+        'subtasks': subtasks.map((s) => s.toJson()).toList(),
+        'recurrence': recurrence,
+        'recurrenceEnd': recurrenceEnd,
         // createdAt은 신규 생성 시 serverTimestamp()로 세팅하므로 여기 포함 X
       };
 
@@ -90,25 +118,39 @@ class Todo {
         'completed': completed,
         'createdAt': createdAt?.millisecondsSinceEpoch,
         'reminderOffset': reminderOffset,
+        'subtasks': subtasks.map((s) => s.toJson()).toList(),
+        'recurrence': recurrence,
+        'recurrenceEnd': recurrenceEnd,
       };
 
-  factory Todo.fromJson(Map<String, dynamic> j) => Todo(
-        id: (j['id'] ?? '') as String,
-        uid: (j['uid'] ?? '') as String,
-        text: (j['text'] ?? '') as String,
-        description: (j['description'] ?? '') as String,
-        date: (j['date'] ?? '') as String,
-        time: (j['time'] ?? '') as String,
-        tags: List<String>.from((j['tags'] as List?) ?? const []),
-        priority: (j['priority'] ?? 'medium') as String,
-        completed: (j['completed'] ?? false) as bool,
-        createdAt: j['createdAt'] is int
-            ? DateTime.fromMillisecondsSinceEpoch(j['createdAt'] as int)
-            : null,
-        reminderOffset: (j['reminderOffset'] is int)
-            ? j['reminderOffset'] as int
-            : -1,
-      );
+  factory Todo.fromJson(Map<String, dynamic> j) {
+    final subsRaw = j['subtasks'];
+    final subs = subsRaw is List
+        ? subsRaw
+            .whereType<Map<String, dynamic>>()
+            .map(Subtask.fromJson)
+            .toList()
+        : <Subtask>[];
+    return Todo(
+      id: (j['id'] ?? '') as String,
+      uid: (j['uid'] ?? '') as String,
+      text: (j['text'] ?? '') as String,
+      description: (j['description'] ?? '') as String,
+      date: (j['date'] ?? '') as String,
+      time: (j['time'] ?? '') as String,
+      tags: List<String>.from((j['tags'] as List?) ?? const []),
+      priority: (j['priority'] ?? 'medium') as String,
+      completed: (j['completed'] ?? false) as bool,
+      createdAt: j['createdAt'] is int
+          ? DateTime.fromMillisecondsSinceEpoch(j['createdAt'] as int)
+          : null,
+      reminderOffset:
+          (j['reminderOffset'] is int) ? j['reminderOffset'] as int : -1,
+      subtasks: subs,
+      recurrence: (j['recurrence'] ?? 'none') as String,
+      recurrenceEnd: (j['recurrenceEnd'] ?? '') as String,
+    );
+  }
 
   Todo copyWith({
     String? text,
@@ -119,6 +161,9 @@ class Todo {
     String? priority,
     bool? completed,
     int? reminderOffset,
+    List<Subtask>? subtasks,
+    String? recurrence,
+    String? recurrenceEnd,
   }) =>
       Todo(
         id: id,
@@ -132,5 +177,8 @@ class Todo {
         completed: completed ?? this.completed,
         createdAt: createdAt,
         reminderOffset: reminderOffset ?? this.reminderOffset,
+        subtasks: subtasks ?? this.subtasks,
+        recurrence: recurrence ?? this.recurrence,
+        recurrenceEnd: recurrenceEnd ?? this.recurrenceEnd,
       );
 }

@@ -54,6 +54,26 @@
   "reminder10min": "10分前",
   "reminder30min": "30分前",
   "reminder1hour": "1時間前",
+  "fieldSubtasks": "サブタスク",
+  "addSubtask": "サブタスクを追加",
+  "subtaskHint": "入力してEnter",
+  "fieldRecurrence": "繰り返し",
+  "recurrenceNone": "繰り返さない",
+  "recurrenceDaily": "毎日",
+  "recurrenceWeekly": "毎週",
+  "recurrenceMonthly": "毎月",
+  "recurrenceEnd": "終了日",
+  "recurrenceEndNone": "無期限",
+  "subtaskProgress": "{done}/{total}",
+  "@subtaskProgress": {
+    "placeholders": {
+      "done": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "search": "検索",
+  "searchHint": "内容, メモ, タグ",
+  "searchEmpty": "結果がありません",
   "actionCancel": "キャンセル",
   "actionAdd": "追加",
   "actionSave": "保存",

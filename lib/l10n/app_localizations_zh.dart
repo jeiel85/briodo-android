@@ -158,6 +158,50 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reminder1hour => '提前 1 小时';
 
   @override
+  String get fieldSubtasks => '子任务';
+
+  @override
+  String get addSubtask => '添加子任务';
+
+  @override
+  String get subtaskHint => '输入后按 Enter';
+
+  @override
+  String get fieldRecurrence => '重复';
+
+  @override
+  String get recurrenceNone => '不重复';
+
+  @override
+  String get recurrenceDaily => '每天';
+
+  @override
+  String get recurrenceWeekly => '每周';
+
+  @override
+  String get recurrenceMonthly => '每月';
+
+  @override
+  String get recurrenceEnd => '重复结束日';
+
+  @override
+  String get recurrenceEndNone => '无限期';
+
+  @override
+  String subtaskProgress(int done, int total) {
+    return '$done/$total';
+  }
+
+  @override
+  String get search => '搜索';
+
+  @override
+  String get searchHint => '内容, 备注, 标签';
+
+  @override
+  String get searchEmpty => '没有结果';
+
+  @override
   String get actionCancel => '取消';
 
   @override

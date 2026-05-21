@@ -54,6 +54,26 @@
   "reminder10min": "提前 10 分钟",
   "reminder30min": "提前 30 分钟",
   "reminder1hour": "提前 1 小时",
+  "fieldSubtasks": "子任务",
+  "addSubtask": "添加子任务",
+  "subtaskHint": "输入后按 Enter",
+  "fieldRecurrence": "重复",
+  "recurrenceNone": "不重复",
+  "recurrenceDaily": "每天",
+  "recurrenceWeekly": "每周",
+  "recurrenceMonthly": "每月",
+  "recurrenceEnd": "重复结束日",
+  "recurrenceEndNone": "无限期",
+  "subtaskProgress": "{done}/{total}",
+  "@subtaskProgress": {
+    "placeholders": {
+      "done": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "search": "搜索",
+  "searchHint": "内容, 备注, 标签",
+  "searchEmpty": "没有结果",
   "actionCancel": "取消",
   "actionAdd": "添加",
   "actionSave": "保存",

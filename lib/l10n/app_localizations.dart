@@ -396,6 +396,90 @@ abstract class AppLocalizations {
   /// **'1시간 전'**
   String get reminder1hour;
 
+  /// No description provided for @fieldSubtasks.
+  ///
+  /// In ko, this message translates to:
+  /// **'하위 작업'**
+  String get fieldSubtasks;
+
+  /// No description provided for @addSubtask.
+  ///
+  /// In ko, this message translates to:
+  /// **'하위 작업 추가'**
+  String get addSubtask;
+
+  /// No description provided for @subtaskHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'내용 입력 후 Enter'**
+  String get subtaskHint;
+
+  /// No description provided for @fieldRecurrence.
+  ///
+  /// In ko, this message translates to:
+  /// **'반복'**
+  String get fieldRecurrence;
+
+  /// No description provided for @recurrenceNone.
+  ///
+  /// In ko, this message translates to:
+  /// **'반복 안 함'**
+  String get recurrenceNone;
+
+  /// No description provided for @recurrenceDaily.
+  ///
+  /// In ko, this message translates to:
+  /// **'매일'**
+  String get recurrenceDaily;
+
+  /// No description provided for @recurrenceWeekly.
+  ///
+  /// In ko, this message translates to:
+  /// **'매주'**
+  String get recurrenceWeekly;
+
+  /// No description provided for @recurrenceMonthly.
+  ///
+  /// In ko, this message translates to:
+  /// **'매월'**
+  String get recurrenceMonthly;
+
+  /// No description provided for @recurrenceEnd.
+  ///
+  /// In ko, this message translates to:
+  /// **'반복 종료일'**
+  String get recurrenceEnd;
+
+  /// No description provided for @recurrenceEndNone.
+  ///
+  /// In ko, this message translates to:
+  /// **'무기한'**
+  String get recurrenceEndNone;
+
+  /// No description provided for @subtaskProgress.
+  ///
+  /// In ko, this message translates to:
+  /// **'{done}/{total}'**
+  String subtaskProgress(int done, int total);
+
+  /// No description provided for @search.
+  ///
+  /// In ko, this message translates to:
+  /// **'검색'**
+  String get search;
+
+  /// No description provided for @searchHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'내용, 메모, 태그'**
+  String get searchHint;
+
+  /// No description provided for @searchEmpty.
+  ///
+  /// In ko, this message translates to:
+  /// **'결과가 없어요'**
+  String get searchEmpty;
+
   /// No description provided for @actionCancel.
   ///
   /// In ko, this message translates to:

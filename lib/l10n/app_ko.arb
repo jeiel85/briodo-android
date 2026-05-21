@@ -54,6 +54,26 @@
   "reminder10min": "10분 전",
   "reminder30min": "30분 전",
   "reminder1hour": "1시간 전",
+  "fieldSubtasks": "하위 작업",
+  "addSubtask": "하위 작업 추가",
+  "subtaskHint": "내용 입력 후 Enter",
+  "fieldRecurrence": "반복",
+  "recurrenceNone": "반복 안 함",
+  "recurrenceDaily": "매일",
+  "recurrenceWeekly": "매주",
+  "recurrenceMonthly": "매월",
+  "recurrenceEnd": "반복 종료일",
+  "recurrenceEndNone": "무기한",
+  "subtaskProgress": "{done}/{total}",
+  "@subtaskProgress": {
+    "placeholders": {
+      "done": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "search": "검색",
+  "searchHint": "내용, 메모, 태그",
+  "searchEmpty": "결과가 없어요",
   "actionCancel": "취소",
   "actionAdd": "추가",
   "actionSave": "저장",

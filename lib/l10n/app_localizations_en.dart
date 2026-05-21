@@ -163,6 +163,50 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reminder1hour => '1 hour before';
 
   @override
+  String get fieldSubtasks => 'Subtasks';
+
+  @override
+  String get addSubtask => 'Add subtask';
+
+  @override
+  String get subtaskHint => 'Type and press Enter';
+
+  @override
+  String get fieldRecurrence => 'Repeat';
+
+  @override
+  String get recurrenceNone => 'Doesn\'t repeat';
+
+  @override
+  String get recurrenceDaily => 'Daily';
+
+  @override
+  String get recurrenceWeekly => 'Weekly';
+
+  @override
+  String get recurrenceMonthly => 'Monthly';
+
+  @override
+  String get recurrenceEnd => 'Repeat until';
+
+  @override
+  String get recurrenceEndNone => 'Forever';
+
+  @override
+  String subtaskProgress(int done, int total) {
+    return '$done/$total';
+  }
+
+  @override
+  String get search => 'Search';
+
+  @override
+  String get searchHint => 'title, note, tag';
+
+  @override
+  String get searchEmpty => 'No results';
+
+  @override
   String get actionCancel => 'Cancel';
 
   @override

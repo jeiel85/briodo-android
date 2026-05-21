@@ -11,6 +11,7 @@ import '../services/analytics_service.dart';
 import '../services/notifications_service.dart';
 import '../widgets/calendar_header.dart';
 import '../widgets/todo_editor_dialog.dart';
+import 'search_screen.dart';
 import 'settings_screen.dart';
 
 /// todo의 알림 발송 시각.
@@ -89,6 +90,9 @@ class HomeScreen extends ConsumerWidget {
         tags: result.tags,
         priority: result.priority,
         reminderOffset: result.reminderOffset,
+        subtasks: result.subtasks,
+        recurrence: result.recurrence,
+        recurrenceEnd: result.recurrenceEnd,
       );
       unawaited(AnalyticsService.instance.logTodoCreate(
         priority: result.priority,
@@ -106,6 +110,9 @@ class HomeScreen extends ConsumerWidget {
           tags: result.tags,
           priority: result.priority,
           reminderOffset: result.reminderOffset,
+          subtasks: result.subtasks,
+          recurrence: result.recurrence,
+          recurrenceEnd: result.recurrenceEnd,
         ),
       );
     } else {
@@ -117,9 +124,54 @@ class HomeScreen extends ConsumerWidget {
         tags: result.tags,
         priority: result.priority,
         reminderOffset: result.reminderOffset,
+        subtasks: result.subtasks,
+        recurrence: result.recurrence,
+        recurrenceEnd: result.recurrenceEnd,
       );
       await repo.update(updated);
       await _rescheduleNotification(ref, updated);
+    }
+  }
+
+  /// 반복 일정 완료 시 다음 occurrence 자동 생성.
+  /// recurrence != 'none'이고 recurrenceEnd가 비어있거나 미래면 다음 날짜로 새 todo 추가.
+  Future<void> _spawnNextOccurrence(WidgetRef ref, Todo t) async {
+    if (t.recurrence == 'none') return;
+    final repo = ref.read(todosRepositoryProvider);
+    final nextDate = _nextOccurrenceDate(t.date, t.recurrence);
+    if (nextDate == null) return;
+    if (t.recurrenceEnd.isNotEmpty && nextDate.compareTo(t.recurrenceEnd) > 0) {
+      return;
+    }
+    await repo.add(
+      text: t.text,
+      description: t.description,
+      date: nextDate,
+      time: t.time,
+      tags: t.tags,
+      priority: t.priority,
+      reminderOffset: t.reminderOffset,
+      subtasks: t.subtasks
+          .map((s) => s.copyWith(completed: false))
+          .toList(),
+      recurrence: t.recurrence,
+      recurrenceEnd: t.recurrenceEnd,
+    );
+  }
+
+  /// recurrence 규칙으로 다음 날짜 계산 (YYYY-MM-DD).
+  String? _nextOccurrenceDate(String date, String recurrence) {
+    final base = parseDateKey(date);
+    switch (recurrence) {
+      case 'daily':
+        return dateKey(base.add(const Duration(days: 1)));
+      case 'weekly':
+        return dateKey(base.add(const Duration(days: 7)));
+      case 'monthly':
+        final n = DateTime(base.year, base.month + 1, base.day);
+        return dateKey(n);
+      default:
+        return null;
     }
   }
 
@@ -176,6 +228,15 @@ class HomeScreen extends ConsumerWidget {
               child: Text(l.today),
             ),
           IconButton(
+            tooltip: l.search,
+            icon: const Icon(Icons.search),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const SearchScreen(),
+              ),
+            ),
+          ),
+          IconButton(
             tooltip: l.settings,
             icon: const Icon(Icons.settings_outlined),
             onPressed: () => Navigator.of(context).push(
@@ -219,8 +280,14 @@ class HomeScreen extends ConsumerWidget {
                   itemBuilder: (ctx, i) {
                     final t = filtered[i];
                     final color = _priorityColor(t.priority, theme.colorScheme);
+                    final subDone = t.subtasks.where((s) => s.completed).length;
+                    final subTotal = t.subtasks.length;
                     final subtitleParts = <String>[
                       if (t.time.isNotEmpty) t.time,
+                      if (subTotal > 0)
+                        l.subtaskProgress(subDone, subTotal),
+                      if (t.recurrence != 'none')
+                        _recurrenceShort(l, t.recurrence),
                       ...t.tags.map((x) => '#$x'),
                     ];
                     return Dismissible(
@@ -247,6 +314,7 @@ class HomeScreen extends ConsumerWidget {
                               unawaited(AnalyticsService.instance.logTodoComplete(
                                 priority: t.priority,
                               ));
+                              unawaited(_spawnNextOccurrence(ref, t));
                             }
                           },
                           child: Container(
@@ -291,6 +359,19 @@ class HomeScreen extends ConsumerWidget {
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  String _recurrenceShort(AppLocalizations l, String r) {
+    switch (r) {
+      case 'daily':
+        return '↻ ${l.recurrenceDaily}';
+      case 'weekly':
+        return '↻ ${l.recurrenceWeekly}';
+      case 'monthly':
+        return '↻ ${l.recurrenceMonthly}';
+      default:
+        return '';
+    }
   }
 
   /// 미완료 → 시간(없는 건 뒤) → 우선순위(urgent>high>medium>low).

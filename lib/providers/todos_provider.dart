@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/subtask.dart';
 import '../models/todo.dart';
 import 'auth_provider.dart';
 
@@ -60,6 +61,9 @@ abstract class TodosRepository {
     List<String> tags = const [],
     String priority = 'medium',
     int reminderOffset = -1,
+    List<Subtask> subtasks = const [],
+    String recurrence = 'none',
+    String recurrenceEnd = '',
   });
 
   Future<void> update(Todo todo);
@@ -101,6 +105,9 @@ class FirestoreTodosRepository implements TodosRepository {
     List<String> tags = const [],
     String priority = 'medium',
     int reminderOffset = -1,
+    List<Subtask> subtasks = const [],
+    String recurrence = 'none',
+    String recurrenceEnd = '',
   }) async {
     final doc = await _col.add({
       'uid': _uid,
@@ -113,6 +120,9 @@ class FirestoreTodosRepository implements TodosRepository {
       'completed': false,
       'createdAt': FieldValue.serverTimestamp(),
       'reminderOffset': reminderOffset,
+      'subtasks': subtasks.map((s) => s.toJson()).toList(),
+      'recurrence': recurrence,
+      'recurrenceEnd': recurrenceEnd,
     });
     return doc.id;
   }
@@ -127,6 +137,9 @@ class FirestoreTodosRepository implements TodosRepository {
       'tags': todo.tags,
       'priority': todo.priority,
       'reminderOffset': todo.reminderOffset,
+      'subtasks': todo.subtasks.map((s) => s.toJson()).toList(),
+      'recurrence': todo.recurrence,
+      'recurrenceEnd': todo.recurrenceEnd,
     });
   }
 
@@ -225,6 +238,9 @@ class LocalTodosRepository implements TodosRepository {
     List<String> tags = const [],
     String priority = 'medium',
     int reminderOffset = -1,
+    List<Subtask> subtasks = const [],
+    String recurrence = 'none',
+    String recurrenceEnd = '',
   }) async {
     final id = _newId();
     _cache = [
@@ -240,6 +256,9 @@ class LocalTodosRepository implements TodosRepository {
         priority: priority,
         createdAt: DateTime.now(),
         reminderOffset: reminderOffset,
+        subtasks: subtasks,
+        recurrence: recurrence,
+        recurrenceEnd: recurrenceEnd,
       ),
     ];
     await _flush();

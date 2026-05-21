@@ -54,6 +54,26 @@
   "reminder10min": "10 min before",
   "reminder30min": "30 min before",
   "reminder1hour": "1 hour before",
+  "fieldSubtasks": "Subtasks",
+  "addSubtask": "Add subtask",
+  "subtaskHint": "Type and press Enter",
+  "fieldRecurrence": "Repeat",
+  "recurrenceNone": "Doesn't repeat",
+  "recurrenceDaily": "Daily",
+  "recurrenceWeekly": "Weekly",
+  "recurrenceMonthly": "Monthly",
+  "recurrenceEnd": "Repeat until",
+  "recurrenceEndNone": "Forever",
+  "subtaskProgress": "{done}/{total}",
+  "@subtaskProgress": {
+    "placeholders": {
+      "done": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "search": "Search",
+  "searchHint": "title, note, tag",
+  "searchEmpty": "No results",
   "actionCancel": "Cancel",
   "actionAdd": "Add",
   "actionSave": "Save",

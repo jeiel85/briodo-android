@@ -158,6 +158,50 @@ class AppLocalizationsJa extends AppLocalizations {
   String get reminder1hour => '1時間前';
 
   @override
+  String get fieldSubtasks => 'サブタスク';
+
+  @override
+  String get addSubtask => 'サブタスクを追加';
+
+  @override
+  String get subtaskHint => '入力してEnter';
+
+  @override
+  String get fieldRecurrence => '繰り返し';
+
+  @override
+  String get recurrenceNone => '繰り返さない';
+
+  @override
+  String get recurrenceDaily => '毎日';
+
+  @override
+  String get recurrenceWeekly => '毎週';
+
+  @override
+  String get recurrenceMonthly => '毎月';
+
+  @override
+  String get recurrenceEnd => '終了日';
+
+  @override
+  String get recurrenceEndNone => '無期限';
+
+  @override
+  String subtaskProgress(int done, int total) {
+    return '$done/$total';
+  }
+
+  @override
+  String get search => '検索';
+
+  @override
+  String get searchHint => '内容, メモ, タグ';
+
+  @override
+  String get searchEmpty => '結果がありません';
+
+  @override
   String get actionCancel => 'キャンセル';
 
   @override
