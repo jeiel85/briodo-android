@@ -481,13 +481,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         onTap: () => _openEditor(context, initial: t),
                         leading: GestureDetector(
                           onTap: () {
-                            repo.toggleComplete(t);
-                            if (!t.completed) {
+                            final completeMode =
+                                ref.read(appSettingsProvider).completeMode;
+                            if (completeMode == 'delete' && !t.completed) {
+                              repo.delete(t.id);
                               unawaited(NotificationsService.instance.cancel(t.id));
                               unawaited(AnalyticsService.instance.logTodoComplete(
                                 priority: t.priority,
                               ));
                               unawaited(_spawnNextOccurrence(t));
+                            } else {
+                              repo.toggleComplete(t);
+                              if (!t.completed) {
+                                unawaited(NotificationsService.instance.cancel(t.id));
+                                unawaited(AnalyticsService.instance.logTodoComplete(
+                                  priority: t.priority,
+                                ));
+                                unawaited(_spawnNextOccurrence(t));
+                              }
                             }
                           },
                           child: Container(

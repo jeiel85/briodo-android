@@ -8,9 +8,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
+import 'providers/app_settings_provider.dart';
 import 'providers/locale_provider.dart';
 import 'providers/todos_provider.dart';
 import 'screens/home_screen.dart';
+import 'screens/onboarding_screen.dart';
 import 'services/analytics_service.dart';
 import 'services/notifications_service.dart';
 import 'theme.dart';
@@ -23,25 +25,16 @@ const String _googleServerClientId =
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Firebase는 로그인을 안 했더라도 항상 init — 나중에 옵션 로그인이 사용되면
-  // 같은 인스턴스를 사용함. 클라우드 동기화가 꺼져 있어도 비용/성능 영향 없음.
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Analytics는 자동으로 app_open / session_start / first_open 수집.
-  // 명시 이벤트는 services/analytics_service.dart에서 토글.
   await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
 
-  // 로컬 알림 — 채널 4개(urgent/high/medium/low) 사전 생성.
-  // 권한 요청은 실제로 알림을 예약할 때(처음 todo 알림 설정) 또는 Settings에서 수동.
   await NotificationsService.instance.init();
 
-  // 로컬 저장소 — 로그인 안 한 사용자도 곧바로 todos를 쓸 수 있게 사전 로드.
   final prefs = await SharedPreferences.getInstance();
 
-  // 안드(/iOS)에서만 GIS 초기화. 웹은 OAuth 웹 클라이언트가 localhost 도메인
-  // 허용 등록되어야 하므로 일단 스킵. 실패해도 앱 부팅은 막지 않음.
   if (!kIsWeb) {
     try {
       await GoogleSignIn.instance.initialize(
@@ -60,23 +53,72 @@ Future<void> main() async {
   );
 }
 
+ThemeMode _themeModeFor(String code) {
+  switch (code) {
+    case 'light':
+      return ThemeMode.light;
+    case 'dark':
+      return ThemeMode.dark;
+    case 'system':
+    default:
+      return ThemeMode.system;
+  }
+}
+
 class BrioDoApp extends ConsumerWidget {
   const BrioDoApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = ref.watch(localeProvider);
+    final settings = ref.watch(appSettingsProvider);
     return MaterialApp(
       title: 'BrioDo',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      themeMode: ThemeMode.system,
+      themeMode: _themeModeFor(settings.themeMode),
       locale: locale,
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       navigatorObservers: [AnalyticsService.instance.observer],
-      home: const HomeScreen(),
+      builder: (context, child) {
+        if (child == null) return const SizedBox.shrink();
+        final mq = MediaQuery.of(context);
+        return MediaQuery(
+          data: mq.copyWith(
+            textScaler: TextScaler.linear(settings.fontScale),
+          ),
+          child: child,
+        );
+      },
+      home: const _AppRoot(),
     );
+  }
+}
+
+/// 첫 실행이면 OnboardingScreen, 아니면 HomeScreen.
+class _AppRoot extends ConsumerStatefulWidget {
+  const _AppRoot();
+
+  @override
+  ConsumerState<_AppRoot> createState() => _AppRootState();
+}
+
+class _AppRootState extends ConsumerState<_AppRoot> {
+  bool? _done;
+
+  @override
+  void initState() {
+    super.initState();
+    _done = ref.read(sharedPreferencesProvider).getBool('onboarding.done') ?? false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_done == false) {
+      return OnboardingScreen(onDone: () => setState(() => _done = true));
+    }
+    return const HomeScreen();
   }
 }

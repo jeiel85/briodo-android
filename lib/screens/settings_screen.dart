@@ -206,6 +206,40 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
           _AllDayReminderTile(),
+          _StatusBarOngoingTile(),
+          const Divider(height: 32),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: Text(
+              l.themeMode,
+              style: theme.textTheme.titleSmall?.copyWith(
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
+          _ThemeSection(),
+          const Divider(height: 32),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: Text(
+              l.fontSize,
+              style: theme.textTheme.titleSmall?.copyWith(
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
+          _FontSizeSection(),
+          const Divider(height: 32),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: Text(
+              l.completeMode,
+              style: theme.textTheme.titleSmall?.copyWith(
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
+          _CompleteModeSection(),
           const Divider(height: 32),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -300,6 +334,85 @@ class _CalendarSyncSection extends ConsumerWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+class _StatusBarOngoingTile extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
+    final s = ref.watch(appSettingsProvider);
+    return SwitchListTile(
+      secondary: const Icon(Icons.notifications_paused_outlined),
+      title: Text(l.statusBarOngoing),
+      subtitle: Text(l.statusBarOngoingSubtitle),
+      value: s.statusBarOngoingEnabled,
+      onChanged: (v) =>
+          ref.read(appSettingsProvider.notifier).setStatusBarOngoingEnabled(v),
+    );
+  }
+}
+
+class _ThemeSection extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
+    final s = ref.watch(appSettingsProvider);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: SegmentedButton<String>(
+        segments: [
+          ButtonSegment(value: 'system', label: Text(l.themeSystem)),
+          ButtonSegment(value: 'light', label: Text(l.themeLight)),
+          ButtonSegment(value: 'dark', label: Text(l.themeDark)),
+        ],
+        selected: {s.themeMode},
+        onSelectionChanged: (set) =>
+            ref.read(appSettingsProvider.notifier).setThemeMode(set.first),
+      ),
+    );
+  }
+}
+
+class _FontSizeSection extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
+    final s = ref.watch(appSettingsProvider);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: SegmentedButton<double>(
+        segments: [
+          ButtonSegment(value: 0.9, label: Text(l.fontSizeSmall)),
+          ButtonSegment(value: 1.0, label: Text(l.fontSizeMedium)),
+          ButtonSegment(value: 1.15, label: Text(l.fontSizeLarge)),
+          ButtonSegment(value: 1.3, label: Text(l.fontSizeXLarge)),
+        ],
+        selected: {s.fontScale},
+        onSelectionChanged: (set) =>
+            ref.read(appSettingsProvider.notifier).setFontScale(set.first),
+      ),
+    );
+  }
+}
+
+class _CompleteModeSection extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
+    final s = ref.watch(appSettingsProvider);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: SegmentedButton<String>(
+        segments: [
+          ButtonSegment(value: 'toggle', label: Text(l.completeToggle)),
+          ButtonSegment(value: 'delete', label: Text(l.completeDelete)),
+        ],
+        selected: {s.completeMode},
+        onSelectionChanged: (set) =>
+            ref.read(appSettingsProvider.notifier).setCompleteMode(set.first),
+      ),
     );
   }
 }

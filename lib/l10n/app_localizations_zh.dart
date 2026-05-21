@@ -269,6 +269,96 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get onboardTitle1 => '欢迎使用 BrioDo';
+
+  @override
+  String get onboardBody1 => '贴在日历上的轻快待办应用。';
+
+  @override
+  String get onboardTitle2 => '日历就是清单';
+
+  @override
+  String get onboardBody2 => '通过日期旁的小点,一眼掌握节奏。';
+
+  @override
+  String get onboardTitle3 => '需要时再同步';
+
+  @override
+  String get onboardBody3 => '不登录也能使用,稍后用 Google 登录可在多设备同步。';
+
+  @override
+  String get onboardTitle4 => '提醒与统计';
+
+  @override
+  String get onboardBody4 => '截止提醒、连续天数、成就 — 给坚持者准备的工具。';
+
+  @override
+  String get onboardSkip => '跳过';
+
+  @override
+  String get onboardNext => '下一步';
+
+  @override
+  String get onboardStart => '开始使用';
+
+  @override
+  String get themeMode => '主题';
+
+  @override
+  String get themeSystem => '跟随系统';
+
+  @override
+  String get themeLight => '浅色';
+
+  @override
+  String get themeDark => '深色';
+
+  @override
+  String get fontSize => '字体大小';
+
+  @override
+  String get fontSizeSmall => '小';
+
+  @override
+  String get fontSizeMedium => '默认';
+
+  @override
+  String get fontSizeLarge => '大';
+
+  @override
+  String get fontSizeXLarge => '更大';
+
+  @override
+  String get defaultView => '默认视图';
+
+  @override
+  String get viewDate => '日历';
+
+  @override
+  String get viewAll => '全部';
+
+  @override
+  String get viewLists => '标签';
+
+  @override
+  String get completeMode => '完成处理';
+
+  @override
+  String get completeToggle => '切换状态';
+
+  @override
+  String get completeDelete => '立即删除';
+
+  @override
+  String get statusBarOngoing => '状态栏常驻';
+
+  @override
+  String get statusBarOngoingSubtitle => '在状态栏持续显示今天的事项数量';
+
+  @override
+  String get achievements => '成就';
+
+  @override
   String get actionCancel => '取消';
 
   @override

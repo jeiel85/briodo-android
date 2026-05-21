@@ -606,6 +606,186 @@ abstract class AppLocalizations {
   /// **'{days}일'**
   String streakDays(int days);
 
+  /// No description provided for @onboardTitle1.
+  ///
+  /// In ko, this message translates to:
+  /// **'BrioDo에 오신 걸 환영해요'**
+  String get onboardTitle1;
+
+  /// No description provided for @onboardBody1.
+  ///
+  /// In ko, this message translates to:
+  /// **'캘린더 위에 그대로 펼쳐지는, 가볍고 빠른 할 일 앱.'**
+  String get onboardBody1;
+
+  /// No description provided for @onboardTitle2.
+  ///
+  /// In ko, this message translates to:
+  /// **'캘린더가 곧 목록'**
+  String get onboardTitle2;
+
+  /// No description provided for @onboardBody2.
+  ///
+  /// In ko, this message translates to:
+  /// **'월/주 보기에서 일정 옆 dot 한 번에 흐름을 확인하세요.'**
+  String get onboardBody2;
+
+  /// No description provided for @onboardTitle3.
+  ///
+  /// In ko, this message translates to:
+  /// **'원할 때만 동기화'**
+  String get onboardTitle3;
+
+  /// No description provided for @onboardBody3.
+  ///
+  /// In ko, this message translates to:
+  /// **'로그인 없이도 OK. 나중에 Google 로그인하면 다른 기기와 자동으로 이어집니다.'**
+  String get onboardBody3;
+
+  /// No description provided for @onboardTitle4.
+  ///
+  /// In ko, this message translates to:
+  /// **'알림과 통계'**
+  String get onboardTitle4;
+
+  /// No description provided for @onboardBody4.
+  ///
+  /// In ko, this message translates to:
+  /// **'마감 알림, 연속일, 업적 — 꾸준한 사람을 위한 도구를 곁들였어요.'**
+  String get onboardBody4;
+
+  /// No description provided for @onboardSkip.
+  ///
+  /// In ko, this message translates to:
+  /// **'건너뛰기'**
+  String get onboardSkip;
+
+  /// No description provided for @onboardNext.
+  ///
+  /// In ko, this message translates to:
+  /// **'다음'**
+  String get onboardNext;
+
+  /// No description provided for @onboardStart.
+  ///
+  /// In ko, this message translates to:
+  /// **'시작하기'**
+  String get onboardStart;
+
+  /// No description provided for @themeMode.
+  ///
+  /// In ko, this message translates to:
+  /// **'테마'**
+  String get themeMode;
+
+  /// No description provided for @themeSystem.
+  ///
+  /// In ko, this message translates to:
+  /// **'시스템 기본'**
+  String get themeSystem;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In ko, this message translates to:
+  /// **'라이트'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In ko, this message translates to:
+  /// **'다크'**
+  String get themeDark;
+
+  /// No description provided for @fontSize.
+  ///
+  /// In ko, this message translates to:
+  /// **'글자 크기'**
+  String get fontSize;
+
+  /// No description provided for @fontSizeSmall.
+  ///
+  /// In ko, this message translates to:
+  /// **'작게'**
+  String get fontSizeSmall;
+
+  /// No description provided for @fontSizeMedium.
+  ///
+  /// In ko, this message translates to:
+  /// **'기본'**
+  String get fontSizeMedium;
+
+  /// No description provided for @fontSizeLarge.
+  ///
+  /// In ko, this message translates to:
+  /// **'크게'**
+  String get fontSizeLarge;
+
+  /// No description provided for @fontSizeXLarge.
+  ///
+  /// In ko, this message translates to:
+  /// **'더 크게'**
+  String get fontSizeXLarge;
+
+  /// No description provided for @defaultView.
+  ///
+  /// In ko, this message translates to:
+  /// **'기본 화면'**
+  String get defaultView;
+
+  /// No description provided for @viewDate.
+  ///
+  /// In ko, this message translates to:
+  /// **'캘린더'**
+  String get viewDate;
+
+  /// No description provided for @viewAll.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체'**
+  String get viewAll;
+
+  /// No description provided for @viewLists.
+  ///
+  /// In ko, this message translates to:
+  /// **'태그'**
+  String get viewLists;
+
+  /// No description provided for @completeMode.
+  ///
+  /// In ko, this message translates to:
+  /// **'완료 처리'**
+  String get completeMode;
+
+  /// No description provided for @completeToggle.
+  ///
+  /// In ko, this message translates to:
+  /// **'상태 전환'**
+  String get completeToggle;
+
+  /// No description provided for @completeDelete.
+  ///
+  /// In ko, this message translates to:
+  /// **'즉시 삭제'**
+  String get completeDelete;
+
+  /// No description provided for @statusBarOngoing.
+  ///
+  /// In ko, this message translates to:
+  /// **'상태바 상주 알림'**
+  String get statusBarOngoing;
+
+  /// No description provided for @statusBarOngoingSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘 할 일 개수를 상태바에 계속 표시'**
+  String get statusBarOngoingSubtitle;
+
+  /// No description provided for @achievements.
+  ///
+  /// In ko, this message translates to:
+  /// **'업적'**
+  String get achievements;
+
   /// No description provided for @actionCancel.
   ///
   /// In ko, this message translates to:

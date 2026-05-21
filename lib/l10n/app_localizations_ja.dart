@@ -269,6 +269,96 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get onboardTitle1 => 'BrioDoへようこそ';
+
+  @override
+  String get onboardBody1 => 'カレンダーに沿って広がる、軽くて速いタスクアプリ。';
+
+  @override
+  String get onboardTitle2 => 'カレンダーがリスト';
+
+  @override
+  String get onboardBody2 => '日付の横のドットで全体の流れを一目で。';
+
+  @override
+  String get onboardTitle3 => '必要なときだけ同期';
+
+  @override
+  String get onboardBody3 => 'ログイン不要でOK。後でGoogle連携すれば自動で他端末と同期。';
+
+  @override
+  String get onboardTitle4 => '通知と統計';
+
+  @override
+  String get onboardBody4 => '締切通知、連続日数、実績 — 続ける人のためのツール。';
+
+  @override
+  String get onboardSkip => 'スキップ';
+
+  @override
+  String get onboardNext => '次へ';
+
+  @override
+  String get onboardStart => 'はじめる';
+
+  @override
+  String get themeMode => 'テーマ';
+
+  @override
+  String get themeSystem => 'システム';
+
+  @override
+  String get themeLight => 'ライト';
+
+  @override
+  String get themeDark => 'ダーク';
+
+  @override
+  String get fontSize => '文字サイズ';
+
+  @override
+  String get fontSizeSmall => '小';
+
+  @override
+  String get fontSizeMedium => '標準';
+
+  @override
+  String get fontSizeLarge => '大';
+
+  @override
+  String get fontSizeXLarge => '特大';
+
+  @override
+  String get defaultView => 'デフォルトビュー';
+
+  @override
+  String get viewDate => 'カレンダー';
+
+  @override
+  String get viewAll => 'すべて';
+
+  @override
+  String get viewLists => 'タグ';
+
+  @override
+  String get completeMode => '完了処理';
+
+  @override
+  String get completeToggle => '状態切替';
+
+  @override
+  String get completeDelete => '即削除';
+
+  @override
+  String get statusBarOngoing => 'ステータスバー常時表示';
+
+  @override
+  String get statusBarOngoingSubtitle => '今日のタスク数をステータスバーに常時表示';
+
+  @override
+  String get achievements => '実績';
+
+  @override
   String get actionCancel => 'キャンセル';
 
   @override

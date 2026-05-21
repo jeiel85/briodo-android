@@ -275,6 +275,101 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get onboardTitle1 => 'Welcome to BrioDo';
+
+  @override
+  String get onboardBody1 =>
+      'A light, fast to-do app that lives right on your calendar.';
+
+  @override
+  String get onboardTitle2 => 'Calendar IS the list';
+
+  @override
+  String get onboardBody2 =>
+      'See at a glance — dots on dates show your flow across weeks.';
+
+  @override
+  String get onboardTitle3 => 'Sync only when you want';
+
+  @override
+  String get onboardBody3 =>
+      'Use it without signing in. Add a Google account later and it picks up where you left off.';
+
+  @override
+  String get onboardTitle4 => 'Reminders & stats';
+
+  @override
+  String get onboardBody4 =>
+      'Due-time reminders, streaks, achievements — tools for people who stick with it.';
+
+  @override
+  String get onboardSkip => 'Skip';
+
+  @override
+  String get onboardNext => 'Next';
+
+  @override
+  String get onboardStart => 'Get started';
+
+  @override
+  String get themeMode => 'Theme';
+
+  @override
+  String get themeSystem => 'System default';
+
+  @override
+  String get themeLight => 'Light';
+
+  @override
+  String get themeDark => 'Dark';
+
+  @override
+  String get fontSize => 'Font size';
+
+  @override
+  String get fontSizeSmall => 'Small';
+
+  @override
+  String get fontSizeMedium => 'Default';
+
+  @override
+  String get fontSizeLarge => 'Large';
+
+  @override
+  String get fontSizeXLarge => 'Extra large';
+
+  @override
+  String get defaultView => 'Default view';
+
+  @override
+  String get viewDate => 'Calendar';
+
+  @override
+  String get viewAll => 'All';
+
+  @override
+  String get viewLists => 'Tags';
+
+  @override
+  String get completeMode => 'On complete';
+
+  @override
+  String get completeToggle => 'Toggle state';
+
+  @override
+  String get completeDelete => 'Delete immediately';
+
+  @override
+  String get statusBarOngoing => 'Status-bar ongoing';
+
+  @override
+  String get statusBarOngoingSubtitle =>
+      'Keep today\'s count pinned to the status bar';
+
+  @override
+  String get achievements => 'Achievements';
+
+  @override
   String get actionCancel => 'Cancel';
 
   @override

@@ -270,6 +270,96 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get onboardTitle1 => 'BrioDo에 오신 걸 환영해요';
+
+  @override
+  String get onboardBody1 => '캘린더 위에 그대로 펼쳐지는, 가볍고 빠른 할 일 앱.';
+
+  @override
+  String get onboardTitle2 => '캘린더가 곧 목록';
+
+  @override
+  String get onboardBody2 => '월/주 보기에서 일정 옆 dot 한 번에 흐름을 확인하세요.';
+
+  @override
+  String get onboardTitle3 => '원할 때만 동기화';
+
+  @override
+  String get onboardBody3 => '로그인 없이도 OK. 나중에 Google 로그인하면 다른 기기와 자동으로 이어집니다.';
+
+  @override
+  String get onboardTitle4 => '알림과 통계';
+
+  @override
+  String get onboardBody4 => '마감 알림, 연속일, 업적 — 꾸준한 사람을 위한 도구를 곁들였어요.';
+
+  @override
+  String get onboardSkip => '건너뛰기';
+
+  @override
+  String get onboardNext => '다음';
+
+  @override
+  String get onboardStart => '시작하기';
+
+  @override
+  String get themeMode => '테마';
+
+  @override
+  String get themeSystem => '시스템 기본';
+
+  @override
+  String get themeLight => '라이트';
+
+  @override
+  String get themeDark => '다크';
+
+  @override
+  String get fontSize => '글자 크기';
+
+  @override
+  String get fontSizeSmall => '작게';
+
+  @override
+  String get fontSizeMedium => '기본';
+
+  @override
+  String get fontSizeLarge => '크게';
+
+  @override
+  String get fontSizeXLarge => '더 크게';
+
+  @override
+  String get defaultView => '기본 화면';
+
+  @override
+  String get viewDate => '캘린더';
+
+  @override
+  String get viewAll => '전체';
+
+  @override
+  String get viewLists => '태그';
+
+  @override
+  String get completeMode => '완료 처리';
+
+  @override
+  String get completeToggle => '상태 전환';
+
+  @override
+  String get completeDelete => '즉시 삭제';
+
+  @override
+  String get statusBarOngoing => '상태바 상주 알림';
+
+  @override
+  String get statusBarOngoingSubtitle => '오늘 할 일 개수를 상태바에 계속 표시';
+
+  @override
+  String get achievements => '업적';
+
+  @override
   String get actionCancel => '취소';
 
   @override
