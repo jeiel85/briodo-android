@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/todo.dart';
 import '../providers/todos_provider.dart';
 
@@ -29,14 +30,40 @@ class _TodoEditorDialogState extends State<TodoEditorDialog> {
   late String _date;
   late String _time;
   late String _priority;
+  late int _reminderOffset; // -1 = 끔, 0 = 정각, 10/30/60
 
   static const _priorities = ['low', 'medium', 'high', 'urgent'];
-  static const _priorityLabel = {
-    'low': '낮음',
-    'medium': '보통',
-    'high': '높음',
-    'urgent': '긴급',
-  };
+  static const _reminderOffsets = [-1, 0, 10, 30, 60];
+
+  String _priorityLabel(AppLocalizations l, String p) {
+    switch (p) {
+      case 'low':
+        return l.priorityLow;
+      case 'high':
+        return l.priorityHigh;
+      case 'urgent':
+        return l.priorityUrgent;
+      case 'medium':
+      default:
+        return l.priorityMedium;
+    }
+  }
+
+  String _reminderLabel(AppLocalizations l, int o) {
+    switch (o) {
+      case 0:
+        return l.reminderAtTime;
+      case 10:
+        return l.reminder10min;
+      case 30:
+        return l.reminder30min;
+      case 60:
+        return l.reminder1hour;
+      case -1:
+      default:
+        return l.reminderNone;
+    }
+  }
 
   @override
   void initState() {
@@ -48,6 +75,7 @@ class _TodoEditorDialogState extends State<TodoEditorDialog> {
     _date = i?.date ?? widget.defaultDate;
     _time = i?.time ?? '';
     _priority = i?.priority ?? 'medium';
+    _reminderOffset = i?.reminderOffset ?? -1;
   }
 
   @override
@@ -107,15 +135,17 @@ class _TodoEditorDialogState extends State<TodoEditorDialog> {
       time: _time,
       tags: tags,
       priority: _priority,
+      reminderOffset: _reminderOffset,
     ));
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context)!;
     final isEdit = widget.initial != null;
     return AlertDialog(
-      title: Text(isEdit ? '할 일 편집' : '할 일 추가'),
+      title: Text(isEdit ? l.editTodo : l.addTodo),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -124,9 +154,9 @@ class _TodoEditorDialogState extends State<TodoEditorDialog> {
             TextField(
               controller: _textCtrl,
               autofocus: !isEdit,
-              decoration: const InputDecoration(
-                labelText: '내용',
-                hintText: '예: 운동 30분',
+              decoration: InputDecoration(
+                labelText: l.fieldText,
+                hintText: l.fieldTextHint,
               ),
               textInputAction: TextInputAction.next,
             ),
@@ -134,8 +164,8 @@ class _TodoEditorDialogState extends State<TodoEditorDialog> {
             TextField(
               controller: _descCtrl,
               maxLines: 2,
-              decoration: const InputDecoration(
-                labelText: '메모 (선택)',
+              decoration: InputDecoration(
+                labelText: l.fieldNote,
               ),
             ),
             const SizedBox(height: 16),
@@ -153,37 +183,61 @@ class _TodoEditorDialogState extends State<TodoEditorDialog> {
                   child: OutlinedButton.icon(
                     onPressed: _pickTime,
                     icon: const Icon(Icons.schedule, size: 18),
-                    label: Text(_time.isEmpty ? '종일' : _time),
+                    label: Text(_time.isEmpty ? l.fieldAllDay : _time),
                   ),
                 ),
                 if (_time.isNotEmpty)
                   IconButton(
-                    tooltip: '시간 지우기',
+                    tooltip: l.fieldClearTime,
                     onPressed: _clearTime,
                     icon: const Icon(Icons.close, size: 18),
                   ),
               ],
             ),
             const SizedBox(height: 12),
-            Text('우선순위', style: theme.textTheme.labelMedium),
+            Text(l.fieldPriority, style: theme.textTheme.labelMedium),
             const SizedBox(height: 4),
             Wrap(
               spacing: 6,
               children: [
                 for (final p in _priorities)
                   ChoiceChip(
-                    label: Text(_priorityLabel[p]!),
+                    label: Text(_priorityLabel(l, p)),
                     selected: _priority == p,
                     onSelected: (_) => setState(() => _priority = p),
                   ),
               ],
             ),
             const SizedBox(height: 12),
+            Text(l.fieldReminder, style: theme.textTheme.labelMedium),
+            const SizedBox(height: 4),
+            Wrap(
+              spacing: 6,
+              children: [
+                for (final o in _reminderOffsets)
+                  ChoiceChip(
+                    label: Text(_reminderLabel(l, o)),
+                    selected: _reminderOffset == o,
+                    onSelected: (_) => setState(() => _reminderOffset = o),
+                  ),
+              ],
+            ),
+            if (_reminderOffset >= 0 && _time.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  l.noTimeNoReminderHint,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.outline,
+                  ),
+                ),
+              ),
+            const SizedBox(height: 12),
             TextField(
               controller: _tagsCtrl,
-              decoration: const InputDecoration(
-                labelText: '태그 (쉼표 구분)',
-                hintText: '예: 운동, 건강',
+              decoration: InputDecoration(
+                labelText: l.fieldTags,
+                hintText: l.fieldTagsHint,
               ),
             ),
           ],
@@ -192,11 +246,11 @@ class _TodoEditorDialogState extends State<TodoEditorDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('취소'),
+          child: Text(l.actionCancel),
         ),
         FilledButton(
           onPressed: _submit,
-          child: Text(isEdit ? '저장' : '추가'),
+          child: Text(isEdit ? l.actionSave : l.actionAdd),
         ),
       ],
     );
@@ -212,6 +266,7 @@ class TodoEditorResult {
     required this.time,
     required this.tags,
     required this.priority,
+    required this.reminderOffset,
   });
 
   final String text;
@@ -220,4 +275,5 @@ class TodoEditorResult {
   final String time;
   final List<String> tags;
   final String priority;
+  final int reminderOffset;
 }

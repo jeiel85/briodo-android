@@ -7,9 +7,12 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'firebase_options.dart';
+import 'l10n/app_localizations.dart';
+import 'providers/locale_provider.dart';
 import 'providers/todos_provider.dart';
 import 'screens/home_screen.dart';
 import 'services/analytics_service.dart';
+import 'services/notifications_service.dart';
 import 'theme.dart';
 
 // Firebase Console > Authentication > Sign-in method > Google > Web SDK 구성
@@ -29,6 +32,10 @@ Future<void> main() async {
   // Analytics는 자동으로 app_open / session_start / first_open 수집.
   // 명시 이벤트는 services/analytics_service.dart에서 토글.
   await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
+
+  // 로컬 알림 — 채널 4개(urgent/high/medium/low) 사전 생성.
+  // 권한 요청은 실제로 알림을 예약할 때(처음 todo 알림 설정) 또는 Settings에서 수동.
+  await NotificationsService.instance.init();
 
   // 로컬 저장소 — 로그인 안 한 사용자도 곧바로 todos를 쓸 수 있게 사전 로드.
   final prefs = await SharedPreferences.getInstance();
@@ -53,17 +60,21 @@ Future<void> main() async {
   );
 }
 
-class BrioDoApp extends StatelessWidget {
+class BrioDoApp extends ConsumerWidget {
   const BrioDoApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locale = ref.watch(localeProvider);
     return MaterialApp(
       title: 'BrioDo',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: ThemeMode.system,
+      locale: locale,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
       navigatorObservers: [AnalyticsService.instance.observer],
       home: const HomeScreen(),
     );

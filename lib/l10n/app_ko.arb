@@ -1,0 +1,90 @@
+{
+  "@@locale": "ko",
+  "appTitle": "BrioDo",
+  "today": "오늘",
+  "settings": "설정",
+  "account": "계정",
+  "storage": "저장 방식",
+  "notSignedIn": "로그인 안 됨",
+  "notSignedInSubtitle": "일정은 이 기기에만 저장됩니다. Google 로그인 시 동기화 가능.",
+  "signInWithGoogle": "Google 계정으로 로그인",
+  "linkGoogle": "Google 계정 연결",
+  "anonymousAccount": "익명 계정 (v1.1.17 이전 사용자)",
+  "anonymousSubtitle": "Google 계정으로 연결하면 다른 기기에서도 사용할 수 있어요.",
+  "signOut": "로그아웃",
+  "syncedToCloud": "Google 계정에 동기화 중",
+  "syncedSubtitle": "여러 기기에서 같은 일정을 볼 수 있어요.",
+  "deviceOnly": "이 기기에만 저장",
+  "deviceOnlySubtitle": "로그인하지 않아도 일정 추가/편집이 가능합니다.",
+  "notifications": "알림",
+  "allDayReminderTime": "종일 일정 알림 시각",
+  "allDayReminderTimeSubtitle": "시간이 지정되지 않은 일정의 알림이 발송될 시각",
+  "language": "언어",
+  "languageSystem": "시스템 기본",
+  "languageKorean": "한국어",
+  "languageEnglish": "English",
+  "languageJapanese": "日本語",
+  "languageChinese": "中文",
+  "noTodosToday": "오늘 할 일이 없어요\n+ 버튼으로 추가하세요",
+  "noTodosOnDate": "이 날짜에 할 일이 없어요",
+  "errorPrefix": "오류: {detail}",
+  "@errorPrefix": {
+    "placeholders": {
+      "detail": { "type": "String" }
+    }
+  },
+  "addTodo": "할 일 추가",
+  "editTodo": "할 일 편집",
+  "fieldText": "내용",
+  "fieldTextHint": "예: 운동 30분",
+  "fieldNote": "메모 (선택)",
+  "fieldAllDay": "종일",
+  "fieldClearTime": "시간 지우기",
+  "fieldPriority": "우선순위",
+  "fieldReminder": "알림",
+  "fieldTags": "태그 (쉼표 구분)",
+  "fieldTagsHint": "예: 운동, 건강",
+  "noTimeNoReminderHint": "시간 미지정 시 일정 시각이 없어 알림이 예약되지 않을 수 있어요.",
+  "priorityLow": "낮음",
+  "priorityMedium": "보통",
+  "priorityHigh": "높음",
+  "priorityUrgent": "긴급",
+  "reminderNone": "없음",
+  "reminderAtTime": "정각",
+  "reminder10min": "10분 전",
+  "reminder30min": "30분 전",
+  "reminder1hour": "1시간 전",
+  "actionCancel": "취소",
+  "actionAdd": "추가",
+  "actionSave": "저장",
+  "migrateDialogTitle": "기기 일정을 옮길까요?",
+  "migrateDialogBody": "현재 기기에 저장된 일정 {count}개가 있어요.\nGoogle 계정으로 옮기면 다른 기기에서도 같은 일정을 볼 수 있습니다.",
+  "@migrateDialogBody": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "migrateDeclineButton": "아니요, 그냥 로그인",
+  "migrateAcceptButton": "옮기기",
+  "snackLoginSuccess": "로그인됐어요.",
+  "snackLoginMigrated": "로그인됐어요. 일정 {count}개를 Google 계정으로 옮겼습니다.",
+  "@snackLoginMigrated": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "snackLoginFailed": "로그인 실패: {detail}",
+  "@snackLoginFailed": {
+    "placeholders": {
+      "detail": { "type": "String" }
+    }
+  },
+  "snackLogoutSuccess": "로그아웃됐어요. 다시 로컬 저장으로 돌아갑니다.",
+  "snackLogoutFailed": "로그아웃 실패: {detail}",
+  "@snackLogoutFailed": {
+    "placeholders": {
+      "detail": { "type": "String" }
+    }
+  },
+  "webNoGoogleLogin": "웹에서는 아직 Google 로그인이 지원되지 않습니다. 모바일 앱에서 사용해 주세요."
+}

@@ -19,6 +19,10 @@ class Todo {
   final bool completed;
   final DateTime? createdAt;
 
+  /// 마감 시간 N분 전에 알림 (분 단위).
+  /// -1 = 알림 끔, 0 = 정각, 10/30/60 등.
+  final int reminderOffset;
+
   const Todo({
     required this.id,
     required this.uid,
@@ -30,6 +34,7 @@ class Todo {
     this.priority = 'medium',
     this.completed = false,
     this.createdAt,
+    this.reminderOffset = -1,
   });
 
   factory Todo.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -53,6 +58,9 @@ class Todo {
       priority: (d['priority'] ?? 'medium') as String,
       completed: (d['completed'] ?? false) as bool,
       createdAt: createdAt,
+      reminderOffset: (d['reminderOffset'] is int)
+          ? d['reminderOffset'] as int
+          : -1,
     );
   }
 
@@ -65,6 +73,7 @@ class Todo {
         'tags': tags,
         'priority': priority,
         'completed': completed,
+        'reminderOffset': reminderOffset,
         // createdAt은 신규 생성 시 serverTimestamp()로 세팅하므로 여기 포함 X
       };
 
@@ -80,6 +89,7 @@ class Todo {
         'priority': priority,
         'completed': completed,
         'createdAt': createdAt?.millisecondsSinceEpoch,
+        'reminderOffset': reminderOffset,
       };
 
   factory Todo.fromJson(Map<String, dynamic> j) => Todo(
@@ -95,6 +105,9 @@ class Todo {
         createdAt: j['createdAt'] is int
             ? DateTime.fromMillisecondsSinceEpoch(j['createdAt'] as int)
             : null,
+        reminderOffset: (j['reminderOffset'] is int)
+            ? j['reminderOffset'] as int
+            : -1,
       );
 
   Todo copyWith({
@@ -105,6 +118,7 @@ class Todo {
     List<String>? tags,
     String? priority,
     bool? completed,
+    int? reminderOffset,
   }) =>
       Todo(
         id: id,
@@ -117,5 +131,6 @@ class Todo {
         priority: priority ?? this.priority,
         completed: completed ?? this.completed,
         createdAt: createdAt,
+        reminderOffset: reminderOffset ?? this.reminderOffset,
       );
 }

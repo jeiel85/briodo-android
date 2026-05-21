@@ -52,13 +52,14 @@ final sharedPreferencesProvider = Provider<SharedPreferences>(
 abstract class TodosRepository {
   Stream<List<Todo>> watch();
 
-  Future<void> add({
+  Future<String> add({
     required String text,
     required String date,
     String description = '',
     String time = '',
     List<String> tags = const [],
     String priority = 'medium',
+    int reminderOffset = -1,
   });
 
   Future<void> update(Todo todo);
@@ -92,15 +93,16 @@ class FirestoreTodosRepository implements TodosRepository {
       .map((snap) => snap.docs.map(Todo.fromFirestore).toList());
 
   @override
-  Future<void> add({
+  Future<String> add({
     required String text,
     required String date,
     String description = '',
     String time = '',
     List<String> tags = const [],
     String priority = 'medium',
+    int reminderOffset = -1,
   }) async {
-    await _col.add({
+    final doc = await _col.add({
       'uid': _uid,
       'text': text,
       'description': description,
@@ -110,7 +112,9 @@ class FirestoreTodosRepository implements TodosRepository {
       'priority': priority,
       'completed': false,
       'createdAt': FieldValue.serverTimestamp(),
+      'reminderOffset': reminderOffset,
     });
+    return doc.id;
   }
 
   @override
@@ -122,6 +126,7 @@ class FirestoreTodosRepository implements TodosRepository {
       'time': todo.time,
       'tags': todo.tags,
       'priority': todo.priority,
+      'reminderOffset': todo.reminderOffset,
     });
   }
 
@@ -212,18 +217,20 @@ class LocalTodosRepository implements TodosRepository {
   }
 
   @override
-  Future<void> add({
+  Future<String> add({
     required String text,
     required String date,
     String description = '',
     String time = '',
     List<String> tags = const [],
     String priority = 'medium',
+    int reminderOffset = -1,
   }) async {
+    final id = _newId();
     _cache = [
       ..._cache,
       Todo(
-        id: _newId(),
+        id: id,
         uid: 'local',
         text: text,
         description: description,
@@ -232,9 +239,11 @@ class LocalTodosRepository implements TodosRepository {
         tags: tags,
         priority: priority,
         createdAt: DateTime.now(),
+        reminderOffset: reminderOffset,
       ),
     ];
     await _flush();
+    return id;
   }
 
   @override

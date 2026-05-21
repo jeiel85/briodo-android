@@ -1,0 +1,90 @@
+{
+  "@@locale": "ja",
+  "appTitle": "BrioDo",
+  "today": "今日",
+  "settings": "設定",
+  "account": "アカウント",
+  "storage": "保存方法",
+  "notSignedIn": "未ログイン",
+  "notSignedInSubtitle": "予定はこの端末にのみ保存されます。Googleでログインすると同期できます。",
+  "signInWithGoogle": "Googleアカウントでログイン",
+  "linkGoogle": "Googleアカウントを連携",
+  "anonymousAccount": "匿名アカウント (v1.1.17以前のユーザー)",
+  "anonymousSubtitle": "Googleアカウントを連携すると他の端末でも使えます。",
+  "signOut": "ログアウト",
+  "syncedToCloud": "Googleアカウントに同期中",
+  "syncedSubtitle": "複数の端末で同じ予定を見ることができます。",
+  "deviceOnly": "この端末にのみ保存",
+  "deviceOnlySubtitle": "ログインしなくても予定の追加・編集ができます。",
+  "notifications": "通知",
+  "allDayReminderTime": "終日予定の通知時刻",
+  "allDayReminderTimeSubtitle": "時刻が指定されていない予定の通知を送る時刻",
+  "language": "言語",
+  "languageSystem": "システム設定",
+  "languageKorean": "한국어",
+  "languageEnglish": "English",
+  "languageJapanese": "日本語",
+  "languageChinese": "中文",
+  "noTodosToday": "今日の予定はありません\n+ ボタンで追加できます",
+  "noTodosOnDate": "この日付の予定はありません",
+  "errorPrefix": "エラー: {detail}",
+  "@errorPrefix": {
+    "placeholders": {
+      "detail": { "type": "String" }
+    }
+  },
+  "addTodo": "予定を追加",
+  "editTodo": "予定を編集",
+  "fieldText": "内容",
+  "fieldTextHint": "例: 運動30分",
+  "fieldNote": "メモ (任意)",
+  "fieldAllDay": "終日",
+  "fieldClearTime": "時間を消す",
+  "fieldPriority": "優先度",
+  "fieldReminder": "通知",
+  "fieldTags": "タグ (カンマ区切り)",
+  "fieldTagsHint": "例: 運動, 健康",
+  "noTimeNoReminderHint": "時間が指定されていないと通知がスケジュールされない場合があります。",
+  "priorityLow": "低",
+  "priorityMedium": "中",
+  "priorityHigh": "高",
+  "priorityUrgent": "緊急",
+  "reminderNone": "なし",
+  "reminderAtTime": "時刻ちょうど",
+  "reminder10min": "10分前",
+  "reminder30min": "30分前",
+  "reminder1hour": "1時間前",
+  "actionCancel": "キャンセル",
+  "actionAdd": "追加",
+  "actionSave": "保存",
+  "migrateDialogTitle": "端末の予定を移動しますか?",
+  "migrateDialogBody": "この端末に保存されている予定が {count} 件あります。\nGoogleアカウントに移動すると他の端末でも同じ予定を見られます。",
+  "@migrateDialogBody": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "migrateDeclineButton": "いいえ、ログインのみ",
+  "migrateAcceptButton": "移動する",
+  "snackLoginSuccess": "ログインしました。",
+  "snackLoginMigrated": "ログインしました。予定 {count} 件をGoogleアカウントに移動しました。",
+  "@snackLoginMigrated": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "snackLoginFailed": "ログイン失敗: {detail}",
+  "@snackLoginFailed": {
+    "placeholders": {
+      "detail": { "type": "String" }
+    }
+  },
+  "snackLogoutSuccess": "ログアウトしました。ローカル保存に戻ります。",
+  "snackLogoutFailed": "ログアウト失敗: {detail}",
+  "@snackLogoutFailed": {
+    "placeholders": {
+      "detail": { "type": "String" }
+    }
+  },
+  "webNoGoogleLogin": "ウェブではまだGoogleログインに対応していません。モバイルアプリをご利用ください。"
+}

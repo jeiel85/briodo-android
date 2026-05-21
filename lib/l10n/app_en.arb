@@ -1,0 +1,90 @@
+{
+  "@@locale": "en",
+  "appTitle": "BrioDo",
+  "today": "Today",
+  "settings": "Settings",
+  "account": "Account",
+  "storage": "Storage",
+  "notSignedIn": "Not signed in",
+  "notSignedInSubtitle": "Items are stored on this device only. Sign in with Google to sync.",
+  "signInWithGoogle": "Sign in with Google",
+  "linkGoogle": "Link Google account",
+  "anonymousAccount": "Anonymous account (pre-v1.1.17 user)",
+  "anonymousSubtitle": "Link a Google account to use BrioDo on other devices.",
+  "signOut": "Sign out",
+  "syncedToCloud": "Syncing to Google account",
+  "syncedSubtitle": "Your items are available on all your devices.",
+  "deviceOnly": "Saved on this device only",
+  "deviceOnlySubtitle": "You can add and edit items without signing in.",
+  "notifications": "Notifications",
+  "allDayReminderTime": "All-day reminder time",
+  "allDayReminderTimeSubtitle": "When to send reminders for items without a set time",
+  "language": "Language",
+  "languageSystem": "System default",
+  "languageKorean": "한국어",
+  "languageEnglish": "English",
+  "languageJapanese": "日本語",
+  "languageChinese": "中文",
+  "noTodosToday": "Nothing to do today\nTap + to add",
+  "noTodosOnDate": "Nothing on this date",
+  "errorPrefix": "Error: {detail}",
+  "@errorPrefix": {
+    "placeholders": {
+      "detail": { "type": "String" }
+    }
+  },
+  "addTodo": "New item",
+  "editTodo": "Edit item",
+  "fieldText": "Title",
+  "fieldTextHint": "e.g. 30 min workout",
+  "fieldNote": "Note (optional)",
+  "fieldAllDay": "All-day",
+  "fieldClearTime": "Clear time",
+  "fieldPriority": "Priority",
+  "fieldReminder": "Reminder",
+  "fieldTags": "Tags (comma-separated)",
+  "fieldTagsHint": "e.g. workout, health",
+  "noTimeNoReminderHint": "Without a specific time, the reminder may not be scheduled.",
+  "priorityLow": "Low",
+  "priorityMedium": "Medium",
+  "priorityHigh": "High",
+  "priorityUrgent": "Urgent",
+  "reminderNone": "Off",
+  "reminderAtTime": "At time",
+  "reminder10min": "10 min before",
+  "reminder30min": "30 min before",
+  "reminder1hour": "1 hour before",
+  "actionCancel": "Cancel",
+  "actionAdd": "Add",
+  "actionSave": "Save",
+  "migrateDialogTitle": "Move items to the cloud?",
+  "migrateDialogBody": "There are {count} items saved on this device.\nMove them to your Google account to view them on other devices.",
+  "@migrateDialogBody": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "migrateDeclineButton": "No, just sign in",
+  "migrateAcceptButton": "Move them",
+  "snackLoginSuccess": "Signed in.",
+  "snackLoginMigrated": "Signed in. Moved {count} items to your Google account.",
+  "@snackLoginMigrated": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "snackLoginFailed": "Sign-in failed: {detail}",
+  "@snackLoginFailed": {
+    "placeholders": {
+      "detail": { "type": "String" }
+    }
+  },
+  "snackLogoutSuccess": "Signed out. Back to local storage.",
+  "snackLogoutFailed": "Sign-out failed: {detail}",
+  "@snackLogoutFailed": {
+    "placeholders": {
+      "detail": { "type": "String" }
+    }
+  },
+  "webNoGoogleLogin": "Google sign-in is not supported on web yet. Please use the mobile app."
+}

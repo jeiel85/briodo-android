@@ -3,12 +3,46 @@ import 'dart:async' show unawaited;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/todo.dart';
+import '../providers/app_settings_provider.dart';
 import '../providers/todos_provider.dart';
 import '../services/analytics_service.dart';
+import '../services/notifications_service.dart';
 import '../widgets/calendar_header.dart';
 import '../widgets/todo_editor_dialog.dart';
 import 'settings_screen.dart';
+
+/// todo의 알림 발송 시각.
+/// time(HH:MM)이 있으면 → time - reminderOffset
+/// time이 없으면(종일) → date + AppSettings.allDayReminder
+/// reminderOffset < 0이면 null (예약 안 함).
+DateTime? scheduleAtFor(Todo todo, AppSettings settings) {
+  if (todo.reminderOffset < 0) return null;
+  final dateParts = todo.date.split('-');
+  if (dateParts.length != 3) return null;
+  final y = int.tryParse(dateParts[0]);
+  final m = int.tryParse(dateParts[1]);
+  final d = int.tryParse(dateParts[2]);
+  if (y == null || m == null || d == null) return null;
+
+  if (todo.time.isEmpty) {
+    return DateTime(
+      y,
+      m,
+      d,
+      settings.allDayReminderHour,
+      settings.allDayReminderMinute,
+    );
+  }
+  final timeParts = todo.time.split(':');
+  if (timeParts.length < 2) return null;
+  final hh = int.tryParse(timeParts[0]);
+  final mm = int.tryParse(timeParts[1]);
+  if (hh == null || mm == null) return null;
+  final base = DateTime(y, m, d, hh, mm);
+  return base.subtract(Duration(minutes: todo.reminderOffset));
+}
 
 /// 캘린더 + 선택 날짜의 할 일 리스트.
 class HomeScreen extends ConsumerWidget {
@@ -47,33 +81,80 @@ class HomeScreen extends ConsumerWidget {
     if (result == null) return;
 
     if (initial == null) {
-      await repo.add(
+      final newId = await repo.add(
         text: result.text,
         description: result.description,
         date: result.date,
         time: result.time,
         tags: result.tags,
         priority: result.priority,
+        reminderOffset: result.reminderOffset,
       );
       unawaited(AnalyticsService.instance.logTodoCreate(
         priority: result.priority,
         tagCount: result.tags.length,
       ));
+      await _rescheduleNotification(
+        ref,
+        Todo(
+          id: newId,
+          uid: '',
+          text: result.text,
+          description: result.description,
+          date: result.date,
+          time: result.time,
+          tags: result.tags,
+          priority: result.priority,
+          reminderOffset: result.reminderOffset,
+        ),
+      );
     } else {
-      await repo.update(initial.copyWith(
+      final updated = initial.copyWith(
         text: result.text,
         description: result.description,
         date: result.date,
         time: result.time,
         tags: result.tags,
         priority: result.priority,
-      ));
+        reminderOffset: result.reminderOffset,
+      );
+      await repo.update(updated);
+      await _rescheduleNotification(ref, updated);
     }
+  }
+
+  /// reminderOffset/time 조건이 맞으면 새로 스케줄, 아니면 취소.
+  /// 권한이 없으면 한 번 요청한다.
+  Future<void> _rescheduleNotification(WidgetRef ref, Todo todo) async {
+    final ns = NotificationsService.instance;
+    if (todo.completed) {
+      unawaited(ns.cancel(todo.id));
+      return;
+    }
+    final settings = ref.read(appSettingsProvider);
+    final when = scheduleAtFor(todo, settings);
+    if (when == null || when.isBefore(DateTime.now())) {
+      unawaited(ns.cancel(todo.id));
+      return;
+    }
+    final granted = await ns.isPermissionGranted();
+    if (!granted) {
+      final ok = await ns.requestPermission();
+      if (!ok) return;
+    }
+    await ns.scheduleTodo(
+      todoId: todo.id,
+      title: todo.text,
+      body: todo.description.isEmpty ? todo.time : todo.description,
+      when: when,
+      priority: todo.priority,
+    );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context)!;
     final todosAsync = ref.watch(todosStreamProvider);
     final repo = ref.read(todosRepositoryProvider);
     final selected = ref.watch(selectedDateProvider);
@@ -87,15 +168,15 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('BrioDo'),
+        title: Text(l.appTitle),
         actions: [
           if (!isToday)
             TextButton(
               onPressed: () => ref.read(selectedDateProvider.notifier).resetToToday(),
-              child: const Text('오늘'),
+              child: Text(l.today),
             ),
           IconButton(
-            tooltip: '설정',
+            tooltip: l.settings,
             icon: const Icon(Icons.settings_outlined),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
@@ -116,16 +197,14 @@ class HomeScreen extends ConsumerWidget {
           Expanded(
             child: todosAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('오류: $err')),
+              error: (err, _) => Center(child: Text(l.errorPrefix(err.toString()))),
               data: (todos) {
                 final filtered = todos.where((t) => t.date == selected).toList()
                   ..sort(_compareTodos);
                 if (filtered.isEmpty) {
                   return Center(
                     child: Text(
-                      isToday
-                          ? '오늘 할 일이 없어요\n+ 버튼으로 추가하세요'
-                          : '이 날짜에 할 일이 없어요',
+                      isToday ? l.noTodosToday : l.noTodosOnDate,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
@@ -155,6 +234,7 @@ class HomeScreen extends ConsumerWidget {
                       direction: DismissDirection.endToStart,
                       onDismissed: (_) {
                         repo.delete(t.id);
+                        unawaited(NotificationsService.instance.cancel(t.id));
                         unawaited(AnalyticsService.instance.logTodoDelete());
                       },
                       child: ListTile(
@@ -163,6 +243,7 @@ class HomeScreen extends ConsumerWidget {
                           onTap: () {
                             repo.toggleComplete(t);
                             if (!t.completed) {
+                              unawaited(NotificationsService.instance.cancel(t.id));
                               unawaited(AnalyticsService.instance.logTodoComplete(
                                 priority: t.priority,
                               ));

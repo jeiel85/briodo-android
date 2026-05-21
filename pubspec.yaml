@@ -43,6 +43,11 @@ dependencies:
   table_calendar: ^3.2.0
   shared_preferences: ^2.5.5
   firebase_analytics: ^12.4.1
+  flutter_local_notifications: ^21.0.0
+  timezone: ^0.11.0
+  permission_handler: ^12.0.1
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
@@ -60,6 +65,9 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+
+  # Enable code generation for localizations (lib/l10n/*.arb → app_localizations.dart)
+  generate: true
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
