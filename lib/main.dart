@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'providers/todos_provider.dart';
 import 'screens/home_screen.dart';
+import 'services/analytics_service.dart';
 import 'theme.dart';
 
 // Firebase Console > Authentication > Sign-in method > Google > Web SDK 구성
@@ -23,6 +25,10 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Analytics는 자동으로 app_open / session_start / first_open 수집.
+  // 명시 이벤트는 services/analytics_service.dart에서 토글.
+  await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
 
   // 로컬 저장소 — 로그인 안 한 사용자도 곧바로 todos를 쓸 수 있게 사전 로드.
   final prefs = await SharedPreferences.getInstance();
@@ -58,6 +64,7 @@ class BrioDoApp extends StatelessWidget {
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: ThemeMode.system,
+      navigatorObservers: [AnalyticsService.instance.observer],
       home: const HomeScreen(),
     );
   }

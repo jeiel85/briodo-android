@@ -1,8 +1,11 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/todo.dart';
 import '../providers/todos_provider.dart';
+import '../services/analytics_service.dart';
 import '../widgets/calendar_header.dart';
 import '../widgets/todo_editor_dialog.dart';
 import 'settings_screen.dart';
@@ -52,6 +55,10 @@ class HomeScreen extends ConsumerWidget {
         tags: result.tags,
         priority: result.priority,
       );
+      unawaited(AnalyticsService.instance.logTodoCreate(
+        priority: result.priority,
+        tagCount: result.tags.length,
+      ));
     } else {
       await repo.update(initial.copyWith(
         text: result.text,
@@ -146,11 +153,21 @@ class HomeScreen extends ConsumerWidget {
                         child: Icon(Icons.delete, color: theme.colorScheme.onErrorContainer),
                       ),
                       direction: DismissDirection.endToStart,
-                      onDismissed: (_) => repo.delete(t.id),
+                      onDismissed: (_) {
+                        repo.delete(t.id);
+                        unawaited(AnalyticsService.instance.logTodoDelete());
+                      },
                       child: ListTile(
                         onTap: () => _openEditor(context, ref, initial: t),
                         leading: GestureDetector(
-                          onTap: () => repo.toggleComplete(t),
+                          onTap: () {
+                            repo.toggleComplete(t);
+                            if (!t.completed) {
+                              unawaited(AnalyticsService.instance.logTodoComplete(
+                                priority: t.priority,
+                              ));
+                            }
+                          },
                           child: Container(
                             width: 24,
                             height: 24,

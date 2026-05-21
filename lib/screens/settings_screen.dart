@@ -1,3 +1,5 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +7,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 import '../providers/auth_provider.dart';
 import '../providers/todos_provider.dart';
+import '../services/analytics_service.dart';
 
 /// 계정 / 동기화 설정.
 /// - 로그인 안 함 (로컬 저장)  → "Google 계정으로 로그인" 노출
@@ -37,7 +40,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         migrate = await _askMigrate(localBefore.length) ?? false;
       }
 
-      await signInWithGoogle();
+      final cred = await signInWithGoogle();
+      unawaited(AnalyticsService.instance.logLogin());
+      unawaited(AnalyticsService.instance.setUserId(cred.user?.uid));
 
       if (migrate) {
         // 로그인 후엔 todosRepositoryProvider가 FirestoreTodosRepository로 교체됨.
@@ -67,6 +72,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     setState(() => _busy = true);
     try {
       await signOutCompletely();
+      unawaited(AnalyticsService.instance.setUserId(null));
       _snack('로그아웃됐어요. 다시 로컬 저장으로 돌아갑니다.');
     } catch (e) {
       _snack('로그아웃 실패: $e');

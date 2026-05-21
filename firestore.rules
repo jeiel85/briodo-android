@@ -1,0 +1,136 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =============================================
+    // Helper Functions
+    // =============================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+
+    function isValidDocumentSize() {
+      return request.resource.size < 1048576; // 1MB
+    }
+
+    function isValidTags(tags) {
+      return tags is list
+        && tags.size() <= 10
+        && tags.size() >= 0
+        && tags.hasAll(tags.map(t, t is string && t.size() <= 50));
+    }
+
+    // =============================================
+    // 유저 정보 (users) - 관리자 전용
+    // =============================================
+    match /users/{userId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // =============================================
+    // 유저 설정 (userSettings)
+    // =============================================
+    match /userSettings/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && isValidDocumentSize()
+        && request.resource.data.keys().hasAll(['theme', 'lang']);
+
+      allow update: if isOwner(userId)
+        && isValidDocumentSize()
+        && request.resource.data.uid == request.auth.uid;
+
+      allow delete: if false;
+    }
+
+    // =============================================
+    // 할 일 (todos)
+    // =============================================
+    match /todos/{todoId} {
+      allow read: if isAuthenticated() && resource.data.uid == request.auth.uid;
+
+      allow create: if isAuthenticated()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 500
+        && isValidDocumentSize()
+        && isValidTags(request.resource.data.tags)
+        && (request.resource.data.date == null
+            || (request.resource.data.date is string && request.resource.data.date.size() == 10))
+        && (request.resource.data.priority == null
+            || request.resource.data.priority in ['low', 'medium', 'high', 'urgent']);
+
+      allow update: if isAuthenticated()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == request.auth.uid
+        && isValidDocumentSize()
+        && isValidTags(request.resource.data.tags)
+        && (request.resource.data.date == null
+            || (request.resource.data.date is string && request.resource.data.date.size() == 10))
+        && (request.resource.data.priority == null
+            || request.resource.data.priority in ['low', 'medium', 'high', 'urgent']);
+
+      allow delete: if isAuthenticated() && resource.data.uid == request.auth.uid;
+    }
+
+    // =============================================
+    // 업적 (achievements)
+    // =============================================
+    match /achievements/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidDocumentSize();
+      allow update: if isOwner(userId)
+        && isValidDocumentSize()
+        && request.resource.data.uid == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // =============================================
+    // AI 사용량 (aiUsage)
+    // Capacitor v1.1.17 호환용 — Flutter에서는 사용 안 함. AI 완전 폐기 후 제거 예정.
+    // =============================================
+    match /aiUsage/{docId} {
+      allow read: if isAuthenticated() && resource.data.uid == request.auth.uid;
+
+      allow write: if isAuthenticated()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.count is int
+        && request.resource.data.count >= 0
+        && request.resource.data.count <= 10;
+    }
+
+    // =============================================
+    // 동기화 큐 (syncQueue)
+    // Capacitor v1.1.17 오프라인 큐 호환용 — Flutter는 Firestore SDK 오프라인 캐시 사용.
+    // =============================================
+    match /syncQueue/{docId} {
+      allow read: if isAuthenticated() && resource.data.uid == request.auth.uid;
+      allow create: if isAuthenticated()
+        && request.resource.data.uid == request.auth.uid
+        && isValidDocumentSize();
+      allow update: if isAuthenticated()
+        && resource.data.uid == request.auth.uid
+        && isValidDocumentSize();
+      allow delete: if isAuthenticated() && resource.data.uid == request.auth.uid;
+    }
+
+    // =============================================
+    // 기본 deny
+    // =============================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
