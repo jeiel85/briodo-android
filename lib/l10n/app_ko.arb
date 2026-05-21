@@ -79,6 +79,32 @@
   "search": "검색",
   "searchHint": "내용, 메모, 태그",
   "searchEmpty": "결과가 없어요",
+  "allView": "전체 보기",
+  "lists": "태그별",
+  "stats": "통계",
+  "filterAll": "전체",
+  "filterMonth": "이번 달",
+  "filterWeek": "이번 주",
+  "noTodos": "할 일이 없어요",
+  "noTags": "태그가 없어요",
+  "todosCount": "{count}개",
+  "@todosCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "statsThisWeek": "이번 주",
+  "statsThisMonth": "이번 달",
+  "statsStreak": "연속",
+  "statsTotal": "전체 완료",
+  "statsContribution": "최근 활동",
+  "statsCompleted": "완료",
+  "streakDays": "{days}일",
+  "@streakDays": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
   "actionCancel": "취소",
   "actionAdd": "추가",
   "actionSave": "저장",

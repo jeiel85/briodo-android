@@ -218,6 +218,58 @@ class AppLocalizationsKo extends AppLocalizations {
   String get searchEmpty => '결과가 없어요';
 
   @override
+  String get allView => '전체 보기';
+
+  @override
+  String get lists => '태그별';
+
+  @override
+  String get stats => '통계';
+
+  @override
+  String get filterAll => '전체';
+
+  @override
+  String get filterMonth => '이번 달';
+
+  @override
+  String get filterWeek => '이번 주';
+
+  @override
+  String get noTodos => '할 일이 없어요';
+
+  @override
+  String get noTags => '태그가 없어요';
+
+  @override
+  String todosCount(int count) {
+    return '$count개';
+  }
+
+  @override
+  String get statsThisWeek => '이번 주';
+
+  @override
+  String get statsThisMonth => '이번 달';
+
+  @override
+  String get statsStreak => '연속';
+
+  @override
+  String get statsTotal => '전체 완료';
+
+  @override
+  String get statsContribution => '최근 활동';
+
+  @override
+  String get statsCompleted => '완료';
+
+  @override
+  String streakDays(int days) {
+    return '$days일';
+  }
+
+  @override
   String get actionCancel => '취소';
 
   @override

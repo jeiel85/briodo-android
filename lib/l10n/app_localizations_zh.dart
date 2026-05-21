@@ -217,6 +217,58 @@ class AppLocalizationsZh extends AppLocalizations {
   String get searchEmpty => '没有结果';
 
   @override
+  String get allView => '全部';
+
+  @override
+  String get lists => '标签';
+
+  @override
+  String get stats => '统计';
+
+  @override
+  String get filterAll => '全部';
+
+  @override
+  String get filterMonth => '本月';
+
+  @override
+  String get filterWeek => '本周';
+
+  @override
+  String get noTodos => '没有事项';
+
+  @override
+  String get noTags => '暂无标签';
+
+  @override
+  String todosCount(int count) {
+    return '$count 项';
+  }
+
+  @override
+  String get statsThisWeek => '本周';
+
+  @override
+  String get statsThisMonth => '本月';
+
+  @override
+  String get statsStreak => '连续';
+
+  @override
+  String get statsTotal => '总完成';
+
+  @override
+  String get statsContribution => '近期活动';
+
+  @override
+  String get statsCompleted => '已完成';
+
+  @override
+  String streakDays(int days) {
+    return '$days 天';
+  }
+
+  @override
   String get actionCancel => '取消';
 
   @override

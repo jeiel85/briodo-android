@@ -510,6 +510,102 @@ abstract class AppLocalizations {
   /// **'결과가 없어요'**
   String get searchEmpty;
 
+  /// No description provided for @allView.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체 보기'**
+  String get allView;
+
+  /// No description provided for @lists.
+  ///
+  /// In ko, this message translates to:
+  /// **'태그별'**
+  String get lists;
+
+  /// No description provided for @stats.
+  ///
+  /// In ko, this message translates to:
+  /// **'통계'**
+  String get stats;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체'**
+  String get filterAll;
+
+  /// No description provided for @filterMonth.
+  ///
+  /// In ko, this message translates to:
+  /// **'이번 달'**
+  String get filterMonth;
+
+  /// No description provided for @filterWeek.
+  ///
+  /// In ko, this message translates to:
+  /// **'이번 주'**
+  String get filterWeek;
+
+  /// No description provided for @noTodos.
+  ///
+  /// In ko, this message translates to:
+  /// **'할 일이 없어요'**
+  String get noTodos;
+
+  /// No description provided for @noTags.
+  ///
+  /// In ko, this message translates to:
+  /// **'태그가 없어요'**
+  String get noTags;
+
+  /// No description provided for @todosCount.
+  ///
+  /// In ko, this message translates to:
+  /// **'{count}개'**
+  String todosCount(int count);
+
+  /// No description provided for @statsThisWeek.
+  ///
+  /// In ko, this message translates to:
+  /// **'이번 주'**
+  String get statsThisWeek;
+
+  /// No description provided for @statsThisMonth.
+  ///
+  /// In ko, this message translates to:
+  /// **'이번 달'**
+  String get statsThisMonth;
+
+  /// No description provided for @statsStreak.
+  ///
+  /// In ko, this message translates to:
+  /// **'연속'**
+  String get statsStreak;
+
+  /// No description provided for @statsTotal.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체 완료'**
+  String get statsTotal;
+
+  /// No description provided for @statsContribution.
+  ///
+  /// In ko, this message translates to:
+  /// **'최근 활동'**
+  String get statsContribution;
+
+  /// No description provided for @statsCompleted.
+  ///
+  /// In ko, this message translates to:
+  /// **'완료'**
+  String get statsCompleted;
+
+  /// No description provided for @streakDays.
+  ///
+  /// In ko, this message translates to:
+  /// **'{days}일'**
+  String streakDays(int days);
+
   /// No description provided for @actionCancel.
   ///
   /// In ko, this message translates to:

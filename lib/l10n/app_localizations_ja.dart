@@ -217,6 +217,58 @@ class AppLocalizationsJa extends AppLocalizations {
   String get searchEmpty => '結果がありません';
 
   @override
+  String get allView => 'すべて';
+
+  @override
+  String get lists => 'タグ';
+
+  @override
+  String get stats => '統計';
+
+  @override
+  String get filterAll => 'すべて';
+
+  @override
+  String get filterMonth => '今月';
+
+  @override
+  String get filterWeek => '今週';
+
+  @override
+  String get noTodos => '予定がありません';
+
+  @override
+  String get noTags => 'タグがありません';
+
+  @override
+  String todosCount(int count) {
+    return '$count件';
+  }
+
+  @override
+  String get statsThisWeek => '今週';
+
+  @override
+  String get statsThisMonth => '今月';
+
+  @override
+  String get statsStreak => '連続';
+
+  @override
+  String get statsTotal => '総完了数';
+
+  @override
+  String get statsContribution => '最近の活動';
+
+  @override
+  String get statsCompleted => '完了';
+
+  @override
+  String streakDays(int days) {
+    return '$days日';
+  }
+
+  @override
   String get actionCancel => 'キャンセル';
 
   @override

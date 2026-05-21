@@ -12,8 +12,11 @@ import '../services/calendar_sync_service.dart';
 import '../services/notifications_service.dart';
 import '../widgets/calendar_header.dart';
 import '../widgets/todo_editor_dialog.dart';
+import 'all_view_screen.dart';
+import 'lists_screen.dart';
 import 'search_screen.dart';
 import 'settings_screen.dart';
+import 'stats_screen.dart';
 
 /// todo의 알림 발송 시각.
 /// time(HH:MM)이 있으면 → time - reminderOffset
@@ -245,14 +248,71 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
           ),
-          IconButton(
-            tooltip: l.settings,
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const SettingsScreen(),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (v) {
+              Widget target;
+              switch (v) {
+                case 'all':
+                  target = const AllViewScreen();
+                  break;
+                case 'lists':
+                  target = const ListsScreen();
+                  break;
+                case 'stats':
+                  target = const StatsScreen();
+                  break;
+                case 'settings':
+                default:
+                  target = const SettingsScreen();
+              }
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => target),
+              );
+            },
+            itemBuilder: (_) => [
+              PopupMenuItem(
+                value: 'all',
+                child: Row(
+                  children: [
+                    const Icon(Icons.view_list_outlined),
+                    const SizedBox(width: 12),
+                    Text(l.allView),
+                  ],
+                ),
               ),
-            ),
+              PopupMenuItem(
+                value: 'lists',
+                child: Row(
+                  children: [
+                    const Icon(Icons.label_outline),
+                    const SizedBox(width: 12),
+                    Text(l.lists),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'stats',
+                child: Row(
+                  children: [
+                    const Icon(Icons.bar_chart_outlined),
+                    const SizedBox(width: 12),
+                    Text(l.stats),
+                  ],
+                ),
+              ),
+              const PopupMenuDivider(),
+              PopupMenuItem(
+                value: 'settings',
+                child: Row(
+                  children: [
+                    const Icon(Icons.settings_outlined),
+                    const SizedBox(width: 12),
+                    Text(l.settings),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

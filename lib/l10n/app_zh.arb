@@ -79,6 +79,32 @@
   "search": "搜索",
   "searchHint": "内容, 备注, 标签",
   "searchEmpty": "没有结果",
+  "allView": "全部",
+  "lists": "标签",
+  "stats": "统计",
+  "filterAll": "全部",
+  "filterMonth": "本月",
+  "filterWeek": "本周",
+  "noTodos": "没有事项",
+  "noTags": "暂无标签",
+  "todosCount": "{count} 项",
+  "@todosCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "statsThisWeek": "本周",
+  "statsThisMonth": "本月",
+  "statsStreak": "连续",
+  "statsTotal": "总完成",
+  "statsContribution": "近期活动",
+  "statsCompleted": "已完成",
+  "streakDays": "{days} 天",
+  "@streakDays": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
   "actionCancel": "取消",
   "actionAdd": "添加",
   "actionSave": "保存",

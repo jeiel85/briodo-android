@@ -223,6 +223,58 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchEmpty => 'No results';
 
   @override
+  String get allView => 'All';
+
+  @override
+  String get lists => 'Tags';
+
+  @override
+  String get stats => 'Stats';
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String get filterMonth => 'This month';
+
+  @override
+  String get filterWeek => 'This week';
+
+  @override
+  String get noTodos => 'Nothing here';
+
+  @override
+  String get noTags => 'No tags yet';
+
+  @override
+  String todosCount(int count) {
+    return '$count items';
+  }
+
+  @override
+  String get statsThisWeek => 'This week';
+
+  @override
+  String get statsThisMonth => 'This month';
+
+  @override
+  String get statsStreak => 'Streak';
+
+  @override
+  String get statsTotal => 'Total done';
+
+  @override
+  String get statsContribution => 'Recent activity';
+
+  @override
+  String get statsCompleted => 'completed';
+
+  @override
+  String streakDays(int days) {
+    return '$days days';
+  }
+
+  @override
   String get actionCancel => 'Cancel';
 
   @override

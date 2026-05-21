@@ -79,6 +79,32 @@
   "search": "Search",
   "searchHint": "title, note, tag",
   "searchEmpty": "No results",
+  "allView": "All",
+  "lists": "Tags",
+  "stats": "Stats",
+  "filterAll": "All",
+  "filterMonth": "This month",
+  "filterWeek": "This week",
+  "noTodos": "Nothing here",
+  "noTags": "No tags yet",
+  "todosCount": "{count} items",
+  "@todosCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "statsThisWeek": "This week",
+  "statsThisMonth": "This month",
+  "statsStreak": "Streak",
+  "statsTotal": "Total done",
+  "statsContribution": "Recent activity",
+  "statsCompleted": "completed",
+  "streakDays": "{days} days",
+  "@streakDays": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
   "actionCancel": "Cancel",
   "actionAdd": "Add",
   "actionSave": "Save",

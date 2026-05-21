@@ -79,6 +79,32 @@
   "search": "検索",
   "searchHint": "内容, メモ, タグ",
   "searchEmpty": "結果がありません",
+  "allView": "すべて",
+  "lists": "タグ",
+  "stats": "統計",
+  "filterAll": "すべて",
+  "filterMonth": "今月",
+  "filterWeek": "今週",
+  "noTodos": "予定がありません",
+  "noTags": "タグがありません",
+  "todosCount": "{count}件",
+  "@todosCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "statsThisWeek": "今週",
+  "statsThisMonth": "今月",
+  "statsStreak": "連続",
+  "statsTotal": "総完了数",
+  "statsContribution": "最近の活動",
+  "statsCompleted": "完了",
+  "streakDays": "{days}日",
+  "@streakDays": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
   "actionCancel": "キャンセル",
   "actionAdd": "追加",
   "actionSave": "保存",
