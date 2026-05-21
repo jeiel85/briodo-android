@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../providers/auth_provider.dart';
 import '../providers/todos_provider.dart';
@@ -48,15 +49,45 @@ class HomeScreen extends ConsumerWidget {
     await repo.add(text: text, date: _todayStr());
   }
 
+  /// 익명 사용자가 v1.1.17 데이터를 잃지 않도록 link 경로로 Google 계정 결합.
+  /// 결과는 SnackBar로만 알림 — 실패해도 UI는 그대로.
+  Future<void> _linkToGoogle(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await signInWithGoogle();
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Google 계정으로 연결됐어요.')),
+      );
+    } on GoogleSignInException catch (e) {
+      if (e.code != GoogleSignInExceptionCode.canceled) {
+        messenger.showSnackBar(
+          SnackBar(content: Text('연결 실패: ${e.code.name}')),
+        );
+      }
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('연결 실패: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final todosAsync = ref.watch(todosStreamProvider);
     final repo = ref.read(todosRepositoryProvider);
+    final isAnonymous = ref.watch(authStateProvider).maybeWhen(
+          data: (user) => user?.isAnonymous ?? false,
+          orElse: () => false,
+        );
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('BrioDo'),
         actions: [
+          if (isAnonymous)
+            IconButton(
+              tooltip: 'Google 계정 연결',
+              icon: const Icon(Icons.link),
+              onPressed: () => _linkToGoogle(context),
+            ),
           IconButton(
             tooltip: '로그아웃',
             icon: const Icon(Icons.logout),

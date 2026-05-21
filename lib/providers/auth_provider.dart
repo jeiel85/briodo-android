@@ -20,6 +20,11 @@ final currentUidProvider = Provider<String?>((ref) {
 /// 호출 전에 main()에서 [GoogleSignIn.instance.initialize]가 한 번 실행돼 있어야 함.
 /// 사용자가 시트를 닫으면 [GoogleSignInException](code: canceled)를 던지므로
 /// 호출 측에서 try/catch로 구분 처리.
+///
+/// v1.1.17(Capacitor) 익명 사용자가 자동 업데이트로 들어왔을 때는
+/// [User.linkWithCredential]로 UID와 Firestore 데이터를 보존한다.
+/// 이미 다른 계정에 묶인 Google credential이면 일반 sign-in으로 폴백
+/// — 익명 측 데이터는 orphan이 되지만 사용자는 막힘 없이 계속 사용.
 Future<UserCredential> signInWithGoogle() async {
   final googleUser = await GoogleSignIn.instance.authenticate();
   final idToken = googleUser.authentication.idToken;
@@ -27,6 +32,19 @@ Future<UserCredential> signInWithGoogle() async {
     throw StateError('Google idToken을 받지 못했습니다.');
   }
   final credential = GoogleAuthProvider.credential(idToken: idToken);
+
+  final current = FirebaseAuth.instance.currentUser;
+  if (current != null && current.isAnonymous) {
+    try {
+      return await current.linkWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'credential-already-in-use' ||
+          e.code == 'email-already-in-use') {
+        return FirebaseAuth.instance.signInWithCredential(credential);
+      }
+      rethrow;
+    }
+  }
   return FirebaseAuth.instance.signInWithCredential(credential);
 }
 
