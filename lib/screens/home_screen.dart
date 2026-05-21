@@ -1,7 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../providers/auth_provider.dart';
 import '../providers/todos_provider.dart';
 
 /// 오늘 할 일 리스트 + FAB.
@@ -60,7 +60,7 @@ class HomeScreen extends ConsumerWidget {
           IconButton(
             tooltip: '로그아웃',
             icon: const Icon(Icons.logout),
-            onPressed: () => FirebaseAuth.instance.signOut(),
+            onPressed: () => signOutCompletely(),
           ),
         ],
       ),

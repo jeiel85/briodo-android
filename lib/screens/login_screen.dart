@@ -1,11 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
-/// 첫 컷: 익명 로그인 버튼.
-/// 추후 Google 로그인으로 교체할 때:
-///   1. android/app SHA-1 fingerprint를 Firebase Console에 등록
-///   2. google_sign_in 7.x API로 GoogleAuthProvider.credential 생성
-///   3. FirebaseAuth.signInWithCredential 호출
+import '../providers/auth_provider.dart';
+
+/// 진입 화면 — Google 로그인 1버튼.
+/// 익명 로그인은 v1.1.17(Capacitor) → Flutter 마이그레이션 과정에서 폐기.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -17,15 +16,20 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _busy = false;
   String? _error;
 
-  Future<void> _signInAnonymously() async {
+  Future<void> _signInWithGoogle() async {
     setState(() {
       _busy = true;
       _error = null;
     });
     try {
-      await FirebaseAuth.instance.signInAnonymously();
+      await signInWithGoogle();
+    } on GoogleSignInException catch (e) {
+      // 사용자가 시트를 닫은 경우는 조용히 무시.
+      if (e.code != GoogleSignInExceptionCode.canceled) {
+        setState(() => _error = '로그인에 실패했어요 (${e.code.name})');
+      }
     } catch (e) {
-      setState(() => _error = e.toString());
+      setState(() => _error = '로그인에 실패했어요\n$e');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -55,14 +59,21 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 48),
-              FilledButton(
-                onPressed: _busy ? null : _signInAnonymously,
-                child: Padding(
+              FilledButton.icon(
+                onPressed: _busy ? null : _signInWithGoogle,
+                icon: _busy
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.login),
+                label: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
+                    horizontal: 16,
                     vertical: 12,
                   ),
-                  child: Text(_busy ? '로그인 중…' : '익명으로 시작'),
+                  child: Text(_busy ? '로그인 중…' : 'Google로 시작'),
                 ),
               ),
               if (_error != null) ...[
