@@ -2,55 +2,70 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import '../models/todo.dart';
 import '../providers/auth_provider.dart';
 import '../providers/todos_provider.dart';
+import '../widgets/todo_editor_dialog.dart';
 
-/// 오늘 할 일 리스트 + FAB.
-/// 패턴 예시 — 다른 화면도 ConsumerWidget + ref.watch(provider) 형태로 작성.
+/// 선택 날짜의 할 일 리스트.
+/// 상단 헤더로 날짜 이동(‹ ›/DatePicker), FAB로 추가, 항목 탭으로 편집.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
-  String _todayStr() {
-    final now = DateTime.now();
-    final m = now.month.toString().padLeft(2, '0');
-    final d = now.day.toString().padLeft(2, '0');
-    return '${now.year}-$m-$d';
+  static const _priorityOrder = {'urgent': 0, 'high': 1, 'medium': 2, 'low': 3};
+
+  Color _priorityColor(String p, ColorScheme cs) {
+    switch (p) {
+      case 'urgent':
+        return cs.error;
+      case 'high':
+        return Colors.orange;
+      case 'low':
+        return cs.outline;
+      case 'medium':
+      default:
+        return cs.primary;
+    }
   }
 
-  Future<void> _showAddDialog(BuildContext context, WidgetRef ref) async {
+  Future<void> _openEditor(
+    BuildContext context,
+    WidgetRef ref, {
+    Todo? initial,
+  }) async {
     final repo = ref.read(todosRepositoryProvider);
     if (repo == null) return;
-
-    final controller = TextEditingController();
-    final text = await showDialog<String>(
+    final selected = ref.read(selectedDateProvider);
+    final result = await showDialog<TodoEditorResult>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('할 일 추가'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(hintText: '내용을 입력하세요'),
-          onSubmitted: (v) => Navigator.pop(ctx, v.trim()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('취소'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('저장'),
-          ),
-        ],
+      builder: (_) => TodoEditorDialog(
+        initial: initial,
+        defaultDate: selected,
       ),
     );
+    if (result == null) return;
 
-    if (text == null || text.isEmpty) return;
-    await repo.add(text: text, date: _todayStr());
+    if (initial == null) {
+      await repo.add(
+        text: result.text,
+        description: result.description,
+        date: result.date,
+        time: result.time,
+        tags: result.tags,
+        priority: result.priority,
+      );
+    } else {
+      await repo.update(initial.copyWith(
+        text: result.text,
+        description: result.description,
+        date: result.date,
+        time: result.time,
+        tags: result.tags,
+        priority: result.priority,
+      ));
+    }
   }
 
-  /// 익명 사용자가 v1.1.17 데이터를 잃지 않도록 link 경로로 Google 계정 결합.
-  /// 결과는 SnackBar로만 알림 — 실패해도 UI는 그대로.
   Future<void> _linkToGoogle(BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
     try {
@@ -69,10 +84,27 @@ class HomeScreen extends ConsumerWidget {
     }
   }
 
+  Future<void> _jumpDate(BuildContext context, WidgetRef ref) async {
+    final cur = parseDateKey(ref.read(selectedDateProvider));
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: cur,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      ref.read(selectedDateProvider.notifier).set(dateKey(picked));
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     final todosAsync = ref.watch(todosStreamProvider);
     final repo = ref.read(todosRepositoryProvider);
+    final selected = ref.watch(selectedDateProvider);
+    final today = dateKey(DateTime.now());
+    final isToday = selected == today;
     final isAnonymous = ref.watch(authStateProvider).maybeWhen(
           data: (user) => user?.isAnonymous ?? false,
           orElse: () => false,
@@ -82,6 +114,11 @@ class HomeScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('BrioDo'),
         actions: [
+          if (!isToday)
+            TextButton(
+              onPressed: () => ref.read(selectedDateProvider.notifier).resetToToday(),
+              child: const Text('오늘'),
+            ),
           if (isAnonymous)
             IconButton(
               tooltip: 'Google 계정 연결',
@@ -95,54 +132,171 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: todosAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('오류: $err')),
-        data: (todos) {
-          // 오늘 + 미완료 우선
-          final today = _todayStr();
-          final filtered = todos.where((t) => t.date == today).toList()
-            ..sort((a, b) {
-              if (a.completed != b.completed) return a.completed ? 1 : -1;
-              return a.time.compareTo(b.time);
-            });
+      body: Column(
+        children: [
+          _DateHeader(
+            selected: selected,
+            onPrev: () => ref.read(selectedDateProvider.notifier).shiftDays(-1),
+            onNext: () => ref.read(selectedDateProvider.notifier).shiftDays(1),
+            onTap: () => _jumpDate(context, ref),
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: todosAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, _) => Center(child: Text('오류: $err')),
+              data: (todos) {
+                final filtered = todos.where((t) => t.date == selected).toList()
+                  ..sort(_compareTodos);
+                if (filtered.isEmpty) {
+                  return Center(
+                    child: Text(
+                      isToday
+                          ? '오늘 할 일이 없어요\n+ 버튼으로 추가하세요'
+                          : '이 날짜에 할 일이 없어요',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  );
+                }
 
-          if (filtered.isEmpty) {
-            return const Center(
-              child: Text('오늘 할 일이 없어요\n+ 버튼으로 추가하세요',
-                  textAlign: TextAlign.center),
-            );
-          }
-
-          return ListView.builder(
-            itemCount: filtered.length,
-            itemBuilder: (ctx, i) {
-              final t = filtered[i];
-              return Dismissible(
-                key: ValueKey(t.id),
-                background: Container(color: Colors.red),
-                direction: DismissDirection.endToStart,
-                onDismissed: (_) => repo?.delete(t.id),
-                child: CheckboxListTile(
-                  value: t.completed,
-                  onChanged: (_) => repo?.toggleComplete(t),
-                  title: Text(
-                    t.text,
-                    style: t.completed
-                        ? const TextStyle(
-                            decoration: TextDecoration.lineThrough)
-                        : null,
-                  ),
-                  subtitle: t.time.isEmpty ? null : Text(t.time),
-                ),
-              );
-            },
-          );
-        },
+                return ListView.separated(
+                  itemCount: filtered.length,
+                  separatorBuilder: (_, _) => const Divider(height: 1, indent: 16, endIndent: 16),
+                  itemBuilder: (ctx, i) {
+                    final t = filtered[i];
+                    final color = _priorityColor(t.priority, theme.colorScheme);
+                    final subtitleParts = <String>[
+                      if (t.time.isNotEmpty) t.time,
+                      ...t.tags.map((x) => '#$x'),
+                    ];
+                    return Dismissible(
+                      key: ValueKey(t.id),
+                      background: Container(
+                        color: theme.colorScheme.errorContainer,
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Icon(Icons.delete, color: theme.colorScheme.onErrorContainer),
+                      ),
+                      direction: DismissDirection.endToStart,
+                      onDismissed: (_) => repo?.delete(t.id),
+                      child: ListTile(
+                        onTap: () => _openEditor(context, ref, initial: t),
+                        leading: GestureDetector(
+                          onTap: () => repo?.toggleComplete(t),
+                          child: Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: t.completed ? color.withValues(alpha: 0.7) : Colors.transparent,
+                              border: Border.all(color: color, width: 2),
+                            ),
+                            child: t.completed
+                                ? const Icon(Icons.check, size: 16, color: Colors.white)
+                                : null,
+                          ),
+                        ),
+                        title: Text(
+                          t.text,
+                          style: t.completed
+                              ? TextStyle(
+                                  decoration: TextDecoration.lineThrough,
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                )
+                              : null,
+                        ),
+                        subtitle: subtitleParts.isEmpty
+                            ? null
+                            : Text(
+                                subtitleParts.join('  '),
+                                style: theme.textTheme.bodySmall,
+                              ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddDialog(context, ref),
+        onPressed: () => _openEditor(context, ref),
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  /// 미완료 → 시간(없는 건 뒤) → 우선순위(urgent>high>medium>low).
+  int _compareTodos(Todo a, Todo b) {
+    if (a.completed != b.completed) return a.completed ? 1 : -1;
+    final at = a.time.isEmpty ? '99:99' : a.time;
+    final bt = b.time.isEmpty ? '99:99' : b.time;
+    final tc = at.compareTo(bt);
+    if (tc != 0) return tc;
+    final ap = _priorityOrder[a.priority] ?? 2;
+    final bp = _priorityOrder[b.priority] ?? 2;
+    return ap.compareTo(bp);
+  }
+}
+
+class _DateHeader extends StatelessWidget {
+  const _DateHeader({
+    required this.selected,
+    required this.onPrev,
+    required this.onNext,
+    required this.onTap,
+  });
+
+  final String selected;
+  final VoidCallback onPrev;
+  final VoidCallback onNext;
+  final VoidCallback onTap;
+
+  static const _weekdays = ['월', '화', '수', '목', '금', '토', '일'];
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final d = parseDateKey(selected);
+    final wd = _weekdays[(d.weekday - 1).clamp(0, 6)];
+    final label = '${d.year}.${d.month.toString().padLeft(2, '0')}.${d.day.toString().padLeft(2, '0')} ($wd)';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            onPressed: onPrev,
+            icon: const Icon(Icons.chevron_left),
+            tooltip: '이전 날짜',
+          ),
+          Expanded(
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: onNext,
+            icon: const Icon(Icons.chevron_right),
+            tooltip: '다음 날짜',
+          ),
+        ],
       ),
     );
   }
