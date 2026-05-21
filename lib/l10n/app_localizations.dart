@@ -216,6 +216,36 @@ abstract class AppLocalizations {
   /// **'시간이 지정되지 않은 일정의 알림이 발송될 시각'**
   String get allDayReminderTimeSubtitle;
 
+  /// No description provided for @calendarSync.
+  ///
+  /// In ko, this message translates to:
+  /// **'Google Calendar 동기화'**
+  String get calendarSync;
+
+  /// No description provided for @calendarSyncSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'할 일을 Google Calendar에 BrioDo 캘린더로 양방향 동기화'**
+  String get calendarSyncSubtitle;
+
+  /// No description provided for @calendarNoTimePolicy.
+  ///
+  /// In ko, this message translates to:
+  /// **'시간 없는 일정'**
+  String get calendarNoTimePolicy;
+
+  /// No description provided for @calendarNoTimeAllday.
+  ///
+  /// In ko, this message translates to:
+  /// **'종일 일정으로 동기화'**
+  String get calendarNoTimeAllday;
+
+  /// No description provided for @calendarNoTimeSkip.
+  ///
+  /// In ko, this message translates to:
+  /// **'동기화 안 함'**
+  String get calendarNoTimeSkip;
+
   /// No description provided for @language.
   ///
   /// In ko, this message translates to:

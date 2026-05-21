@@ -66,6 +66,21 @@ class AppLocalizationsJa extends AppLocalizations {
   String get allDayReminderTimeSubtitle => '時刻が指定されていない予定の通知を送る時刻';
 
   @override
+  String get calendarSync => 'Googleカレンダー同期';
+
+  @override
+  String get calendarSyncSubtitle => '予定をGoogleカレンダーのBrioDoカレンダーと双方向同期';
+
+  @override
+  String get calendarNoTimePolicy => '時刻のない予定';
+
+  @override
+  String get calendarNoTimeAllday => '終日予定として同期';
+
+  @override
+  String get calendarNoTimeSkip => '同期しない';
+
+  @override
   String get language => '言語';
 
   @override

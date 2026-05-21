@@ -8,6 +8,7 @@ import '../models/todo.dart';
 import '../providers/app_settings_provider.dart';
 import '../providers/todos_provider.dart';
 import '../services/analytics_service.dart';
+import '../services/calendar_sync_service.dart';
 import '../services/notifications_service.dart';
 import '../widgets/calendar_header.dart';
 import '../widgets/todo_editor_dialog.dart';
@@ -98,23 +99,22 @@ class HomeScreen extends ConsumerWidget {
         priority: result.priority,
         tagCount: result.tags.length,
       ));
-      await _rescheduleNotification(
-        ref,
-        Todo(
-          id: newId,
-          uid: '',
-          text: result.text,
-          description: result.description,
-          date: result.date,
-          time: result.time,
-          tags: result.tags,
-          priority: result.priority,
-          reminderOffset: result.reminderOffset,
-          subtasks: result.subtasks,
-          recurrence: result.recurrence,
-          recurrenceEnd: result.recurrenceEnd,
-        ),
+      final newTodo = Todo(
+        id: newId,
+        uid: '',
+        text: result.text,
+        description: result.description,
+        date: result.date,
+        time: result.time,
+        tags: result.tags,
+        priority: result.priority,
+        reminderOffset: result.reminderOffset,
+        subtasks: result.subtasks,
+        recurrence: result.recurrence,
+        recurrenceEnd: result.recurrenceEnd,
       );
+      await _rescheduleNotification(ref, newTodo);
+      unawaited(_syncToCalendar(ref, newTodo));
     } else {
       final updated = initial.copyWith(
         text: result.text,
@@ -130,7 +130,16 @@ class HomeScreen extends ConsumerWidget {
       );
       await repo.update(updated);
       await _rescheduleNotification(ref, updated);
+      unawaited(_syncToCalendar(ref, updated));
     }
+  }
+
+  /// calendarSyncEnabled가 켜져 있으면 todo를 Google Calendar로 push.
+  Future<void> _syncToCalendar(WidgetRef ref, Todo todo) async {
+    final s = ref.read(appSettingsProvider);
+    if (!s.calendarSyncEnabled) return;
+    await CalendarSyncService.instance
+        .pushTodo(todo, syncNoTimePolicy: s.calendarSyncNoTime);
   }
 
   /// 반복 일정 완료 시 다음 occurrence 자동 생성.
@@ -303,6 +312,10 @@ class HomeScreen extends ConsumerWidget {
                         repo.delete(t.id);
                         unawaited(NotificationsService.instance.cancel(t.id));
                         unawaited(AnalyticsService.instance.logTodoDelete());
+                        if (ref.read(appSettingsProvider).calendarSyncEnabled) {
+                          unawaited(
+                              CalendarSyncService.instance.deleteTodo(t.id));
+                        }
                       },
                       child: ListTile(
                         onTap: () => _openEditor(context, ref, initial: t),

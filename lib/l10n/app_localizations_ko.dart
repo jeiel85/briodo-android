@@ -66,6 +66,22 @@ class AppLocalizationsKo extends AppLocalizations {
   String get allDayReminderTimeSubtitle => '시간이 지정되지 않은 일정의 알림이 발송될 시각';
 
   @override
+  String get calendarSync => 'Google Calendar 동기화';
+
+  @override
+  String get calendarSyncSubtitle =>
+      '할 일을 Google Calendar에 BrioDo 캘린더로 양방향 동기화';
+
+  @override
+  String get calendarNoTimePolicy => '시간 없는 일정';
+
+  @override
+  String get calendarNoTimeAllday => '종일 일정으로 동기화';
+
+  @override
+  String get calendarNoTimeSkip => '동기화 안 함';
+
+  @override
   String get language => '언어';
 
   @override

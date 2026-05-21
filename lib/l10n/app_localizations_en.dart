@@ -70,6 +70,22 @@ class AppLocalizationsEn extends AppLocalizations {
       'When to send reminders for items without a set time';
 
   @override
+  String get calendarSync => 'Google Calendar sync';
+
+  @override
+  String get calendarSyncSubtitle =>
+      'Two-way sync of items with the BrioDo calendar in Google';
+
+  @override
+  String get calendarNoTimePolicy => 'Items without a time';
+
+  @override
+  String get calendarNoTimeAllday => 'Sync as all-day events';
+
+  @override
+  String get calendarNoTimeSkip => 'Don\'t sync';
+
+  @override
   String get language => 'Language';
 
   @override

@@ -66,6 +66,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get allDayReminderTimeSubtitle => '未设置时间的事项的提醒发送时刻';
 
   @override
+  String get calendarSync => 'Google 日历同步';
+
+  @override
+  String get calendarSyncSubtitle => '将事项与 Google 日历中的 BrioDo 日历双向同步';
+
+  @override
+  String get calendarNoTimePolicy => '无时间的事项';
+
+  @override
+  String get calendarNoTimeAllday => '作为全天事件同步';
+
+  @override
+  String get calendarNoTimeSkip => '不同步';
+
+  @override
   String get language => '语言';
 
   @override

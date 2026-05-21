@@ -194,6 +194,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: Text(loggedIn ? l.syncedToCloud : l.deviceOnly),
             subtitle: Text(loggedIn ? l.syncedSubtitle : l.deviceOnlySubtitle),
           ),
+          if (loggedIn) _CalendarSyncSection(),
           const Divider(height: 32),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -247,6 +248,58 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _CalendarSyncSection extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
+    final s = ref.watch(appSettingsProvider);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SwitchListTile(
+          secondary: const Icon(Icons.event_repeat),
+          title: Text(l.calendarSync),
+          subtitle: Text(l.calendarSyncSubtitle),
+          value: s.calendarSyncEnabled,
+          onChanged: (v) =>
+              ref.read(appSettingsProvider.notifier).setCalendarSyncEnabled(v),
+        ),
+        if (s.calendarSyncEnabled)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l.calendarNoTimePolicy,
+                    style: Theme.of(context).textTheme.labelMedium),
+                const SizedBox(height: 4),
+                Wrap(
+                  spacing: 6,
+                  children: [
+                    ChoiceChip(
+                      label: Text(l.calendarNoTimeAllday),
+                      selected: s.calendarSyncNoTime == 'allday',
+                      onSelected: (_) => ref
+                          .read(appSettingsProvider.notifier)
+                          .setCalendarSyncNoTime('allday'),
+                    ),
+                    ChoiceChip(
+                      label: Text(l.calendarNoTimeSkip),
+                      selected: s.calendarSyncNoTime == 'skip',
+                      onSelected: (_) => ref
+                          .read(appSettingsProvider.notifier)
+                          .setCalendarSyncNoTime('skip'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }
