@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 import '../models/todo.dart';
-import '../providers/auth_provider.dart';
 import '../providers/todos_provider.dart';
 import '../widgets/calendar_header.dart';
 import '../widgets/todo_editor_dialog.dart';
+import 'settings_screen.dart';
 
 /// 캘린더 + 선택 날짜의 할 일 리스트.
 class HomeScreen extends ConsumerWidget {
@@ -34,7 +33,6 @@ class HomeScreen extends ConsumerWidget {
     Todo? initial,
   }) async {
     final repo = ref.read(todosRepositoryProvider);
-    if (repo == null) return;
     final selected = ref.read(selectedDateProvider);
     final result = await showDialog<TodoEditorResult>(
       context: context,
@@ -66,24 +64,6 @@ class HomeScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _linkToGoogle(BuildContext context) async {
-    final messenger = ScaffoldMessenger.of(context);
-    try {
-      await signInWithGoogle();
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Google 계정으로 연결됐어요.')),
-      );
-    } on GoogleSignInException catch (e) {
-      if (e.code != GoogleSignInExceptionCode.canceled) {
-        messenger.showSnackBar(
-          SnackBar(content: Text('연결 실패: ${e.code.name}')),
-        );
-      }
-    } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('연결 실패: $e')));
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -92,10 +72,6 @@ class HomeScreen extends ConsumerWidget {
     final selected = ref.watch(selectedDateProvider);
     final today = dateKey(DateTime.now());
     final isToday = selected == today;
-    final isAnonymous = ref.watch(authStateProvider).maybeWhen(
-          data: (user) => user?.isAnonymous ?? false,
-          orElse: () => false,
-        );
 
     final allTodos = todosAsync.maybeWhen(
       data: (list) => list,
@@ -111,16 +87,14 @@ class HomeScreen extends ConsumerWidget {
               onPressed: () => ref.read(selectedDateProvider.notifier).resetToToday(),
               child: const Text('오늘'),
             ),
-          if (isAnonymous)
-            IconButton(
-              tooltip: 'Google 계정 연결',
-              icon: const Icon(Icons.link),
-              onPressed: () => _linkToGoogle(context),
-            ),
           IconButton(
-            tooltip: '로그아웃',
-            icon: const Icon(Icons.logout),
-            onPressed: () => signOutCompletely(),
+            tooltip: '설정',
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const SettingsScreen(),
+              ),
+            ),
           ),
         ],
       ),
@@ -172,11 +146,11 @@ class HomeScreen extends ConsumerWidget {
                         child: Icon(Icons.delete, color: theme.colorScheme.onErrorContainer),
                       ),
                       direction: DismissDirection.endToStart,
-                      onDismissed: (_) => repo?.delete(t.id),
+                      onDismissed: (_) => repo.delete(t.id),
                       child: ListTile(
                         onTap: () => _openEditor(context, ref, initial: t),
                         leading: GestureDetector(
-                          onTap: () => repo?.toggleComplete(t),
+                          onTap: () => repo.toggleComplete(t),
                           child: Container(
                             width: 24,
                             height: 24,

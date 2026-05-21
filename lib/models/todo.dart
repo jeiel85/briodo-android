@@ -68,6 +68,35 @@ class Todo {
         // createdAt은 신규 생성 시 serverTimestamp()로 세팅하므로 여기 포함 X
       };
 
+  /// 로컬(SharedPreferences) 저장용 JSON. id/createdAt 포함.
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'uid': uid,
+        'text': text,
+        'description': description,
+        'date': date,
+        'time': time,
+        'tags': tags,
+        'priority': priority,
+        'completed': completed,
+        'createdAt': createdAt?.millisecondsSinceEpoch,
+      };
+
+  factory Todo.fromJson(Map<String, dynamic> j) => Todo(
+        id: (j['id'] ?? '') as String,
+        uid: (j['uid'] ?? '') as String,
+        text: (j['text'] ?? '') as String,
+        description: (j['description'] ?? '') as String,
+        date: (j['date'] ?? '') as String,
+        time: (j['time'] ?? '') as String,
+        tags: List<String>.from((j['tags'] as List?) ?? const []),
+        priority: (j['priority'] ?? 'medium') as String,
+        completed: (j['completed'] ?? false) as bool,
+        createdAt: j['createdAt'] is int
+            ? DateTime.fromMillisecondsSinceEpoch(j['createdAt'] as int)
+            : null,
+      );
+
   Todo copyWith({
     String? text,
     String? description,
