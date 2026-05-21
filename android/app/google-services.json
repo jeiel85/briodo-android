@@ -1,0 +1,101 @@
+{
+  "project_info": {
+    "project_number": "758825654936",
+    "firebase_url": "https://todoest-e560b-default-rtdb.firebaseio.com",
+    "project_id": "todoest-e560b",
+    "storage_bucket": "todoest-e560b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:758825654936:android:e85e3e4932f5b90a04ceed",
+        "android_client_info": {
+          "package_name": "app.briodo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "758825654936-6kb0b8lfs6ch3bfo8ohjiptpgknm64ur.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "app.briodo",
+            "certificate_hash": "c4cf5d3d01de716a63da73c53634c2cd9e3933ae"
+          }
+        },
+        {
+          "client_id": "758825654936-8t0p83qiqnbugroio7o7fpch6nu0hl7r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "app.briodo",
+            "certificate_hash": "1d097c59112522d5c446494e5bf97340ce57f47a"
+          }
+        },
+        {
+          "client_id": "758825654936-m1ukp983dq28ete22baqlot1fkr0t013.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "app.briodo",
+            "certificate_hash": "2ac6fcfa9e8097e49449b78c34baa145913dcf8b"
+          }
+        },
+        {
+          "client_id": "758825654936-ncdosvcsuhhkr1sus1i31essgepu554e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "app.briodo",
+            "certificate_hash": "fa8018eafe4370352a0947e6988a4162e81ebe84"
+          }
+        },
+        {
+          "client_id": "758825654936-hbi2uo4u34gqn8okvnnaqlm1ic43hfbc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzdfCHv0Zn6bGcFP0Wr-alPpSs7ekpYeU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "758825654936-hbi2uo4u34gqn8okvnnaqlm1ic43hfbc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:758825654936:android:10cd95d906980f4904ceed",
+        "android_client_info": {
+          "package_name": "app.briodo.briodo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "758825654936-hbi2uo4u34gqn8okvnnaqlm1ic43hfbc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzdfCHv0Zn6bGcFP0Wr-alPpSs7ekpYeU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "758825654936-hbi2uo4u34gqn8okvnnaqlm1ic43hfbc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
