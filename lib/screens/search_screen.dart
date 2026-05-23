@@ -5,8 +5,11 @@ import '../l10n/app_localizations.dart';
 import '../models/todo.dart';
 import '../providers/achievements_provider.dart';
 import '../providers/todos_provider.dart';
+import '../services/todo_actions.dart';
+import '../widgets/brio_components.dart';
+import '../widgets/todo_editor_sheet.dart';
 
-/// 전문 검색 화면. text/description/tags에서 substring 매치.
+/// 전문 검색 화면 — 새 BrioTodoTile 디자인.
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
@@ -16,6 +19,7 @@ class SearchScreen extends ConsumerStatefulWidget {
 
 class _SearchScreenState extends ConsumerState<SearchScreen> {
   final _ctrl = TextEditingController();
+  late final TodoActions _actions = TodoActions(ref);
   String _query = '';
 
   @override
@@ -36,7 +40,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
+    final cs = Theme.of(context).colorScheme;
     final todosAsync = ref.watch(todosStreamProvider);
 
     return Scaffold(
@@ -46,8 +50,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           autofocus: true,
           decoration: InputDecoration(
             border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
             hintText: l.searchHint,
+            hintStyle: TextStyle(
+              color: cs.onSurface.withValues(alpha: 0.4),
+              fontWeight: FontWeight.w500,
+            ),
           ),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           onChanged: (v) {
             setState(() => _query = v.trim());
             if (_query.isNotEmpty) {
@@ -55,52 +66,71 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             }
           },
         ),
+        actions: [
+          if (_query.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.clear),
+              onPressed: () {
+                _ctrl.clear();
+                setState(() => _query = '');
+              },
+            ),
+        ],
       ),
       body: todosAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text(l.errorPrefix(e.toString()))),
         data: (todos) {
           if (_query.isEmpty) {
-            return Center(
-              child: Text(
-                l.searchHint,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.outline,
-                ),
+            return BrioEmptyState(
+              title: '검색창이 대기 중입니다',
+              subtitle: '찾고 싶은 할 일, 태그, 메모의 일부 검색어를 입력해 보세요!',
+              icon: Icon(
+                Icons.manage_search,
+                size: 54,
+                color: cs.primary.withValues(alpha: 0.35),
               ),
             );
           }
           final results = todos.where((t) => _match(t, _query)).toList()
             ..sort((a, b) => b.date.compareTo(a.date));
           if (results.isEmpty) {
-            return Center(child: Text(l.searchEmpty));
+            return BrioEmptyState(
+              title: "'$_query' 결과 없음",
+              subtitle: '검색어를 잘못 입력했거나 없는 할 일입니다. 다른 키워드를 기입해 보세요!',
+              icon: Icon(
+                Icons.find_in_page,
+                size: 54,
+                color: cs.error.withValues(alpha: 0.35),
+              ),
+            );
           }
-          return ListView.separated(
-            itemCount: results.length,
-            separatorBuilder: (_, _) =>
-                const Divider(height: 1, indent: 16, endIndent: 16),
-            itemBuilder: (_, i) {
-              final t = results[i];
-              return ListTile(
-                title: Text(
-                  t.text,
-                  style: t.completed
-                      ? TextStyle(
-                          decoration: TextDecoration.lineThrough,
-                          color: theme.colorScheme.outline,
-                        )
-                      : null,
+          return ListView(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  '검색된 결과 ${results.length}개',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: cs.onSurface.withValues(alpha: 0.6),
+                  ),
                 ),
-                subtitle: Text(
-                  [
-                    t.date,
-                    if (t.time.isNotEmpty) t.time,
-                    ...t.tags.map((x) => '#$x'),
-                  ].join('  '),
-                  style: theme.textTheme.bodySmall,
+              ),
+              for (final t in results)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: BrioTodoTile(
+                    todo: t,
+                    onToggle: () => _actions.toggle(t),
+                    onTap: () => openTodoEditorSheet(context,
+                        ref: ref, initial: t),
+                    onDelete: () => _actions.delete(t),
+                  ),
                 ),
-              );
-            },
+            ],
           );
         },
       ),

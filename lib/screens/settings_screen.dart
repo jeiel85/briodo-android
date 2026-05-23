@@ -11,8 +11,10 @@ import '../providers/auth_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/todos_provider.dart';
 import '../services/analytics_service.dart';
+import '../theme.dart';
+import '../widgets/brio_components.dart';
 
-/// 계정 / 동기화 / 언어 설정.
+/// 계정 / 동기화 / 알림 / 개인화 설정 — BrioCard 섹션으로 묶었다.
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
@@ -33,7 +35,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     try {
       final localRepo = ref.read(todosRepositoryProvider);
       final localBefore = await localRepo.snapshot();
-      final hasLocal = localBefore.isNotEmpty && localRepo is LocalTodosRepository;
+      final hasLocal =
+          localBefore.isNotEmpty && localRepo is LocalTodosRepository;
 
       bool migrate = false;
       if (hasLocal && mounted) {
@@ -107,354 +110,392 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final l = AppLocalizations.of(context)!;
+    final cs = Theme.of(context).colorScheme;
     final user = ref.watch(authStateProvider).maybeWhen(
           data: (u) => u,
           orElse: () => null,
         );
     final loggedIn = user != null && !user.isAnonymous;
     final anonymous = user != null && user.isAnonymous;
+    final settings = ref.watch(appSettingsProvider);
     final currentLocale = ref.watch(localeProvider);
 
-    final String accountTitle;
-    final String accountSubtitle;
-    if (loggedIn) {
-      accountTitle = user.displayName ?? user.email ?? 'Google';
-      accountSubtitle = user.email ?? '';
-    } else if (anonymous) {
-      accountTitle = l.anonymousAccount;
-      accountSubtitle = l.anonymousSubtitle;
-    } else {
-      accountTitle = l.notSignedIn;
-      accountSubtitle = l.notSignedInSubtitle;
-    }
-
     return Scaffold(
-      appBar: AppBar(title: Text(l.settings)),
+      appBar: AppBar(
+        title: Text(
+          l.settings,
+          style: const TextStyle(fontWeight: FontWeight.w800),
+        ),
+      ),
       body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-            child: Text(
-              l.account,
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: theme.colorScheme.primary,
-              ),
-            ),
-          ),
-          ListTile(
-            leading: CircleAvatar(
-              backgroundColor: theme.colorScheme.surfaceContainerHighest,
-              child: Icon(
-                loggedIn
-                    ? Icons.person
-                    : anonymous
-                        ? Icons.person_outline
-                        : Icons.no_accounts,
-              ),
-            ),
-            title: Text(accountTitle),
-            subtitle: accountSubtitle.isEmpty ? null : Text(accountSubtitle),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: loggedIn
-                ? OutlinedButton.icon(
-                    onPressed: _busy ? null : _logout,
-                    icon: const Icon(Icons.logout),
-                    label: Text(l.signOut),
-                  )
-                : FilledButton.icon(
+          _SectionHeader(l.account),
+          BrioCard(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (!loggedIn && !anonymous) ...[
+                  Text(
+                    l.notSignedIn,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    l.notSignedInSubtitle,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: cs.onSurface.withValues(alpha: 0.55),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
                     onPressed: _busy ? null : _login,
                     icon: _busy
                         ? const SizedBox(
                             width: 18,
                             height: 18,
-                            child:
-                                CircularProgressIndicator(strokeWidth: 2),
-                          )
+                            child: CircularProgressIndicator(strokeWidth: 2))
                         : const Icon(Icons.login),
-                    label: Text(anonymous ? l.linkGoogle : l.signInWithGoogle),
+                    label: Text(l.signInWithGoogle),
                   ),
-          ),
-          const Divider(height: 32),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: Text(
-              l.storage,
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: theme.colorScheme.primary,
-              ),
+                ] else if (anonymous) ...[
+                  Text(
+                    l.anonymousAccount,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    l.anonymousSubtitle,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: cs.onSurface.withValues(alpha: 0.55),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
+                    onPressed: _busy ? null : _login,
+                    icon: const Icon(Icons.link),
+                    label: Text(l.linkGoogle),
+                  ),
+                ] else ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user.displayName ?? user.email ?? 'Google',
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            if ((user.email ?? '').isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                user.email!,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: cs.onSurface.withValues(alpha: 0.6),
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 4),
+                            Text(
+                              l.syncedToCloud,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: BrioColors.success,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      OutlinedButton(
+                        onPressed: _busy ? null : _logout,
+                        child: Text(l.signOut),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
             ),
           ),
-          ListTile(
-            leading: Icon(loggedIn ? Icons.cloud_done : Icons.smartphone),
-            title: Text(loggedIn ? l.syncedToCloud : l.deviceOnly),
-            subtitle: Text(loggedIn ? l.syncedSubtitle : l.deviceOnlySubtitle),
-          ),
-          if (loggedIn) _CalendarSyncSection(),
-          const Divider(height: 32),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: Text(
-              l.notifications,
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: theme.colorScheme.primary,
+          if (loggedIn) ...[
+            const SizedBox(height: 16),
+            _SectionHeader('Google Calendar'),
+            BrioCard(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 8, vertical: 4),
+              child: Column(
+                children: [
+                  SwitchListTile(
+                    secondary: const Icon(Icons.event_repeat),
+                    title: Text(
+                      l.calendarSync,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    subtitle: Text(l.calendarSyncSubtitle),
+                    value: settings.calendarSyncEnabled,
+                    onChanged: (v) => ref
+                        .read(appSettingsProvider.notifier)
+                        .setCalendarSyncEnabled(v),
+                  ),
+                  if (settings.calendarSyncEnabled)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l.calendarNoTimePolicy,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: cs.onSurface.withValues(alpha: 0.6),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Wrap(
+                            spacing: 6,
+                            children: [
+                              ChoiceChip(
+                                label: Text(l.calendarNoTimeAllday),
+                                selected:
+                                    settings.calendarSyncNoTime == 'allday',
+                                onSelected: (_) => ref
+                                    .read(appSettingsProvider.notifier)
+                                    .setCalendarSyncNoTime('allday'),
+                              ),
+                              ChoiceChip(
+                                label: Text(l.calendarNoTimeSkip),
+                                selected:
+                                    settings.calendarSyncNoTime == 'skip',
+                                onSelected: (_) => ref
+                                    .read(appSettingsProvider.notifier)
+                                    .setCalendarSyncNoTime('skip'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
               ),
             ),
-          ),
-          _AllDayReminderTile(),
-          _StatusBarOngoingTile(),
-          const Divider(height: 32),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: Text(
-              l.themeMode,
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: theme.colorScheme.primary,
-              ),
-            ),
-          ),
-          _ThemeSection(),
-          const Divider(height: 32),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: Text(
-              l.fontSize,
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: theme.colorScheme.primary,
-              ),
-            ),
-          ),
-          _FontSizeSection(),
-          const Divider(height: 32),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: Text(
-              l.completeMode,
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: theme.colorScheme.primary,
-              ),
-            ),
-          ),
-          _CompleteModeSection(),
-          const Divider(height: 32),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: Text(
-              l.language,
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: theme.colorScheme.primary,
-              ),
-            ),
-          ),
-          _LanguageTile(
-            label: l.languageSystem,
-            selected: currentLocale == null,
-            onTap: () =>
-                ref.read(localeProvider.notifier).setLanguageCode(null),
-          ),
-          _LanguageTile(
-            label: l.languageKorean,
-            selected: currentLocale?.languageCode == 'ko',
-            onTap: () =>
-                ref.read(localeProvider.notifier).setLanguageCode('ko'),
-          ),
-          _LanguageTile(
-            label: l.languageEnglish,
-            selected: currentLocale?.languageCode == 'en',
-            onTap: () =>
-                ref.read(localeProvider.notifier).setLanguageCode('en'),
-          ),
-          _LanguageTile(
-            label: l.languageJapanese,
-            selected: currentLocale?.languageCode == 'ja',
-            onTap: () =>
-                ref.read(localeProvider.notifier).setLanguageCode('ja'),
-          ),
-          _LanguageTile(
-            label: l.languageChinese,
-            selected: currentLocale?.languageCode == 'zh',
-            onTap: () =>
-                ref.read(localeProvider.notifier).setLanguageCode('zh'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CalendarSyncSection extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppLocalizations.of(context)!;
-    final s = ref.watch(appSettingsProvider);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SwitchListTile(
-          secondary: const Icon(Icons.event_repeat),
-          title: Text(l.calendarSync),
-          subtitle: Text(l.calendarSyncSubtitle),
-          value: s.calendarSyncEnabled,
-          onChanged: (v) =>
-              ref.read(appSettingsProvider.notifier).setCalendarSyncEnabled(v),
-        ),
-        if (s.calendarSyncEnabled)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          ],
+          const SizedBox(height: 16),
+          _SectionHeader(l.notifications),
+          BrioCard(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l.calendarNoTimePolicy,
-                    style: Theme.of(context).textTheme.labelMedium),
-                const SizedBox(height: 4),
-                Wrap(
-                  spacing: 6,
-                  children: [
-                    ChoiceChip(
-                      label: Text(l.calendarNoTimeAllday),
-                      selected: s.calendarSyncNoTime == 'allday',
-                      onSelected: (_) => ref
+                ListTile(
+                  leading: const Icon(Icons.alarm),
+                  title: Text(
+                    l.allDayReminderTime,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  subtitle: Text(l.allDayReminderTimeSubtitle),
+                  trailing: Text(
+                    '${settings.allDayReminderHour.toString().padLeft(2, '0')}:${settings.allDayReminderMinute.toString().padLeft(2, '0')}',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                  onTap: () async {
+                    final picked = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay(
+                        hour: settings.allDayReminderHour,
+                        minute: settings.allDayReminderMinute,
+                      ),
+                    );
+                    if (picked != null) {
+                      await ref
                           .read(appSettingsProvider.notifier)
-                          .setCalendarSyncNoTime('allday'),
-                    ),
-                    ChoiceChip(
-                      label: Text(l.calendarNoTimeSkip),
-                      selected: s.calendarSyncNoTime == 'skip',
-                      onSelected: (_) => ref
-                          .read(appSettingsProvider.notifier)
-                          .setCalendarSyncNoTime('skip'),
-                    ),
-                  ],
+                          .setAllDayReminderTime(
+                            hour: picked.hour,
+                            minute: picked.minute,
+                          );
+                    }
+                  },
+                ),
+                Divider(
+                  color: cs.outlineVariant,
+                  thickness: 0.6,
+                  height: 0,
+                  indent: 16,
+                  endIndent: 16,
+                ),
+                SwitchListTile(
+                  secondary: const Icon(Icons.notifications_paused_outlined),
+                  title: Text(
+                    l.statusBarOngoing,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  subtitle: Text(l.statusBarOngoingSubtitle),
+                  value: settings.statusBarOngoingEnabled,
+                  onChanged: (v) => ref
+                      .read(appSettingsProvider.notifier)
+                      .setStatusBarOngoingEnabled(v),
                 ),
               ],
             ),
           ),
-      ],
-    );
-  }
-}
-
-class _StatusBarOngoingTile extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppLocalizations.of(context)!;
-    final s = ref.watch(appSettingsProvider);
-    return SwitchListTile(
-      secondary: const Icon(Icons.notifications_paused_outlined),
-      title: Text(l.statusBarOngoing),
-      subtitle: Text(l.statusBarOngoingSubtitle),
-      value: s.statusBarOngoingEnabled,
-      onChanged: (v) =>
-          ref.read(appSettingsProvider.notifier).setStatusBarOngoingEnabled(v),
-    );
-  }
-}
-
-class _ThemeSection extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppLocalizations.of(context)!;
-    final s = ref.watch(appSettingsProvider);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: SegmentedButton<String>(
-        segments: [
-          ButtonSegment(value: 'system', label: Text(l.themeSystem)),
-          ButtonSegment(value: 'light', label: Text(l.themeLight)),
-          ButtonSegment(value: 'dark', label: Text(l.themeDark)),
-        ],
-        selected: {s.themeMode},
-        onSelectionChanged: (set) =>
-            ref.read(appSettingsProvider.notifier).setThemeMode(set.first),
-      ),
-    );
-  }
-}
-
-class _FontSizeSection extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppLocalizations.of(context)!;
-    final s = ref.watch(appSettingsProvider);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: SegmentedButton<double>(
-        segments: [
-          ButtonSegment(value: 0.9, label: Text(l.fontSizeSmall)),
-          ButtonSegment(value: 1.0, label: Text(l.fontSizeMedium)),
-          ButtonSegment(value: 1.15, label: Text(l.fontSizeLarge)),
-          ButtonSegment(value: 1.3, label: Text(l.fontSizeXLarge)),
-        ],
-        selected: {s.fontScale},
-        onSelectionChanged: (set) =>
-            ref.read(appSettingsProvider.notifier).setFontScale(set.first),
-      ),
-    );
-  }
-}
-
-class _CompleteModeSection extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppLocalizations.of(context)!;
-    final s = ref.watch(appSettingsProvider);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: SegmentedButton<String>(
-        segments: [
-          ButtonSegment(value: 'toggle', label: Text(l.completeToggle)),
-          ButtonSegment(value: 'delete', label: Text(l.completeDelete)),
-        ],
-        selected: {s.completeMode},
-        onSelectionChanged: (set) =>
-            ref.read(appSettingsProvider.notifier).setCompleteMode(set.first),
-      ),
-    );
-  }
-}
-
-class _AllDayReminderTile extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppLocalizations.of(context)!;
-    final s = ref.watch(appSettingsProvider);
-    final timeStr =
-        '${s.allDayReminderHour.toString().padLeft(2, '0')}:${s.allDayReminderMinute.toString().padLeft(2, '0')}';
-    return ListTile(
-      leading: const Icon(Icons.alarm),
-      title: Text(l.allDayReminderTime),
-      subtitle: Text(l.allDayReminderTimeSubtitle),
-      trailing: Text(timeStr, style: const TextStyle(fontSize: 16)),
-      onTap: () async {
-        final picked = await showTimePicker(
-          context: context,
-          initialTime: TimeOfDay(
-            hour: s.allDayReminderHour,
-            minute: s.allDayReminderMinute,
+          const SizedBox(height: 16),
+          _SectionHeader('테마 & 글꼴'),
+          BrioCard(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l.themeMode,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: cs.onSurface.withValues(alpha: 0.6),
+                    )),
+                const SizedBox(height: 6),
+                SegmentedButton<String>(
+                  segments: [
+                    ButtonSegment(value: 'system', label: Text(l.themeSystem)),
+                    ButtonSegment(value: 'light', label: Text(l.themeLight)),
+                    ButtonSegment(value: 'dark', label: Text(l.themeDark)),
+                  ],
+                  selected: {settings.themeMode},
+                  onSelectionChanged: (s) => ref
+                      .read(appSettingsProvider.notifier)
+                      .setThemeMode(s.first),
+                ),
+                const SizedBox(height: 16),
+                Text(l.fontSize,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: cs.onSurface.withValues(alpha: 0.6),
+                    )),
+                const SizedBox(height: 6),
+                SegmentedButton<double>(
+                  segments: [
+                    ButtonSegment(value: 0.9, label: Text(l.fontSizeSmall)),
+                    ButtonSegment(value: 1.0, label: Text(l.fontSizeMedium)),
+                    ButtonSegment(value: 1.15, label: Text(l.fontSizeLarge)),
+                    ButtonSegment(value: 1.3, label: Text(l.fontSizeXLarge)),
+                  ],
+                  selected: {settings.fontScale},
+                  onSelectionChanged: (s) => ref
+                      .read(appSettingsProvider.notifier)
+                      .setFontScale(s.first),
+                ),
+              ],
+            ),
           ),
-        );
-        if (picked != null) {
-          await ref.read(appSettingsProvider.notifier).setAllDayReminderTime(
-                hour: picked.hour,
-                minute: picked.minute,
-              );
-        }
-      },
+          const SizedBox(height: 16),
+          _SectionHeader(l.completeMode),
+          BrioCard(
+            padding: const EdgeInsets.all(16),
+            child: SegmentedButton<String>(
+              segments: [
+                ButtonSegment(
+                    value: 'toggle', label: Text(l.completeToggle)),
+                ButtonSegment(
+                    value: 'delete', label: Text(l.completeDelete)),
+              ],
+              selected: {settings.completeMode},
+              onSelectionChanged: (s) => ref
+                  .read(appSettingsProvider.notifier)
+                  .setCompleteMode(s.first),
+            ),
+          ),
+          const SizedBox(height: 16),
+          _SectionHeader(l.language),
+          BrioCard(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            child: Column(
+              children: [
+                _LangTile(
+                  label: l.languageSystem,
+                  selected: currentLocale == null,
+                  onTap: () => ref
+                      .read(localeProvider.notifier)
+                      .setLanguageCode(null),
+                ),
+                _LangTile(
+                  label: l.languageKorean,
+                  selected: currentLocale?.languageCode == 'ko',
+                  onTap: () => ref
+                      .read(localeProvider.notifier)
+                      .setLanguageCode('ko'),
+                ),
+                _LangTile(
+                  label: l.languageEnglish,
+                  selected: currentLocale?.languageCode == 'en',
+                  onTap: () => ref
+                      .read(localeProvider.notifier)
+                      .setLanguageCode('en'),
+                ),
+                _LangTile(
+                  label: l.languageJapanese,
+                  selected: currentLocale?.languageCode == 'ja',
+                  onTap: () => ref
+                      .read(localeProvider.notifier)
+                      .setLanguageCode('ja'),
+                ),
+                _LangTile(
+                  label: l.languageChinese,
+                  selected: currentLocale?.languageCode == 'zh',
+                  onTap: () => ref
+                      .read(localeProvider.notifier)
+                      .setLanguageCode('zh'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class _LanguageTile extends StatelessWidget {
-  const _LanguageTile({
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader(this.label);
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w900,
+          color: cs.primary,
+          letterSpacing: 0.4,
+        ),
+      ),
+    );
+  }
+}
+
+class _LangTile extends StatelessWidget {
+  const _LangTile({
     required this.label,
     required this.selected,
     required this.onTap,
   });
-
   final String label;
   final bool selected;
   final VoidCallback onTap;
@@ -464,7 +505,13 @@ class _LanguageTile extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return ListTile(
       onTap: onTap,
-      title: Text(label),
+      title: Text(
+        label,
+        style: TextStyle(
+          fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
+          color: selected ? cs.primary : null,
+        ),
+      ),
       trailing: selected ? Icon(Icons.check, color: cs.primary) : null,
     );
   }

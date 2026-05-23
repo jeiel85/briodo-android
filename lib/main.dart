@@ -11,11 +11,11 @@ import 'l10n/app_localizations.dart';
 import 'providers/app_settings_provider.dart';
 import 'providers/locale_provider.dart';
 import 'providers/todos_provider.dart';
-import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'services/analytics_service.dart';
 import 'services/notifications_service.dart';
 import 'theme.dart';
+import 'widgets/main_shell.dart';
 
 // Firebase Console > Authentication > Sign-in method > Google > Web SDK 구성
 // 의 클라이언트 ID. Capacitor 시절부터 동일.
@@ -119,6 +119,6 @@ class _AppRootState extends ConsumerState<_AppRoot> {
     if (_done == false) {
       return OnboardingScreen(onDone: () => setState(() => _done = true));
     }
-    return const HomeScreen();
+    return const MainShell();
   }
 }

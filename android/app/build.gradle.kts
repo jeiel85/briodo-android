@@ -75,6 +75,16 @@ flutter {
     source = "../.."
 }
 
+// home_widget 0.9.1 가 androidx.glance:glance-appwidget:1.+ 로 동적 버전을 요청해
+// Google이 최근 푸시한 1.3.0-alpha01 (AGP 9.1+, compileSdk 37+ 요구)이 끌려오는 사고를 막는다.
+// 안정판 1.1.1로 강제.
+configurations.all {
+    resolutionStrategy {
+        force("androidx.glance:glance-appwidget:1.1.1")
+        force("androidx.glance:glance:1.1.1")
+    }
+}
+
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
