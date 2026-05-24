@@ -10,7 +10,7 @@
 - [x] 릴리즈 APK: `android/app/build/outputs/apk/release/app-release.apk`
 - [x] 앱 아이콘: `docs/icon-512.png`
 - [x] 스크린샷: `docs/screenshots/` 폴더
-- [x] 개인정보처리방침 URL: `https://jeiel85.github.io/BrioDo/privacy-policy.html`
+- [x] 개인정보처리방침 URL: `https://jeiel85.github.io/briodo-android/privacy-policy.html`
 
 ---
 
@@ -55,7 +55,7 @@ AI가 당신의 할 일을 똑똑하게 정리해줍니다.
 • 다크 모드 + 랜덤 테마
 • 한국어/영어/일본어/중국어 지원
 
-Privacy Policy: https://jeiel85.github.io/BrioDo/privacy-policy.html
+Privacy Policy: https://jeiel85.github.io/briodo-android/privacy-policy.html
 ```
 
 ### 4단계: 이미지 업로드
@@ -64,7 +64,7 @@ Privacy Policy: https://jeiel85.github.io/BrioDo/privacy-policy.html
 
 ### 5단계: 개인정보처리방침 URL 입력
 ```
-https://jeiel85.github.io/BrioDo/privacy-policy.html
+https://jeiel85.github.io/briodo-android/privacy-policy.html
 ```
 
 ### 6단계: 제출

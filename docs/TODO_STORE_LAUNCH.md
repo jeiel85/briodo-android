@@ -11,7 +11,7 @@
 
 - [ ] **Google Cloud Console** → 프로젝트 선택 → API 및 서비스 → OAuth 동의 화면
 - [ ] OAuth 동의 화면 기본 정보 입력 (앱 이름, 이메일, 개인정보처리방침 URL)
-  - 개인정보처리방침: `https://jeiel85.github.io/BrioDo/privacy-policy.html`
+  - 개인정보처리방침: `https://jeiel85.github.io/briodo-android/privacy-policy.html`
 - [ ] "앱 게시" 버튼 클릭 → 심사를 위해 제출
 - [ ] 스코프 사용 목적 영문 설명서 붙여넣기 (`google-oauth-review.md` 2번 항목)
 - [ ] **데모 영상 촬영** (Galaxy S24 화면 녹화, 1~3분)

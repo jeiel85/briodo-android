@@ -11,7 +11,7 @@
 | 앱 이름 | BrioDo |
 | 패키지 ID | app.briodo |
 | 개발자 이메일 | jeiel85@gmail.com |
-| 개인정보처리방침 | https://jeiel85.github.io/BrioDo/privacy-policy.html |
+| 개인정보처리방침 | https://jeiel85.github.io/briodo-android/privacy-policy.html |
 | 요청 스코프 | `https://www.googleapis.com/auth/calendar` |
 
 ---
@@ -23,9 +23,9 @@ Google Cloud Console에서 아래 내용으로 채우세요.
 **앱 이름:** `BrioDo`
 **사용자 지원 이메일:** `jeiel85@gmail.com`
 **앱 로고:** `docs/icon-512.png` 업로드
-**애플리케이션 홈페이지:** `https://github.com/jeiel85/BrioDo`
-**개인정보처리방침 링크:** `https://jeiel85.github.io/BrioDo/privacy-policy.html`
-**서비스 약관 링크:** `https://jeiel85.github.io/BrioDo/privacy-policy.html`
+**애플리케이션 홈페이지:** `https://github.com/jeiel85/briodo-android`
+**개인정보처리방침 링크:** `https://jeiel85.github.io/briodo-android/privacy-policy.html`
+**서비스 약관 링크:** `https://jeiel85.github.io/briodo-android/privacy-policy.html`
 **개발자 연락처 이메일:** `jeiel85@gmail.com`
 
 ---

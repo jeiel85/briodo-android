@@ -76,7 +76,7 @@ AI 기능을 사용하면 브리오 포인트가 소모됩니다. 보상형 광�
 • 200개 업적 시스템
 • 4개 언어 지원
 
-개인정보처리방침: https://jeiel85.github.io/BrioDo/privacy-policy.html
+개인정보처리방침: https://jeiel85.github.io/briodo-android/privacy-policy.html
 ```
 
 ---
@@ -128,7 +128,7 @@ Supports Korean, English, Japanese, and Chinese.
 • 200 achievements system
 • 4 language support
 
-Privacy Policy: https://jeiel85.github.io/BrioDo/privacy-policy.html
+Privacy Policy: https://jeiel85.github.io/briodo-android/privacy-policy.html
 ```
 
 ---
@@ -228,7 +228,7 @@ BrioDo v1.0.0 — First Release!
 ### 개인정보처리방침
 
 ```
-https://jeiel85.github.io/BrioDo/privacy-policy.html
+https://jeiel85.github.io/briodo-android/privacy-policy.html
 ```
 
 ---

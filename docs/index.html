@@ -4,224 +4,520 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BrioDo — 활기차게, 해내다.</title>
-  <meta name="description" content="BrioDo는 AI와 Google 캘린더가 연동되는 스마트 할 일 관리 앱입니다. Gemini AI로 자연어 입력, 음성 인식, 오프라인 우선 동작을 지원합니다." />
+  <meta name="description" content="BrioDo는 Gemini AI와 Google 캘린더가 연동되는 스마트 할 일 관리 Android 앱입니다. 자연어 입력, 음성 인식, 오프라인 우선 동작, 38개 업적 시스템을 지원합니다." />
+  <meta name="theme-color" content="#2563EB" />
   <meta name="google-site-verification" content="DH3ZpLy4wLidhXF2-XuJZ5qPa2jnt-sXPH7cNesfkFc" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="BrioDo — 활기차게, 해내다." />
+  <meta property="og:description" content="AI와 Google 캘린더가 손잡은 가장 빠른 할 일 앱. 한 줄 자연어를 던지면 Gemini가 알아서 정리합니다." />
+  <meta property="og:image" content="https://jeiel85.github.io/briodo-android/featured-graphic.png" />
+  <meta property="og:url" content="https://jeiel85.github.io/briodo-android/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="ko_KR" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="BrioDo — 활기차게, 해내다." />
+  <meta name="twitter:description" content="AI와 Google 캘린더가 손잡은 가장 빠른 할 일 앱." />
+  <meta name="twitter:image" content="https://jeiel85.github.io/briodo-android/featured-graphic.png" />
+
+  <link rel="icon" type="image/png" href="icon-512.png" />
+  <link rel="apple-touch-icon" href="icon-512.png" />
+
   <style>
+    :root {
+      --brio: #2563EB;             /* energetic soft blue */
+      --brio-light: #60A5FA;        /* light blue */
+      --brio-dark: #1E40AF;         /* deep blue */
+      --brio-lavender: #7C3AED;     /* secondary lavender */
+      --brio-accent: #F59E0B;        /* warm amber accent */
+      --brio-bg: #F8FAFC;           /* slate-50 */
+      --brio-card: #ffffff;
+      --brio-soft: #DBEAFE;         /* blue-100 */
+      --ink: #0F172A;
+      --ink-soft: #475569;
+      --ink-mute: #94A3B8;
+      --line: #E2E8F0;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif;
-      background: #f5f0ff;
-      color: #1c1b1f;
+      background: var(--brio-bg);
+      color: var(--ink);
       line-height: 1.6;
+      overflow-x: hidden;
     }
+    a { color: inherit; }
 
-    /* Hero */
+    /* ===== Hero ===== */
     .hero {
-      background: linear-gradient(135deg, #6750a4 0%, #9c7cd6 100%);
+      position: relative;
+      background: linear-gradient(135deg, #1E40AF 0%, #2563EB 50%, #7C3AED 100%);
       color: #fff;
-      padding: 64px 24px 80px;
+      padding: 80px 24px 100px;
       text-align: center;
+      overflow: hidden;
     }
+    .hero::before, .hero::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(70px);
+      opacity: 0.42;
+      pointer-events: none;
+    }
+    .hero::before {
+      width: 380px; height: 380px;
+      background: #60A5FA;
+      top: -120px; left: -120px;
+    }
+    .hero::after {
+      width: 320px; height: 320px;
+      background: #F59E0B;
+      bottom: -80px; right: -80px;
+    }
+    .hero-inner { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; }
     .hero-icon {
-      width: 96px;
-      height: 96px;
-      border-radius: 22px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.28);
-      margin-bottom: 20px;
+      width: 112px; height: 112px;
+      border-radius: 26px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.32);
+      margin-bottom: 24px;
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
     }
     .hero h1 {
-      font-size: 2.6rem;
+      font-size: clamp(2.4rem, 6vw, 3.4rem);
       font-weight: 900;
-      letter-spacing: -0.5px;
-      margin-bottom: 8px;
+      letter-spacing: -1px;
+      margin-bottom: 12px;
     }
     .hero .tagline {
-      font-size: 1.15rem;
-      opacity: 0.88;
-      margin-bottom: 32px;
+      font-size: clamp(1.05rem, 2.4vw, 1.25rem);
+      opacity: 0.92;
+      margin-bottom: 14px;
+      font-weight: 500;
     }
-    .btn-download {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: #fff;
-      color: #6750a4;
-      font-weight: 700;
-      font-size: 1rem;
+    .hero .pitch {
+      font-size: 0.95rem;
+      opacity: 0.78;
+      margin: 0 auto 36px;
+      max-width: 520px;
+      line-height: 1.7;
+    }
+    .hero-buttons {
+      display: flex; flex-wrap: wrap;
+      gap: 14px; justify-content: center;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: 10px;
       padding: 14px 28px;
       border-radius: 50px;
       text-decoration: none;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-      transition: transform 0.15s, box-shadow 0.15s;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+      cursor: pointer;
+      border: none;
     }
-    .btn-download:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.22); }
-    .btn-download.secondary {
-      background: transparent;
+    .btn-primary {
+      background: #fff; color: var(--brio);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.20);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.26);
+    }
+    .btn-ghost {
+      background: rgba(255,255,255,0.08);
       color: #fff;
-      border: 2px solid rgba(255,255,255,0.6);
-      font-size: 0.88rem;
-      padding: 10px 22px;
+      border: 2px solid rgba(255,255,255,0.7);
+      padding: 12px 24px;
+      font-size: 0.92rem;
     }
-    .btn-download.secondary:hover { background: rgba(255,255,255,0.12); }
-    .hero-buttons { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+    .btn-ghost:hover { background: rgba(255,255,255,0.18); }
 
-    /* Features */
-    .section { max-width: 760px; margin: 0 auto; padding: 56px 24px; }
+    .hero-badges {
+      margin-top: 36px;
+      display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    }
+    .badge {
+      background: rgba(255,255,255,0.16);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.22);
+      color: #fff;
+      padding: 5px 12px;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* ===== Section base ===== */
+    .section {
+      max-width: 1040px; margin: 0 auto;
+      padding: 80px 24px;
+    }
     .section h2 {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: #6750a4;
-      margin-bottom: 32px;
+      font-size: clamp(1.6rem, 3.5vw, 2.1rem);
+      font-weight: 900;
+      color: var(--brio);
+      margin-bottom: 12px;
+      text-align: center;
+      letter-spacing: -0.5px;
+    }
+    .section .lead {
+      text-align: center;
+      color: var(--ink-soft);
+      max-width: 560px;
+      margin: 0 auto 48px;
+      font-size: 1rem;
+    }
+
+    /* ===== Pitch strip ===== */
+    .pitch-strip {
+      background: #fff;
+      padding: 56px 24px;
       text-align: center;
     }
+    .pitch-strip .quote {
+      max-width: 720px; margin: 0 auto;
+      font-size: clamp(1.1rem, 2.6vw, 1.4rem);
+      font-weight: 600;
+      color: var(--brio-dark);
+      line-height: 1.6;
+    }
+    .pitch-strip .quote .ai {
+      background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight: 900;
+    }
+    .pitch-strip .demo {
+      margin-top: 28px;
+      display: inline-block;
+      background: var(--brio-soft);
+      border-left: 4px solid var(--brio);
+      padding: 18px 26px;
+      border-radius: 0 12px 12px 0;
+      text-align: left;
+      font-family: 'Courier New', ui-monospace, monospace;
+      font-size: 0.92rem;
+      color: var(--brio-dark);
+      max-width: 600px;
+    }
+    .pitch-strip .demo .arrow {
+      color: var(--brio-lavender); font-weight: 900; margin: 0 8px;
+    }
+
+    /* ===== Features ===== */
     .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+    }
+    .feature-card {
+      background: var(--brio-card);
+      border-radius: 18px;
+      padding: 26px 22px;
+      box-shadow: 0 2px 14px rgba(37,99,235,0.08);
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 28px rgba(37,99,235,0.16);
+    }
+    .feature-card .icon {
+      font-size: 2.1rem;
+      margin-bottom: 14px;
+      display: inline-block;
+    }
+    .feature-card h3 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: var(--brio-dark);
+    }
+    .feature-card p {
+      font-size: 0.92rem;
+      color: var(--ink-soft);
+      line-height: 1.55;
+    }
+
+    /* ===== Screenshots ===== */
+    .screenshots-bg {
+      background: linear-gradient(180deg, #DBEAFE 0%, #F8FAFC 100%);
+    }
+    .screenshots {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 20px;
+      max-width: 920px; margin: 0 auto;
     }
-    .feature-card {
+    .shot {
+      background: #fff;
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(37,99,235,0.14);
+      text-align: center;
+      transition: transform 0.2s;
+    }
+    .shot:hover { transform: scale(1.02); }
+    .shot img {
+      width: 100%; height: auto;
+      display: block;
+      background: #000;
+    }
+    .shot .caption {
+      padding: 14px 12px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--brio-dark);
+    }
+
+    /* ===== Stats ===== */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 18px;
+      max-width: 720px; margin: 0 auto;
+    }
+    .stat {
       background: #fff;
       border-radius: 16px;
-      padding: 24px 20px;
-      box-shadow: 0 2px 10px rgba(103,80,164,0.09);
-    }
-    .feature-card .icon { font-size: 2rem; margin-bottom: 12px; }
-    .feature-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; color: #3b2d6e; }
-    .feature-card p { font-size: 0.9rem; color: #49454f; }
-
-    /* App purpose */
-    .purpose {
-      background: #fff;
-      border-left: 4px solid #6750a4;
-      border-radius: 0 12px 12px 0;
-      padding: 20px 24px;
-      margin: 0 0 32px;
-      font-size: 0.95rem;
-      color: #3b2d6e;
-    }
-
-    /* Privacy / Links */
-    .links-section {
-      background: #ede8ff;
-      padding: 40px 24px;
+      padding: 28px 18px;
       text-align: center;
+      box-shadow: 0 2px 12px rgba(37,99,235,0.10);
     }
-    .links-section h2 { font-size: 1.2rem; font-weight: 700; color: #3b2d6e; margin-bottom: 16px; }
-    .link-list { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
-    .link-list a {
-      display: inline-block;
-      background: #6750a4;
+    .stat .num {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--brio);
+      letter-spacing: -1px;
+    }
+    .stat .label {
+      font-size: 0.85rem;
+      color: var(--ink-soft);
+      margin-top: 4px;
+    }
+
+    /* ===== Tech strip ===== */
+    .tech-strip {
+      background: #0F172A;
       color: #fff;
-      padding: 10px 22px;
-      border-radius: 50px;
-      text-decoration: none;
-      font-size: 0.9rem;
-      font-weight: 600;
-      transition: background 0.15s;
-    }
-    .link-list a:hover { background: #7965af; }
-    .link-list a.secondary {
-      background: transparent;
-      color: #6750a4;
-      border: 2px solid #6750a4;
-    }
-    .link-list a.secondary:hover { background: #ede8ff; }
-
-    /* Footer */
-    footer {
+      padding: 60px 24px;
       text-align: center;
-      padding: 28px 24px;
-      font-size: 0.82rem;
-      color: #79747e;
     }
-    footer a { color: #6750a4; text-decoration: none; }
+    .tech-strip h2 { color: #fff; margin-bottom: 28px; font-size: 1.4rem; }
+    .tech-pills {
+      display: flex; flex-wrap: wrap; gap: 10px;
+      justify-content: center; max-width: 720px; margin: 0 auto;
+    }
+    .tech-pill {
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 8px 16px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* ===== CTA ===== */
+    .cta {
+      background: linear-gradient(135deg, #2563EB 0%, #60A5FA 100%);
+      padding: 64px 24px;
+      text-align: center;
+      color: #fff;
+    }
+    .cta h2 { color: #fff; font-size: 1.8rem; margin-bottom: 12px; }
+    .cta p { opacity: 0.9; margin-bottom: 28px; }
+    .cta .btn-primary { color: var(--brio); }
+
+    /* ===== Footer ===== */
+    footer {
+      background: #1c1b1f;
+      color: #aaa;
+      text-align: center;
+      padding: 36px 24px;
+      font-size: 0.85rem;
+    }
+    footer a { color: #60A5FA; text-decoration: none; margin: 0 6px; }
+    footer a:hover { text-decoration: underline; }
+    footer .footer-links { margin-top: 12px; }
 
     @media (max-width: 480px) {
-      .hero h1 { font-size: 2rem; }
-      .hero { padding: 48px 20px 64px; }
+      .hero { padding: 56px 20px 72px; }
+      .section { padding: 56px 20px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Hero -->
+  <!-- ===== Hero ===== -->
   <section class="hero">
-    <img src="icon-512.png" alt="BrioDo 아이콘" class="hero-icon" />
-    <h1>BrioDo</h1>
-    <p class="tagline">활기차게, 해내다. — AI와 함께하는 스마트 할 일 관리</p>
-    <div class="hero-buttons">
-      <a href="https://play.google.com/store/apps/details?id=app.briodo" class="btn-download">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20.5v-17c0-.83 1.01-1.3 1.66-.78l14 8.5c.58.35.58 1.21 0 1.56l-14 8.5C4.01 21.8 3 21.33 3 20.5z"/></svg>
-        Google Play에서 받기
-      </a>
-      <a href="https://github.com/jeiel85/BrioDo/releases/latest" class="btn-download secondary">
-        ⬇ APK 직접 다운로드
-      </a>
+    <div class="hero-inner">
+      <img src="icon-512.png" alt="BrioDo 아이콘" class="hero-icon" />
+      <h1>BrioDo</h1>
+      <p class="tagline">활기차게, 해내다.</p>
+      <p class="pitch">AI와 Google 캘린더가 손잡은 가장 빠른 할 일 앱.<br />한 줄 자연어를 던지면 Gemini가 알아서 정리해 줍니다.</p>
+      <div class="hero-buttons">
+        <a href="https://play.google.com/store/apps/details?id=app.briodo" class="btn btn-primary">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 20.5v-17c0-.83 1.01-1.3 1.66-.78l14 8.5c.58.35.58 1.21 0 1.56l-14 8.5C4.01 21.8 3 21.33 3 20.5z"/></svg>
+          Google Play에서 받기
+        </a>
+        <a href="https://github.com/jeiel85/briodo-android/releases/latest" class="btn btn-ghost">⬇ APK 직접 다운로드</a>
+      </div>
+      <div class="hero-badges">
+        <span class="badge">🇰🇷 한국어</span>
+        <span class="badge">🇺🇸 English</span>
+        <span class="badge">🇯🇵 日本語</span>
+        <span class="badge">🇨🇳 中文</span>
+        <span class="badge">📱 Android 8.0+</span>
+        <span class="badge">⚡ Offline-First</span>
+      </div>
     </div>
   </section>
 
-  <!-- App Purpose -->
-  <div class="section">
-    <div class="purpose">
-      BrioDo는 AI와 Google 캘린더가 연동되는 스마트 할 일 관리 Android 앱입니다.
-      자연어로 할 일을 입력하면 Gemini AI가 날짜·시간·태그·우선순위를 자동으로 설정하고,
-      Google 캘린더와 양방향으로 동기화합니다. 로그인 없이도 게스트 모드로 바로 사용할 수 있습니다.
+  <!-- ===== Pitch ===== -->
+  <section class="pitch-strip">
+    <p class="quote">한 줄만 던지세요. <span class="ai">Gemini AI</span>가 날짜·시간·태그·우선순위를 알아서 채워줍니다.</p>
+    <div class="demo">
+      "내일 오전 10시 팀 미팅" <span class="arrow">→</span><br />
+      📅 2026-05-26 10:00 &nbsp;·&nbsp; 🏷 #업무 &nbsp;·&nbsp; ⚡ 보통
     </div>
+  </section>
 
-    <!-- Features -->
+  <!-- ===== Features ===== -->
+  <section class="section" id="features">
     <h2>주요 기능</h2>
+    <p class="lead">생산성 앱의 본질에만 집중했어요. 빠르게 입력하고, 자동으로 정리되고, 어디서든 동기화되는 것.</p>
     <div class="features">
       <div class="feature-card">
         <div class="icon">🤖</div>
         <h3>AI 자연어 입력</h3>
-        <p>"내일 오전 10시 팀 미팅"처럼 자연어로 입력하면 Gemini AI가 날짜·태그·우선순위를 자동 설정합니다.</p>
+        <p>"내일 오전 10시 팀 미팅" → Gemini 2.5 Flash가 날짜·태그·우선순위를 자동 추출합니다.</p>
       </div>
       <div class="feature-card">
         <div class="icon">📅</div>
         <h3>Google 캘린더 연동</h3>
-        <p>할 일을 추가·수정·완료하면 Google 캘린더에 즉시 반영됩니다. 전용 "BrioDo" 캘린더로 깔끔하게 분리됩니다.</p>
+        <p>BrioDo 전용 캘린더로 양방향 동기화. 추가·수정·완료가 즉시 반영됩니다.</p>
       </div>
       <div class="feature-card">
         <div class="icon">🎤</div>
         <h3>음성 인식 입력</h3>
-        <p>말하는 대로 할 일이 만들어집니다. Android 네이티브 음성 인식으로 빠르게 기록하세요.</p>
+        <p>말하는 대로 할 일이 만들어집니다. Android 네이티브 STT로 빠르게 기록.</p>
       </div>
       <div class="feature-card">
         <div class="icon">🌐</div>
         <h3>오프라인 우선</h3>
-        <p>인터넷 없이도 완벽하게 동작합니다. 온라인이 되면 클라우드에 자동 동기화됩니다.</p>
+        <p>인터넷이 없어도 완벽하게 동작. 온라인 복귀 시 클라우드에 자동 머지됩니다.</p>
       </div>
       <div class="feature-card">
         <div class="icon">🏆</div>
-        <h3>200개 업적 시스템</h3>
-        <p>할 일을 완료할수록 업적을 획득하고 브리오 포인트를 모을 수 있습니다.</p>
+        <h3>38개 업적 시스템</h3>
+        <p>할 일을 완료할수록 업적 해금. 연속 달성일 · 완료율을 게이미피케이션으로 추적.</p>
       </div>
       <div class="feature-card">
-        <div class="icon">🌍</div>
-        <h3>4개 언어 지원</h3>
-        <p>한국어, English, 日本語, 中文을 지원합니다. 설정에서 언제든지 변경 가능합니다.</p>
+        <div class="icon">🔔</div>
+        <h3>알림 / 반복</h3>
+        <p>정각·10분 전·1시간 전 알림. 매일·매주·매월 반복 일정 지원.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🏠</div>
+        <h3>홈 위젯 + 상태바</h3>
+        <p>홈 화면 위젯과 상태바 상주 알림으로 오늘 할 일을 한눈에.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">📊</div>
+        <h3>컬렉션 &amp; 통계</h3>
+        <p>주간·월간·연간 완료율, 연속 달성일, 태그별 집계까지.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🎨</div>
+        <h3>풀세트 커스터마이징</h3>
+        <p>다크 모드 · 랜덤 테마 · 폰트 / 색상 · 시작 화면까지 자유롭게.</p>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- Links -->
-  <div class="links-section">
-    <h2>다운로드 및 링크</h2>
-    <ul class="link-list">
-      <li><a href="https://play.google.com/store/apps/details?id=app.briodo">Google Play 다운로드</a></li>
-      <li><a href="https://github.com/jeiel85/BrioDo/releases/latest" class="secondary">APK 직접 다운로드</a></li>
-      <li><a href="https://github.com/jeiel85/BrioDo" class="secondary">GitHub 저장소</a></li>
-      <li><a href="https://jeiel85.github.io/BrioDo/privacy-policy.html" class="secondary">개인정보처리방침</a></li>
-    </ul>
-  </div>
+  <!-- ===== Stats ===== -->
+  <section class="section">
+    <h2>숫자로 보는 BrioDo</h2>
+    <div class="stats">
+      <div class="stat"><div class="num">38</div><div class="label">해금 업적</div></div>
+      <div class="stat"><div class="num">4</div><div class="label">지원 언어</div></div>
+      <div class="stat"><div class="num">0₩</div><div class="label">완전 무료</div></div>
+      <div class="stat"><div class="num">∞</div><div class="label">할 일 개수</div></div>
+    </div>
+  </section>
 
-  <!-- Footer -->
+  <!-- ===== Screenshots ===== -->
+  <section class="section screenshots-bg" id="screenshots">
+    <h2>화면 미리보기</h2>
+    <p class="lead">Material You 기반의 깔끔한 다크 디자인. 한 손으로도 빠릿하게 다룰 수 있어요.</p>
+    <div class="screenshots">
+      <div class="shot">
+        <img src="screenshots/01_today.png" alt="오늘 화면" loading="lazy" />
+        <div class="caption">오늘 — 한눈에 보는 일정</div>
+      </div>
+      <div class="shot">
+        <img src="screenshots/02_smart_input.png" alt="AI 자연어 입력" loading="lazy" />
+        <div class="caption">AI 자연어 입력</div>
+      </div>
+      <div class="shot">
+        <img src="screenshots/03_all.png" alt="전체 타임라인 뷰" loading="lazy" />
+        <div class="caption">전체 — 타임라인</div>
+      </div>
+      <div class="shot">
+        <img src="screenshots/04_tags.png" alt="태그별 분류" loading="lazy" />
+        <div class="caption">태그별 분류</div>
+      </div>
+      <div class="shot">
+        <img src="screenshots/05_growth.png" alt="성장 / 통계 / 업적" loading="lazy" />
+        <div class="caption">성장 — 스트릭 &amp; 업적</div>
+      </div>
+      <div class="shot">
+        <img src="screenshots/06_settings.png" alt="설정 풀세트" loading="lazy" />
+        <div class="caption">설정 풀세트</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Tech ===== -->
+  <section class="tech-strip">
+    <h2>Built with</h2>
+    <div class="tech-pills">
+      <span class="tech-pill">Flutter 3.x</span>
+      <span class="tech-pill">Dart 3.11</span>
+      <span class="tech-pill">Riverpod 3</span>
+      <span class="tech-pill">Firebase</span>
+      <span class="tech-pill">Google Calendar API</span>
+      <span class="tech-pill">Gemini 2.5 Flash</span>
+      <span class="tech-pill">SQLite</span>
+      <span class="tech-pill">Material You</span>
+    </div>
+  </section>
+
+  <!-- ===== CTA ===== -->
+  <section class="cta">
+    <h2>지금 바로 시작하세요</h2>
+    <p>로그인 없이 게스트 모드로도 모든 핵심 기능을 쓸 수 있어요.</p>
+    <a href="https://play.google.com/store/apps/details?id=app.briodo" class="btn btn-primary">Google Play 다운로드</a>
+  </section>
+
+  <!-- ===== Footer ===== -->
   <footer>
-    BrioDo — Do it with brio.<br />
-    © 2026 BrioDo. MIT License.<br />
-    문의: <a href="mailto:jeiel85@gmail.com">jeiel85@gmail.com</a>
-    &nbsp;|&nbsp;
-    <a href="https://jeiel85.github.io/BrioDo/privacy-policy.html">개인정보처리방침</a>
+    <div>BrioDo — Do it with brio. &nbsp;·&nbsp; © 2026 BrioDo &nbsp;·&nbsp; MIT License</div>
+    <div class="footer-links">
+      <a href="https://github.com/jeiel85/briodo-android">GitHub</a> ·
+      <a href="https://jeiel85.github.io/briodo-android/privacy-policy.html">개인정보처리방침</a> ·
+      <a href="mailto:jeiel85@gmail.com">문의</a> ·
+      <a href="https://github.com/jeiel85/briodo-android/issues">이슈</a>
+    </div>
   </footer>
 
 </body>
