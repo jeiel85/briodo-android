@@ -16,6 +16,9 @@ class AppSettings {
     this.fontScale = 1.0,
     this.defaultView = 'date',
     this.completeMode = 'toggle',
+    this.smartInputEngine = 'local',
+    this.onDeviceModelPath = '',
+    this.onDeviceModelUrl = 'https://huggingface.co/ASahu16/gemma/resolve/main/gemma-2b-it-cpu-int4.bin',
   });
 
   /// 종일 일정 알림 시각 (기본 09:00)
@@ -43,6 +46,15 @@ class AppSettings {
   /// 완료 시 처리 — 'toggle'(완료 상태 토글) | 'delete'(즉시 삭제)
   final String completeMode;
 
+  /// 'local' | 'ondevice'
+  final String smartInputEngine;
+
+  /// 기기에 저장된 실제 모델 파일 경로
+  final String onDeviceModelPath;
+
+  /// 모델 다운로드 주소
+  final String onDeviceModelUrl;
+
   AppSettings copyWith({
     int? allDayReminderHour,
     int? allDayReminderMinute,
@@ -53,6 +65,9 @@ class AppSettings {
     double? fontScale,
     String? defaultView,
     String? completeMode,
+    String? smartInputEngine,
+    String? onDeviceModelPath,
+    String? onDeviceModelUrl,
   }) =>
       AppSettings(
         allDayReminderHour: allDayReminderHour ?? this.allDayReminderHour,
@@ -66,6 +81,9 @@ class AppSettings {
         fontScale: fontScale ?? this.fontScale,
         defaultView: defaultView ?? this.defaultView,
         completeMode: completeMode ?? this.completeMode,
+        smartInputEngine: smartInputEngine ?? this.smartInputEngine,
+        onDeviceModelPath: onDeviceModelPath ?? this.onDeviceModelPath,
+        onDeviceModelUrl: onDeviceModelUrl ?? this.onDeviceModelUrl,
       );
 }
 
@@ -79,6 +97,9 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   static const _keyFontScale = 'settings.fontScale';
   static const _keyDefaultView = 'settings.defaultView';
   static const _keyCompleteMode = 'settings.completeMode';
+  static const _keySmartEngine = 'settings.smartInputEngine';
+  static const _keyModelPath = 'settings.onDeviceModelPath';
+  static const _keyModelUrl = 'settings.onDeviceModelUrl';
 
   late SharedPreferences _prefs;
 
@@ -95,6 +116,9 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
       fontScale: _prefs.getDouble(_keyFontScale) ?? 1.0,
       defaultView: _prefs.getString(_keyDefaultView) ?? 'date',
       completeMode: _prefs.getString(_keyCompleteMode) ?? 'toggle',
+      smartInputEngine: _prefs.getString(_keySmartEngine) ?? 'local',
+      onDeviceModelPath: _prefs.getString(_keyModelPath) ?? '',
+      onDeviceModelUrl: _prefs.getString(_keyModelUrl) ?? 'https://huggingface.co/ASahu16/gemma/resolve/main/gemma-2b-it-cpu-int4.bin',
     );
   }
 
@@ -140,6 +164,21 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   Future<void> setCompleteMode(String mode) async {
     await _prefs.setString(_keyCompleteMode, mode);
     state = state.copyWith(completeMode: mode);
+  }
+
+  Future<void> setSmartInputEngine(String engine) async {
+    await _prefs.setString(_keySmartEngine, engine);
+    state = state.copyWith(smartInputEngine: engine);
+  }
+
+  Future<void> setOnDeviceModelPath(String path) async {
+    await _prefs.setString(_keyModelPath, path);
+    state = state.copyWith(onDeviceModelPath: path);
+  }
+
+  Future<void> setOnDeviceModelUrl(String url) async {
+    await _prefs.setString(_keyModelUrl, url);
+    state = state.copyWith(onDeviceModelUrl: url);
   }
 }
 

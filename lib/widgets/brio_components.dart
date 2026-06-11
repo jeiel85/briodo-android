@@ -638,70 +638,69 @@ class BrioContributionGraph extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Column(
+        LayoutBuilder(
+          builder: (_, c) {
+            final gridWidth = c.maxWidth - 22;
+            double cellSize = (gridWidth - (weeks - 1) * 3) / weeks;
+            if (cellSize > 14.0) {
+              cellSize = 14.0;
+            }
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                for (final label in dayLabels)
-                  Container(
-                    width: 18,
-                    height: 13,
-                    alignment: Alignment.center,
-                    child: Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 9,
-                        color: cs.onSurface.withValues(alpha: 0.4),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(width: 4),
-            Expanded(
-              child: LayoutBuilder(
-                builder: (_, c) {
-                  final cellSize = (c.maxWidth - (weeks - 1) * 3) / weeks;
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      for (var w = 0; w < weeks; w++) ...[
-                        Column(
-                          children: [
-                            for (var dow = 0; dow < 7; dow++)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 3),
-                                child: () {
-                                  final d =
-                                      start.add(Duration(days: w * 7 + dow));
-                                  if (d.isAfter(todayDay)) {
-                                    return SizedBox(
-                                      width: cellSize,
-                                      height: cellSize,
-                                    );
-                                  }
-                                  final count = dailyCounts[dateKey(d)] ?? 0;
-                                  return Container(
-                                    width: cellSize,
-                                    height: cellSize,
-                                    decoration: BoxDecoration(
-                                      color: _cellColor(count, cs),
-                                      borderRadius: BorderRadius.circular(2),
-                                    ),
-                                  );
-                                }(),
-                              ),
-                          ],
+                Column(
+                  children: [
+                    for (final label in dayLabels)
+                      Container(
+                        width: 18,
+                        height: cellSize,
+                        margin: const EdgeInsets.only(bottom: 3),
+                        alignment: Alignment.center,
+                        child: Text(
+                          label,
+                          style: TextStyle(
+                            fontSize: 9,
+                            color: cs.onSurface.withValues(alpha: 0.4),
+                          ),
                         ),
-                        if (w < weeks - 1) const SizedBox(width: 3),
-                      ],
+                      ),
+                  ],
+                ),
+                const SizedBox(width: 4),
+                for (var w = 0; w < weeks; w++) ...[
+                  Column(
+                    children: [
+                      for (var dow = 0; dow < 7; dow++)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 3),
+                          child: () {
+                            final d =
+                                start.add(Duration(days: w * 7 + dow));
+                            if (d.isAfter(todayDay)) {
+                              return SizedBox(
+                                width: cellSize,
+                                height: cellSize,
+                              );
+                            }
+                            final count = dailyCounts[dateKey(d)] ?? 0;
+                            return Container(
+                              width: cellSize,
+                              height: cellSize,
+                              decoration: BoxDecoration(
+                                color: _cellColor(count, cs),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            );
+                          }(),
+                        ),
                     ],
-                  );
-                },
-              ),
-            ),
-          ],
+                  ),
+                  if (w < weeks - 1) const SizedBox(width: 3),
+                ],
+              ],
+            );
+          },
         ),
       ],
     );

@@ -1,4 +1,4 @@
-import 'dart:async' show unawaited;
+import 'dart:async' show unawaited, Timer;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +12,7 @@ import '../providers/todos_provider.dart';
 import '../services/analytics_service.dart';
 import '../services/calendar_sync_service.dart';
 import '../services/notifications_service.dart';
+import '../services/todo_parser.dart';
 import '../theme.dart';
 
 /// Todo의 알림 발송 시각 계산. HomeScreen의 동일 함수에서 이관.
@@ -80,6 +81,17 @@ class _TodoEditorSheetState extends ConsumerState<_TodoEditorSheet> {
   late String _recurrence;
   late String _recurrenceEnd;
 
+  // 스마트 입력 파서 관련 상태 변수들
+  ParsedTodoResult? _parsedResult;
+  bool _cleanTitleOnSave = true;
+  bool _isParsing = false;
+  Timer? _debounceTimer;
+
+  DateTime? _lastParsedDate;
+  String? _lastParsedTime;
+  String? _lastParsedPriority;
+  List<String> _lastParsedTags = const [];
+
   static const _priorities = ['low', 'medium', 'high', 'urgent'];
   static const _reminderOffsets = [-1, 0, 10, 30, 60];
   static const _recurrences = ['none', 'daily', 'weekly', 'monthly'];
@@ -100,15 +112,141 @@ class _TodoEditorSheetState extends ConsumerState<_TodoEditorSheet> {
     _subtasks = List<Subtask>.from(i?.subtasks ?? const <Subtask>[]);
     _recurrence = i?.recurrence ?? 'none';
     _recurrenceEnd = i?.recurrenceEnd ?? '';
+
+    // 실시간 파싱을 위한 리스너 등록 (신규 등록 시에만)
+    if (i == null) {
+      _textCtrl.addListener(_onTextChanged);
+    }
   }
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
+    if (widget.initial == null) {
+      _textCtrl.removeListener(_onTextChanged);
+    }
     _textCtrl.dispose();
     _descCtrl.dispose();
     _tagsCtrl.dispose();
     _subInputCtrl.dispose();
     super.dispose();
+  }
+
+  void _onTextChanged() {
+    final text = _textCtrl.text;
+    if (text.isEmpty) {
+      _debounceTimer?.cancel();
+      setState(() {
+        _parsedResult = null;
+        _lastParsedDate = null;
+        _lastParsedTime = null;
+        _lastParsedPriority = null;
+        _lastParsedTags = const [];
+        _isParsing = false;
+      });
+      return;
+    }
+
+    // 1. 먼저 로컬 정규식 파서로 즉시 동기식 프리뷰 제공
+    final resultLocal = TodoParser.parse(text);
+    setState(() {
+      _parsedResult = resultLocal;
+      _updateFieldsFromResult(resultLocal);
+    });
+
+    final settings = ref.read(appSettingsProvider);
+    if (settings.smartInputEngine == 'local') {
+      _debounceTimer?.cancel();
+      setState(() {
+        _isParsing = false;
+      });
+      return;
+    }
+
+    // 2. 비동기 AI 파서를 위한 디바운싱 적용
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 1200), () async {
+      if (!mounted) return;
+
+      setState(() {
+        _isParsing = true;
+      });
+
+      try {
+        final resultSmart = await TodoParser.parseSmart(text, settings);
+        if (!mounted || _textCtrl.text != text) return;
+
+        setState(() {
+          _parsedResult = resultSmart;
+          _updateFieldsFromResult(resultSmart);
+          _isParsing = false;
+        });
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _isParsing = false;
+          });
+        }
+      }
+    });
+  }
+
+  void _updateFieldsFromResult(ParsedTodoResult result) {
+    // 1. 날짜 바인딩 및 복원
+    if (result.date != null) {
+      if (_lastParsedDate != result.date) {
+        _date = dateKey(result.date!);
+        _lastParsedDate = result.date;
+      }
+    } else {
+      if (_lastParsedDate != null) {
+        _date = widget.defaultDate;
+        _lastParsedDate = null;
+      }
+    }
+
+    // 2. 시간 바인딩 및 복원
+    if (result.time != null) {
+      if (_lastParsedTime != result.time) {
+        _time = result.time!;
+        _lastParsedTime = result.time;
+      }
+    } else {
+      if (_lastParsedTime != null) {
+        _time = '';
+        _lastParsedTime = null;
+      }
+    }
+
+    // 3. 우선순위 바인딩 및 복원
+    if (result.priority != null) {
+      if (_lastParsedPriority != result.priority) {
+        _priority = result.priority!;
+        _lastParsedPriority = result.priority;
+      }
+    } else {
+      if (_lastParsedPriority != null) {
+        _priority = 'medium';
+        _lastParsedPriority = null;
+      }
+    }
+
+    // 4. 태그 바인딩 (태그가 새로 생겼을 때만 태그 필드에 추가)
+    final newTags = result.tags.where((t) => !_lastParsedTags.contains(t)).toList();
+    if (newTags.isNotEmpty) {
+      final currentTags = _tagsCtrl.text
+          .split(',')
+          .map((t) => t.trim())
+          .where((t) => t.isNotEmpty)
+          .toList();
+      for (final tag in newTags) {
+        if (!currentTags.contains(tag)) {
+          currentTags.add(tag);
+        }
+      }
+      _tagsCtrl.text = currentTags.join(', ');
+      _lastParsedTags = List<String>.from(result.tags);
+    }
   }
 
   Future<void> _pickDate() async {
@@ -194,8 +332,14 @@ class _TodoEditorSheetState extends ConsumerState<_TodoEditorSheet> {
   }
 
   Future<void> _submit() async {
-    final text = _textCtrl.text.trim();
+    String text = _textCtrl.text.trim();
     if (text.isEmpty) return;
+
+    // 스마트 파서 결과 정제 활성화 시 제목 치환
+    if (widget.initial == null && _cleanTitleOnSave && _parsedResult != null) {
+      text = _parsedResult!.cleanedText;
+    }
+
     final tags = _tagsCtrl.text
         .split(',')
         .map((t) => t.trim())
@@ -386,6 +530,7 @@ class _TodoEditorSheetState extends ConsumerState<_TodoEditorSheet> {
                     hintText: l.fieldTextHint,
                   ),
                 ),
+                _buildSmartPreview(context, cs),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _descCtrl,
@@ -413,6 +558,9 @@ class _TodoEditorSheetState extends ConsumerState<_TodoEditorSheet> {
                     ),
                     if (_time.isNotEmpty)
                       IconButton(
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                         tooltip: l.fieldClearTime,
                         onPressed: _clearTime,
                         icon: const Icon(Icons.close, size: 18),
@@ -439,14 +587,17 @@ class _TodoEditorSheetState extends ConsumerState<_TodoEditorSheet> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Center(
-                              child: Text(
-                                _priLabel(l, _priorities[i]),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w800,
-                                  color: _priority == _priorities[i]
-                                      ? Colors.white
-                                      : cs.onSurface,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  _priLabel(l, _priorities[i]),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                    color: _priority == _priorities[i]
+                                        ? Colors.white
+                                        : cs.onSurface,
+                                  ),
                                 ),
                               ),
                             ),
@@ -587,6 +738,259 @@ class _TodoEditorSheetState extends ConsumerState<_TodoEditorSheet> {
       ),
     );
   }
+
+  Widget _buildSmartPreview(BuildContext context, ColorScheme cs) {
+    if (widget.initial != null) return const SizedBox.shrink();
+
+    final settings = ref.read(appSettingsProvider);
+    final isOndevice = settings.smartInputEngine == 'ondevice';
+    final modelMissing = settings.onDeviceModelPath.isEmpty;
+
+    if (isOndevice && modelMissing) {
+      final l = AppLocalizations.of(context)!;
+      return Container(
+        margin: const EdgeInsets.only(top: 10, bottom: 4),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: cs.errorContainer.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: cs.error.withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, size: 16, color: cs.error),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                l.modelNotDownloadedWarning,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: cs.error,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_parsedResult == null) return const SizedBox.shrink();
+
+    final r = _parsedResult!;
+    // 날짜, 시간, 태그, 우선순위가 하나라도 파싱되었는지 확인
+    final hasAny = r.date != null || r.time != null || r.priority != null || r.tags.isNotEmpty;
+    if (!hasAny) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.only(top: 10, bottom: 4),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: cs.primaryContainer.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: cs.primary.withValues(alpha: 0.15),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.lightbulb_outline, size: 14, color: cs.primary),
+                  const SizedBox(width: 4),
+                  Text(
+                    '스마트 입력',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: cs.primary,
+                    ),
+                  ),
+                  if (_isParsing) ...[
+                    const SizedBox(width: 6),
+                    SizedBox(
+                      width: 10,
+                      height: 10,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 1.5,
+                        color: cs.primary,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              // 키워드 제외 체크박스
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _cleanTitleOnSave = !_cleanTitleOnSave;
+                  });
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: Checkbox(
+                        value: _cleanTitleOnSave,
+                        onChanged: (v) {
+                          setState(() {
+                            _cleanTitleOnSave = v ?? true;
+                          });
+                        },
+                        activeColor: cs.primary,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '키워드 정제 저장',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: cs.onSurface.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          // 파싱 내용 칩스 가로 배치
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              if (r.date != null)
+                _buildPreviewChip(
+                  cs,
+                  Icons.calendar_today,
+                  _formatPreviewDate(r.date!),
+                ),
+              if (r.time != null)
+                _buildPreviewChip(
+                  cs,
+                  Icons.access_time,
+                  '⏰ ${r.time}',
+                ),
+              if (r.priority != null)
+                _buildPreviewChip(
+                  cs,
+                  Icons.flag,
+                  '🚨 ${_priText(r.priority!)}',
+                ),
+              for (final tag in r.tags)
+                _buildPreviewChip(
+                  cs,
+                  Icons.label_outline,
+                  '#$tag',
+                  isTag: true,
+                ),
+            ],
+          ),
+          if (_cleanTitleOnSave) ...[
+            const SizedBox(height: 8),
+            Divider(color: cs.primary.withValues(alpha: 0.1), height: 1),
+            const SizedBox(height: 6),
+            RichText(
+              text: TextSpan(
+                style: TextStyle(
+                  fontSize: 11,
+                  color: cs.onSurface.withValues(alpha: 0.55),
+                ),
+                children: [
+                  const TextSpan(text: '저장될 제목: '),
+                  TextSpan(
+                    text: '"${r.cleanedText}"',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: cs.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPreviewChip(ColorScheme cs, IconData icon, String text, {bool isTag = false}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: isTag 
+            ? cs.secondaryContainer.withValues(alpha: 0.6) 
+            : cs.surfaceContainerHighest.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon, 
+            size: 12, 
+            color: isTag ? cs.onSecondaryContainer : cs.onSurfaceVariant,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: isTag ? cs.onSecondaryContainer : cs.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatPreviewDate(DateTime d) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final target = DateTime(d.year, d.month, d.day);
+    final diff = target.difference(today).inDays;
+
+    String relative = '';
+    if (diff == 0) {
+      relative = '(오늘)';
+    } else if (diff == 1) {
+      relative = '(내일)';
+    } else if (diff == 2) {
+      relative = '(모레)';
+    } else if (diff == -1) {
+      relative = '(어제)';
+    }
+    
+    return '📅 ${d.month}월 ${d.day}일 $relative';
+  }
+
+  String _priText(String p) {
+    switch (p) {
+      case 'urgent': return '긴급';
+      case 'high': return '높음';
+      case 'low': return '낮음';
+      case 'medium':
+      default:
+        return '보통';
+    }
+  }
 }
 
 class _SectionLabel extends StatelessWidget {
@@ -622,7 +1026,7 @@ class _ChipButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
         decoration: BoxDecoration(
           color: cs.secondaryContainer,
           borderRadius: BorderRadius.circular(12),

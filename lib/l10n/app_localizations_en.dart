@@ -416,4 +416,58 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get webNoGoogleLogin =>
       'Google sign-in is not supported on web yet. Please use the mobile app.';
+
+  @override
+  String get smartInputSettings => 'Smart Input Settings (Offline)';
+
+  @override
+  String get smartInputEngine => 'Parsing Engine';
+
+  @override
+  String get smartInputEngineLocal => 'Local Regex/Keywords';
+
+  @override
+  String get smartInputEngineOndevice => 'On-device LLM (Fully Offline)';
+
+  @override
+  String get modelStatus => 'Model Status';
+
+  @override
+  String get modelStatusNotDownloaded => 'Download Required (~1.35 GB)';
+
+  @override
+  String modelStatusDownloading(String progress, String speed) {
+    return 'Downloading... $progress% ($speed MB/s)';
+  }
+
+  @override
+  String get modelStatusReady => 'Ready (Available)';
+
+  @override
+  String get modelDownloadUrl => 'Model Download URL';
+
+  @override
+  String get modelDownloadUrlHint => 'Enter model download URL';
+
+  @override
+  String get modelDownloadButton => 'Start Download';
+
+  @override
+  String get modelDeleteButton => 'Delete Model';
+
+  @override
+  String get modelDownloadCancelButton => 'Cancel Download';
+
+  @override
+  String get modelHardwareWarning =>
+      '⚠️ On-device LLM might be slow or terminate the app due to RAM limits (at least 4GB RAM recommended) depending on device specs.';
+
+  @override
+  String get modelNotDownloadedWarning =>
+      'On-device LLM model is not on this device. Please download the model in Settings first.';
+
+  @override
+  String smartParsingError(String detail) {
+    return 'Smart parsing error: $detail';
+  }
 }

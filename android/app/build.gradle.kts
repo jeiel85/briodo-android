@@ -48,7 +48,10 @@ android {
         create("release") {
             val storeFilePath = keystoreProperties["storeFile"] as String?
             if (storeFilePath != null) {
-                storeFile = file(storeFilePath)
+                val resolved = file(storeFilePath).let { f ->
+                    if (f.exists()) f else rootProject.file("../$storeFilePath")
+                }
+                storeFile = resolved
                 storePassword = keystoreProperties["storePassword"] as String?
                 keyAlias = keystoreProperties["keyAlias"] as String?
                 keyPassword = keystoreProperties["keyPassword"] as String?
@@ -87,4 +90,5 @@ configurations.all {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    implementation("com.google.mediapipe:tasks-genai:0.10.14")
 }

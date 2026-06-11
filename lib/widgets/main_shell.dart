@@ -70,51 +70,95 @@ class _MainShellState extends ConsumerState<MainShell> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
+    final bodyContent = IndexedStack(
+      index: _index,
+      children: [
+        HomeScreen(onTagToHome: _goToTab),
+        const AllViewScreen(),
+        ListsScreen(onSelectTagDate: (date) {
+          // 태그에서 날짜를 누르면 홈 탭으로 점프 → HomeScreen이 selectedDate를 듣고 있음.
+          _goToTab(0);
+        }),
+        const GrowthScreen(),
+        const SettingsScreen(),
+      ],
+    );
+
     return Scaffold(
-      body: IndexedStack(
-        index: _index,
-        children: [
-          HomeScreen(onTagToHome: _goToTab),
-          const AllViewScreen(),
-          ListsScreen(onSelectTagDate: (date) {
-            // 태그에서 날짜를 누르면 홈 탭으로 점프 → HomeScreen이 selectedDate를 듣고 있음.
-            _goToTab(0);
-          }),
-          const GrowthScreen(),
-          const SettingsScreen(),
-        ],
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: _goToTab,
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.calendar_today_outlined),
-            selectedIcon: const Icon(Icons.calendar_today),
-            label: '홈',
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.format_list_bulleted_outlined),
-            selectedIcon: const Icon(Icons.format_list_bulleted),
-            label: '전체',
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.label_outline),
-            selectedIcon: const Icon(Icons.label),
-            label: '태그',
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.emoji_events_outlined),
-            selectedIcon: const Icon(Icons.emoji_events),
-            label: '성장',
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.settings_outlined),
-            selectedIcon: const Icon(Icons.settings),
-            label: l.settings,
-          ),
-        ],
-      ),
+      body: isLandscape
+          ? Row(
+              children: [
+                Expanded(child: bodyContent),
+                const VerticalDivider(width: 1, thickness: 0.6),
+                NavigationRail(
+                  selectedIndex: _index,
+                  onDestinationSelected: _goToTab,
+                  destinations: [
+                    const NavigationRailDestination(
+                      icon: Icon(Icons.calendar_today_outlined),
+                      selectedIcon: Icon(Icons.calendar_today),
+                      label: Text('홈'),
+                    ),
+                    const NavigationRailDestination(
+                      icon: Icon(Icons.format_list_bulleted_outlined),
+                      selectedIcon: Icon(Icons.format_list_bulleted),
+                      label: Text('전체'),
+                    ),
+                    const NavigationRailDestination(
+                      icon: Icon(Icons.label_outline),
+                      selectedIcon: Icon(Icons.label),
+                      label: Text('태그'),
+                    ),
+                    const NavigationRailDestination(
+                      icon: Icon(Icons.emoji_events_outlined),
+                      selectedIcon: Icon(Icons.emoji_events),
+                      label: Text('성장'),
+                    ),
+                    NavigationRailDestination(
+                      icon: const Icon(Icons.settings_outlined),
+                      selectedIcon: const Icon(Icons.settings),
+                      label: Text(l.settings),
+                    ),
+                  ],
+                ),
+              ],
+            )
+          : bodyContent,
+      bottomNavigationBar: isLandscape
+          ? null
+          : NavigationBar(
+              selectedIndex: _index,
+              onDestinationSelected: _goToTab,
+              destinations: [
+                const NavigationDestination(
+                  icon: Icon(Icons.calendar_today_outlined),
+                  selectedIcon: Icon(Icons.calendar_today),
+                  label: '홈',
+                ),
+                const NavigationDestination(
+                  icon: Icon(Icons.format_list_bulleted_outlined),
+                  selectedIcon: Icon(Icons.format_list_bulleted),
+                  label: '전체',
+                ),
+                const NavigationDestination(
+                  icon: Icon(Icons.label_outline),
+                  selectedIcon: Icon(Icons.label),
+                  label: '태그',
+                ),
+                const NavigationDestination(
+                  icon: Icon(Icons.emoji_events_outlined),
+                  selectedIcon: Icon(Icons.emoji_events),
+                  label: '성장',
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.settings_outlined),
+                  selectedIcon: const Icon(Icons.settings),
+                  label: l.settings,
+                ),
+              ],
+            ),
       floatingActionButton: (_index == 0 || _index == 1)
           ? FloatingActionButton.extended(
               onPressed: _openQuickAdd,
@@ -125,8 +169,10 @@ class _MainShellState extends ConsumerState<MainShell> {
               ),
             )
           : null,
+      floatingActionButtonLocation: isLandscape
+          ? FloatingActionButtonLocation.startFloat
+          : null,
       // Search bar는 홈 탭의 AppBar에서.
-      // (이 셸의 floatingActionButtonLocation은 기본값)
     );
   }
 }

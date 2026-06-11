@@ -6,7 +6,7 @@ Flutter V1 (v1.4.0+vc35)이 Play Store 내부 테스트 검증을 마쳤다고 �
 
 - `D:/Project/BrioDo` — Capacitor 프로젝트. `main` 브랜치 = Play Store v1.1.17/vc30
 - `D:/Project/briodo_flutter` — Flutter 프로젝트. `flutter-rewrite` 브랜치 = 로컬 v1.4.0/vc35
-- **같은 리모트** `github.com/jeiel85/BrioDo` 의 다른 브랜치
+- **같은 리모트** `github.com/jeiel85/briodo-android` 의 다른 브랜치
 - 둘은 unrelated histories (별도 init)
 
 ## 통합 절차
@@ -33,7 +33,7 @@ mv BrioDo BrioDo-capacitor-archive   # Capacitor 보관 (선택)
 mv briodo_flutter BrioDo             # Flutter를 정식 BrioDo 폴더로
 
 cd BrioDo
-git remote -v                         # origin = github.com/jeiel85/BrioDo
+git remote -v                         # origin = github.com/jeiel85/briodo-android
 git fetch origin
 git checkout flutter-rewrite          # 이미 위치
 git push origin flutter-rewrite       # 최신 상태 push (이미 됨)

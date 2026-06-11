@@ -176,6 +176,24 @@ class AppTheme {
           }),
           height: 64,
         ),
+        navigationRailTheme: NavigationRailThemeData(
+          backgroundColor: cs.surface,
+          elevation: 0,
+          indicatorColor: cs.primary.withValues(alpha: 0.12),
+          selectedLabelTextStyle: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: cs.primary,
+          ),
+          unselectedLabelTextStyle: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: cs.onSurfaceVariant,
+          ),
+          selectedIconTheme: IconThemeData(color: cs.primary),
+          unselectedIconTheme: IconThemeData(color: cs.onSurfaceVariant),
+          labelType: NavigationRailLabelType.all,
+        ),
         segmentedButtonTheme: SegmentedButtonThemeData(
           style: ButtonStyle(
             visualDensity: VisualDensity.compact,

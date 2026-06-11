@@ -863,6 +863,102 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'웹에서는 아직 Google 로그인이 지원되지 않습니다. 모바일 앱에서 사용해 주세요.'**
   String get webNoGoogleLogin;
+
+  /// No description provided for @smartInputSettings.
+  ///
+  /// In ko, this message translates to:
+  /// **'스마트 입력 설정 (오프라인)'**
+  String get smartInputSettings;
+
+  /// No description provided for @smartInputEngine.
+  ///
+  /// In ko, this message translates to:
+  /// **'분석 엔진'**
+  String get smartInputEngine;
+
+  /// No description provided for @smartInputEngineLocal.
+  ///
+  /// In ko, this message translates to:
+  /// **'로컬 정규식/키워드'**
+  String get smartInputEngineLocal;
+
+  /// No description provided for @smartInputEngineOndevice.
+  ///
+  /// In ko, this message translates to:
+  /// **'온디바이스 LLM (완전 오프라인)'**
+  String get smartInputEngineOndevice;
+
+  /// No description provided for @modelStatus.
+  ///
+  /// In ko, this message translates to:
+  /// **'모델 상태'**
+  String get modelStatus;
+
+  /// No description provided for @modelStatusNotDownloaded.
+  ///
+  /// In ko, this message translates to:
+  /// **'다운로드 필요 (약 1.35 GB)'**
+  String get modelStatusNotDownloaded;
+
+  /// No description provided for @modelStatusDownloading.
+  ///
+  /// In ko, this message translates to:
+  /// **'다운로드 중... {progress}% ({speed} MB/s)'**
+  String modelStatusDownloading(String progress, String speed);
+
+  /// No description provided for @modelStatusReady.
+  ///
+  /// In ko, this message translates to:
+  /// **'준비 완료 (사용 가능)'**
+  String get modelStatusReady;
+
+  /// No description provided for @modelDownloadUrl.
+  ///
+  /// In ko, this message translates to:
+  /// **'모델 다운로드 URL'**
+  String get modelDownloadUrl;
+
+  /// No description provided for @modelDownloadUrlHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'모델 다운로드 주소를 입력하세요'**
+  String get modelDownloadUrlHint;
+
+  /// No description provided for @modelDownloadButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'다운로드 시작'**
+  String get modelDownloadButton;
+
+  /// No description provided for @modelDeleteButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'모델 삭제'**
+  String get modelDeleteButton;
+
+  /// No description provided for @modelDownloadCancelButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'다운로드 취소'**
+  String get modelDownloadCancelButton;
+
+  /// No description provided for @modelHardwareWarning.
+  ///
+  /// In ko, this message translates to:
+  /// **'⚠️ 온디바이스 LLM은 기기 성능에 따라 작동 속도가 느리거나 가용 RAM 부족(최소 4GB 권장)으로 인해 앱이 종료될 수 있습니다.'**
+  String get modelHardwareWarning;
+
+  /// No description provided for @modelNotDownloadedWarning.
+  ///
+  /// In ko, this message translates to:
+  /// **'온디바이스 LLM 모델이 기기에 없습니다. 설정에서 모델을 먼저 다운로드해야 사용할 수 있습니다.'**
+  String get modelNotDownloadedWarning;
+
+  /// No description provided for @smartParsingError.
+  ///
+  /// In ko, this message translates to:
+  /// **'스마트 분석 오류: {detail}'**
+  String smartParsingError(String detail);
 }
 
 class _AppLocalizationsDelegate

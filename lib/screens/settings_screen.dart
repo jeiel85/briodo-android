@@ -11,6 +11,7 @@ import '../providers/auth_provider.dart';
 import '../providers/locale_provider.dart';
 import '../providers/todos_provider.dart';
 import '../services/analytics_service.dart';
+import '../services/model_download_service.dart';
 import '../theme.dart';
 import '../widgets/brio_components.dart';
 
@@ -350,6 +351,210 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       .read(appSettingsProvider.notifier)
                       .setStatusBarOngoingEnabled(v),
                 ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          _SectionHeader(l.smartInputSettings),
+          BrioCard(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  l.smartInputEngine,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: cs.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<String>(
+                  initialValue: settings.smartInputEngine,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                  items: [
+                    DropdownMenuItem(
+                      value: 'local',
+                      child: Text(l.smartInputEngineLocal),
+                    ),
+                    DropdownMenuItem(
+                      value: 'ondevice',
+                      child: Text(l.smartInputEngineOndevice),
+                    ),
+                  ],
+                  onChanged: (v) {
+                    if (v != null) {
+                      ref.read(appSettingsProvider.notifier).setSmartInputEngine(v);
+                    }
+                  },
+                ),
+                if (settings.smartInputEngine == 'ondevice') ...[
+                  const SizedBox(height: 16),
+                  // 하드웨어 권장사양 경고
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: cs.errorContainer.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: cs.error.withValues(alpha: 0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      l.modelHardwareWarning,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: cs.error,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // 모델 다운로드 제어 영역
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final downloadState = ref.watch(modelDownloadProvider);
+                      final isModelDownloaded = settings.onDeviceModelPath.isNotEmpty;
+                      
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                l.modelStatus,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  color: cs.onSurface.withValues(alpha: 0.6),
+                                ),
+                              ),
+                              if (downloadState.isDownloading)
+                                Text(
+                                  l.modelStatusDownloading(
+                                    (downloadState.progress * 100).toStringAsFixed(1),
+                                    (downloadState.downloadSpeedBytesPerSec / (1024 * 1024)).toStringAsFixed(2),
+                                  ),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: cs.primary,
+                                  ),
+                                )
+                              else if (isModelDownloaded)
+                                Text(
+                                  l.modelStatusReady,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: BrioColors.success,
+                                  ),
+                                )
+                              else
+                                Text(
+                                  l.modelStatusNotDownloaded,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: cs.onSurface.withValues(alpha: 0.5),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          if (downloadState.isDownloading) ...[
+                            LinearProgressIndicator(
+                              value: downloadState.progress,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            const SizedBox(height: 12),
+                            OutlinedButton.icon(
+                              onPressed: () {
+                                ref.read(modelDownloadProvider.notifier).cancelDownload();
+                              },
+                              icon: const Icon(Icons.close, size: 16),
+                              label: Text(l.modelDownloadCancelButton),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: cs.error,
+                                side: BorderSide(color: cs.error),
+                              ),
+                            ),
+                          ] else if (isModelDownloaded) ...[
+                            FilledButton.icon(
+                              onPressed: () async {
+                                final ok = await showDialog<bool>(
+                                  context: context,
+                                  builder: (ctx) => AlertDialog(
+                                    title: const Text('모델 삭제'),
+                                    content: const Text('다운로드된 LLM 모델 파일을 기기에서 삭제하시겠습니까? 다시 사용하려면 재다운로드가 필요합니다.'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.of(ctx).pop(false),
+                                        child: Text(l.actionCancel),
+                                      ),
+                                      FilledButton(
+                                        onPressed: () => Navigator.of(ctx).pop(true),
+                                        child: const Text('삭제'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (ok == true) {
+                                  await ref.read(modelDownloadProvider.notifier).deleteModel();
+                                }
+                              },
+                              icon: const Icon(Icons.delete_outline, size: 16),
+                              label: Text(l.modelDeleteButton),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: cs.errorContainer,
+                                foregroundColor: cs.onErrorContainer,
+                              ),
+                            ),
+                          ] else ...[
+                            TextFormField(
+                              initialValue: settings.onDeviceModelUrl,
+                              decoration: InputDecoration(
+                                labelText: l.modelDownloadUrl,
+                                hintText: l.modelDownloadUrlHint,
+                                isDense: true,
+                              ),
+                              style: const TextStyle(fontSize: 11),
+                              onChanged: (v) {
+                                ref.read(appSettingsProvider.notifier).setOnDeviceModelUrl(v.trim());
+                              },
+                            ),
+                            const SizedBox(height: 12),
+                            if (downloadState.error != null) ...[
+                              Text(
+                                downloadState.error!,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: cs.error,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                            ],
+                            FilledButton.icon(
+                              onPressed: () {
+                                ref.read(modelDownloadProvider.notifier).startDownload();
+                              },
+                              icon: const Icon(Icons.download_for_offline_outlined, size: 16),
+                              label: Text(l.modelDownloadButton),
+                            ),
+                          ],
+                        ],
+                      );
+                    },
+                  ),
+                ],
               ],
             ),
           ),

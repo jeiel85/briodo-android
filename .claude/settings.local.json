@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /d/Project/BlendDo -type f \\\\\\(-name *.json -o -name *.plist -o -name .env* -o -name google-services* \\\\\\))",
+      "Bash(npm install:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)",
+      "Bash(git config:*)"
+    ]
+  }
+}

@@ -404,4 +404,58 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get webNoGoogleLogin => 'ウェブではまだGoogleログインに対応していません。モバイルアプリをご利用ください。';
+
+  @override
+  String get smartInputSettings => '스마트 입력 설정 (오프라인)';
+
+  @override
+  String get smartInputEngine => '분석 엔진';
+
+  @override
+  String get smartInputEngineLocal => '로컬 정규식/키워드';
+
+  @override
+  String get smartInputEngineOndevice => '온디바이스 LLM (완전 오프라인)';
+
+  @override
+  String get modelStatus => '모델 상태';
+
+  @override
+  String get modelStatusNotDownloaded => '다운로드 필요 (약 1.35 GB)';
+
+  @override
+  String modelStatusDownloading(String progress, String speed) {
+    return '다운로드 중... $progress% ($speed MB/s)';
+  }
+
+  @override
+  String get modelStatusReady => '준비 완료 (사용 가능)';
+
+  @override
+  String get modelDownloadUrl => '모델 다운로드 URL';
+
+  @override
+  String get modelDownloadUrlHint => '모델 다운로드 주소를 입력하세요';
+
+  @override
+  String get modelDownloadButton => '다운로드 시작';
+
+  @override
+  String get modelDeleteButton => '모델 삭제';
+
+  @override
+  String get modelDownloadCancelButton => '다운로드 취소';
+
+  @override
+  String get modelHardwareWarning =>
+      '⚠️ 온디바이스 LLM은 기기 성능에 따라 작동 속도가 느리거나 가용 RAM 부족(최소 4GB 권장)으로 인해 앱이 종료될 수 있습니다.';
+
+  @override
+  String get modelNotDownloadedWarning =>
+      '온디바이스 LLM 모델이 기기에 없습니다. 설정에서 모델을 먼저 다운로드해야 사용할 수 있습니다.';
+
+  @override
+  String smartParsingError(String detail) {
+    return '스마트 분석 오류: $detail';
+  }
 }

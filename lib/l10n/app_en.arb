@@ -167,5 +167,32 @@
       "detail": { "type": "String" }
     }
   },
-  "webNoGoogleLogin": "Google sign-in is not supported on web yet. Please use the mobile app."
+  "webNoGoogleLogin": "Google sign-in is not supported on web yet. Please use the mobile app.",
+  "smartInputSettings": "Smart Input Settings (Offline)",
+  "smartInputEngine": "Parsing Engine",
+  "smartInputEngineLocal": "Local Regex/Keywords",
+  "smartInputEngineOndevice": "On-device LLM (Fully Offline)",
+  "modelStatus": "Model Status",
+  "modelStatusNotDownloaded": "Download Required (~1.35 GB)",
+  "modelStatusDownloading": "Downloading... {progress}% ({speed} MB/s)",
+  "@modelStatusDownloading": {
+    "placeholders": {
+      "progress": { "type": "String" },
+      "speed": { "type": "String" }
+    }
+  },
+  "modelStatusReady": "Ready (Available)",
+  "modelDownloadUrl": "Model Download URL",
+  "modelDownloadUrlHint": "Enter model download URL",
+  "modelDownloadButton": "Start Download",
+  "modelDeleteButton": "Delete Model",
+  "modelDownloadCancelButton": "Cancel Download",
+  "modelHardwareWarning": "⚠️ On-device LLM might be slow or terminate the app due to RAM limits (at least 4GB RAM recommended) depending on device specs.",
+  "modelNotDownloadedWarning": "On-device LLM model is not on this device. Please download the model in Settings first.",
+  "smartParsingError": "Smart parsing error: {detail}",
+  "@smartParsingError": {
+    "placeholders": {
+      "detail": { "type": "String" }
+    }
+  }
 }

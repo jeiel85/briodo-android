@@ -167,5 +167,32 @@
       "detail": { "type": "String" }
     }
   },
-  "webNoGoogleLogin": "웹에서는 아직 Google 로그인이 지원되지 않습니다. 모바일 앱에서 사용해 주세요."
+  "webNoGoogleLogin": "웹에서는 아직 Google 로그인이 지원되지 않습니다. 모바일 앱에서 사용해 주세요.",
+  "smartInputSettings": "스마트 입력 설정 (오프라인)",
+  "smartInputEngine": "분석 엔진",
+  "smartInputEngineLocal": "로컬 정규식/키워드",
+  "smartInputEngineOndevice": "온디바이스 LLM (완전 오프라인)",
+  "modelStatus": "모델 상태",
+  "modelStatusNotDownloaded": "다운로드 필요 (약 1.35 GB)",
+  "modelStatusDownloading": "다운로드 중... {progress}% ({speed} MB/s)",
+  "@modelStatusDownloading": {
+    "placeholders": {
+      "progress": { "type": "String" },
+      "speed": { "type": "String" }
+    }
+  },
+  "modelStatusReady": "준비 완료 (사용 가능)",
+  "modelDownloadUrl": "모델 다운로드 URL",
+  "modelDownloadUrlHint": "모델 다운로드 주소를 입력하세요",
+  "modelDownloadButton": "다운로드 시작",
+  "modelDeleteButton": "모델 삭제",
+  "modelDownloadCancelButton": "다운로드 취소",
+  "modelHardwareWarning": "⚠️ 온디바이스 LLM은 기기 성능에 따라 작동 속도가 느리거나 가용 RAM 부족(최소 4GB 권장)으로 인해 앱이 종료될 수 있습니다.",
+  "modelNotDownloadedWarning": "온디바이스 LLM 모델이 기기에 없습니다. 설정에서 모델을 먼저 다운로드해야 사용할 수 있습니다.",
+  "smartParsingError": "스마트 분석 오류: {detail}",
+  "@smartParsingError": {
+    "placeholders": {
+      "detail": { "type": "String" }
+    }
+  }
 }
