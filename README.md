@@ -81,6 +81,23 @@ flutter build appbundle --release           # AAB (Play Store용)
 
 > 🔑 Firebase / Google Sign-In / Gemini API 키는 별도 `.env` 와 `android/app/google-services.json` 이 필요합니다.
 
+릴리스 서명은 저장소 루트 `keystore.properties`(git 제외, `.keystore/blenddo-release.jks`를 가리킴)에서 읽고, 환경 변수 `BRIODO_UPLOAD_STORE_FILE`·`BRIODO_UPLOAD_STORE_PASSWORD`·`BRIODO_UPLOAD_KEY_ALIAS`·`BRIODO_UPLOAD_KEY_PASSWORD`가 있으면 그쪽이 우선합니다(CI용). 둘 다 없으면 debug 키로 서명됩니다.
+
+## 릴리스
+
+Play 업로드는 GitHub Actions [`Play release`](.github/workflows/play-release.yml)가 맡습니다.
+
+1. `pubspec.yaml`의 `version: x.y.z+N`을 올립니다(N = versionCode, Play에 올라간 적 없는 값).
+2. 출시 노트를 `docs/release-notes/x.y.z/ko.txt`(필수)와 `en.txt`(선택)에 500자 이내로 적습니다.
+3. main에 머지한 뒤 태그 `vx.y.z`를 push합니다(GitHub 릴리스를 만들면서 태그를 만들어도 같습니다).
+4. 워크플로가 `play` 환경 승인을 기다립니다 — Actions 화면에서 jeiel85가 승인하면 시험 → AAB 빌드 → 업로드 인증서 SHA-256 확인 → **내부 테스트(internal)·비공개 테스트(alpha)** 에 올리고 트랙 상태를 출력합니다.
+5. **프로덕션**은 태그로는 올라가지 않습니다. Actions에서 `Run workflow`로 같은 버전을 `production` 켜고 돌리면 이미 올라간 번들을 프로덕션에도 붙입니다(전체 출시). `dry_run`은 올리지 않고 빌드·서명·트랙 조회만 합니다.
+
+- 비밀값(키스토어 base64·비밀번호·별칭·Play 서비스 계정 키)은 GitHub 환경 `play`의 Secrets에만 있습니다. 그 환경은 main 브랜치와 `v*` 태그에서만, 승인 후에만 돌아갑니다.
+- 이 저장소의 다른 워크플로는 태그에 반응하지 않아 이중 실행이 없습니다. GitHub 릴리스(APK 첨부)는 지금처럼 손으로 만듭니다.
+- **같은 버전을 로컬에서 Play에 올리지 않습니다**(전역 `play-publish` 스킬, Play Console 드래그 업로드 포함). 같은 versionCode는 Play가 두 번 받지 않으므로 먼저 올린 쪽만 성공하고 나머지는 실패합니다. 워크플로가 실패해 손으로 올려야 하면 그 버전의 워크플로 실행은 취소하거나 승인하지 않습니다.
+- `docs/PLAY_UPLOAD_CHECKLIST.md`의 수동 업로드 절차(v1.3.0)는 이 워크플로 이전 기록입니다.
+
 ## 프로젝트 구조
 
 ```
