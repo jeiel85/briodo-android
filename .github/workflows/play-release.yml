@@ -76,10 +76,12 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      # v1.5.3(vc40)을 빌드한 버전(.metadata revision 00b0c91, Dart 3.11.5). 3.47.x에서는 home_widget 0.9.1
+      # 컴파일이 jvm-target 문제로 깨지므로, Flutter를 올릴 때는 로컬 빌드와 함께 맞춥니다.
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: '3.47.6'
+          flutter-version: '3.41.9'
           cache: true
 
       - uses: gradle/actions/setup-gradle@v4
