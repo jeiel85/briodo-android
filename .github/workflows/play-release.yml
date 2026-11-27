@@ -135,7 +135,7 @@ jobs:
       - name: Play 트랙 상태(올리기 전)
         env:
           PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-        run: pwsh -NoProfile -File tools/play-publish.ps1 -PackageName "$PACKAGE" -ShowTracks
+        run: pwsh -NoProfile -File tools/play-publish.ps1 -PackageName "$PACKAGE" -ShowTracks | tee "$RUNNER_TEMP/tracks-before.txt"
 
       - name: 내부 테스트·Alpha(·프로덕션)에 올리기
         env:
@@ -146,8 +146,18 @@ jobs:
         run: |
           DRYFLAG=(); [ "$DRY" = true ] && DRYFLAG=(-DryRun)
           read -r -a NOTES <<<"$NOTES_ARGS"
-          pwsh -NoProfile -File tools/play-publish.ps1 -PackageName "$PACKAGE" -Track internal -AabPath "$AAB" \
-            -ExpectedUploadCertSha256 "$UPLOAD_CERT_SHA256" "${NOTES[@]}" "${DRYFLAG[@]}"
+          # 이 versionCode가 이미 어느 트랙에 있으면(태그 실행 뒤 production 승격, 실패 후 재실행) 다시 올리지 않고
+          # 트랙에 붙이기만 합니다. Play는 같은 versionCode 번들을 두 번 받지 않습니다.
+          if grep -Eq "\[versionCode ([0-9]+,)*${CODE}(,[0-9]+)*\]" "$RUNNER_TEMP/tracks-before.txt"; then
+            echo "versionCode $CODE 가 이미 Play에 있습니다 — 업로드 없이 트랙에만 붙입니다."
+            pwsh -NoProfile -File tools/play-publish.ps1 -PackageName "$PACKAGE" -Track internal -AabPath "$AAB" \
+              -ExpectedUploadCertSha256 "$UPLOAD_CERT_SHA256" "${NOTES[@]}" -DryRun
+            pwsh -NoProfile -File tools/play-publish.ps1 -PackageName "$PACKAGE" -Track internal -ExpectedVersionCode "$CODE" \
+              "${NOTES[@]}" "${DRYFLAG[@]}"
+          else
+            pwsh -NoProfile -File tools/play-publish.ps1 -PackageName "$PACKAGE" -Track internal -AabPath "$AAB" \
+              -ExpectedUploadCertSha256 "$UPLOAD_CERT_SHA256" "${NOTES[@]}" "${DRYFLAG[@]}"
+          fi
           pwsh -NoProfile -File tools/play-publish.ps1 -PackageName "$PACKAGE" -Track alpha -ExpectedVersionCode "$CODE" \
             "${NOTES[@]}" "${DRYFLAG[@]}"
           if [ "$PROD" = true ]; then
