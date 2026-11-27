@@ -18,6 +18,16 @@ val keystorePropertiesFile = rootProject.file("../keystore.properties")
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
+// CI(.github/workflows/play-release.yml)는 keystore.properties 대신 환경 변수로 넘긴다.
+// BRIODO_UPLOAD_STORE_FILE 이 있으면 파일 값보다 환경 변수가 우선한다.
+val signingFromEnv = !System.getenv("BRIODO_UPLOAD_STORE_FILE").isNullOrBlank()
+if (signingFromEnv) {
+    keystoreProperties["storeFile"] = System.getenv("BRIODO_UPLOAD_STORE_FILE")
+    keystoreProperties["storePassword"] = System.getenv("BRIODO_UPLOAD_STORE_PASSWORD")
+    keystoreProperties["keyAlias"] = System.getenv("BRIODO_UPLOAD_KEY_ALIAS")
+    keystoreProperties["keyPassword"] = System.getenv("BRIODO_UPLOAD_KEY_PASSWORD")
+}
+val hasReleaseSigning = signingFromEnv || keystorePropertiesFile.exists()
 
 android {
     namespace = "app.briodo"
@@ -61,8 +71,8 @@ android {
 
     buildTypes {
         release {
-            // keystore.properties가 없으면 debug 키로 폴백 (flutter run --release 동작용)
-            signingConfig = if (keystorePropertiesFile.exists()) {
+            // keystore.properties·환경 변수 둘 다 없으면 debug 키로 폴백 (flutter run --release 동작용)
+            signingConfig = if (hasReleaseSigning) {
                 signingConfigs.getByName("release")
             } else {
                 signingConfigs.getByName("debug")
